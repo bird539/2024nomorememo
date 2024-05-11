@@ -118,20 +118,6 @@ class wob {
                 for(let key in OP.lightColor[color]){
                     this.c[key] = OP.lightColor[color][key];
                 }
-                /**
-                 * 
-                if(j-1 < 2){
-                    this.i.befo = j-1;
-                    this.intoArray();
-                    this.intoOb();
-
-                    this.targetIndex = j-1;
-                    this.open();
-                    this.obArr[j-1].i.next = j;
-                    this.intoArray();
-                    this.intoOb();
-                }else{
-                 */
                     for(let k=0; k<this.obArr.length;k++){
                         if(this.obArr[k]!=null&&this.obArr[k].i.next == null){
                             this.i.befo = k;
@@ -202,7 +188,7 @@ newWin.setObArr();
 let btn = document.createElement("button");
 
 function al(){
-    newWin.targetIndex = 0;
+    newWin.targetIndex = 3;
     newWin.delete();
 }
 
@@ -212,10 +198,14 @@ function ins(){
 let p = document.createElement("p");
 p.innerText = `index : befo : next`;
 mainDiv.appendChild(p);
-for(let i=0; i<10; i++){
+for(let i=0; i<newWin.obArr.length; i++){
     if(newWin.obArr[i]!=null){
         let p = document.createElement("p");
         p.innerText = `${newWin.obArr[i].i.index}:${newWin.obArr[i].i.befo}:${newWin.obArr[i].i.next}`;
+        mainDiv.appendChild(p);
+    }else{
+        let p = document.createElement("p");
+        p.innerText = `${i}:null`;
         mainDiv.appendChild(p);
     }
 }
