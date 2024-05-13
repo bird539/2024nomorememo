@@ -1,4 +1,7 @@
 const mainDiv = document.querySelector('.mainDiv');
+mainDiv.style.display = 'flex';
+mainDiv.style.flexWrap = 'wrap';
+mainDiv.style.justifyContent = 'center'
 
 let windowArrLenth = Array.from({length:20}, ()=>null);
 
@@ -19,7 +22,7 @@ const OP = {
 }
 const BA = {
     W:{Wsave:'Wsave', WwArr:0, WcssArr:1},
-    lineThic:1.5, winWith:'456px', fontSize:'14pt',
+    lineThic:1.5, winWith:'456', fontSize:14,
     fontThic:0, fontType:2, fontKind:0,
 }
 
@@ -178,43 +181,174 @@ class wob {
         localStorage.setItem(BA.W.Wsave, JSON.stringify(this.saveArr));
     }
 
-
     select(){}
-    real(){}
-}
+    real(){
+        let winDiv = document.createElement("div");
+        winDiv.className = this.i.className;
+        winDiv.style.backgroundColor = this.c.back;
+        winDiv.style.width = '600px';
+        winDiv.style.display = 'flex';
+        winDiv.style.flexWrap = 'wrap';
+        winDiv.style.flexDirection = 'column';
+        ////
+        let head = document.createElement("div");
+        head.className = this.i.className + "_head";
+        ////
+        let title = document.createElement("div");
+        title.className = this.i.className + "_title";
+        title.style.display = 'flex';
+        title.style.borderBottom = `2px solid black`;
+        ////
+        let titleBtn = document.createElement("button");
+        titleBtn.className = this.i.className + "_titleBtn";
+        titleBtn.innerText = this.i.title;
+        
+        titleBtn.style.fontSize = `${this.c.fontSize}pt`;
+        titleBtn.style.fontFamily = this.c.fontKind;
+        titleBtn.style.fontStyle = this.c.fontType;
+        titleBtn.style.fontWeight = this.c.fontThick;
+        titleBtn.style.color = this.c.font;
 
-let newWin = new wob(0);
-newWin.setObArr();
-let btn = document.createElement("button");
+        titleBtn.style.flexGrow = 1;
+        titleBtn.style.textAlign = 'left';
+        titleBtn.style.padding = '0';
+        titleBtn.style.backgroundColor = 'transparent';
+        titleBtn.style.border = 'none';
+        titleBtn.style.paddingLeft = '10px'
+        ////
+        let plsBtn = document.createElement("button");
+        plsBtn.innerText = '+';
 
-function al(){
-    newWin.targetIndex = 3;
-    newWin.delete();
-}
+        plsBtn.style.display = 'flex';
+        plsBtn.style.alignItems = 'center';
+        plsBtn.style.justifyContent = 'center';
+        plsBtn.style.padding = '0';
+        plsBtn.style.paddingBottom = '5px';
 
-function ins(){
-    newWin.insert()
-}
-let p = document.createElement("p");
-p.innerText = `index : befo : next`;
-mainDiv.appendChild(p);
-for(let i=0; i<newWin.obArr.length; i++){
-    if(newWin.obArr[i]!=null){
-        let p = document.createElement("p");
-        p.innerText = `${newWin.obArr[i].i.index}:${newWin.obArr[i].i.befo}:${newWin.obArr[i].i.next}`;
-        mainDiv.appendChild(p);
-    }else{
-        let p = document.createElement("p");
-        p.innerText = `${i}:null`;
-        mainDiv.appendChild(p);
+        plsBtn.style.fontSize = `${this.c.fontSize}pt`;
+        plsBtn.style.fontFamily = this.c.fontKind;
+        plsBtn.style.fontStyle = this.c.fontType;
+        plsBtn.style.fontWeight = this.c.fontThick;
+        plsBtn.style.color = this.c.font;
+
+        plsBtn.style.flexShrink = 0;
+        plsBtn.style.width = '40px';
+        plsBtn.style.height = '40px';
+
+        plsBtn.style.backgroundColor = 'transparent';
+        plsBtn.style.border = 'none';
+
+
+        ////////////////
+        title.appendChild(titleBtn);
+        title.appendChild(plsBtn);
+        head.appendChild(title);
+        winDiv.appendChild(head);
+
+        let body = document.createElement("div");
+        body.className = this.i.className + "_body";
+        body.innerText = 'body~';
+        winDiv.appendChild(body);
+        
+        return winDiv;
     }
 }
 
-btn.addEventListener("click", al);
-btn.innerText = 'delete';
-mainDiv.appendChild(btn);
 
-let btn2 = document.createElement("button");
-btn2.addEventListener("click", ins);
-btn2.innerText = 'insert';
-mainDiv.appendChild(btn2);
+let newWin = new wob(0);
+newWin.setObArr();
+newWin.targetIndex = 0;
+newWin.open();
+
+mainDiv.appendChild(newWin.real());
+let btn = document.createElement('button');
+console.log(btn);
+
+//ex HTML ========================================================================
+
+
+//make HTML ========================================================================
+/*
+function makeEvent(ob, option) {
+    let option1 = option.split(':')[0];
+    let clickOption = option.split(':')[1];
+    if (option1 == 'NextShowEvent') {
+        ob.addEventListener(`${clickOption}`, NextShowEvent);
+    } else if (option1 == 'NextShowEvent2') {
+        ob.addEventListener(`${clickOption}`, NextShowEvent2);
+    } 
+    return ob;
+}
+
+function makeOb(ob) {
+    let newOb = document.createElement(ob);
+    return newOb;
+}
+function makeAppend(parents, child) {
+    let dd = parents;
+    let bb = child;
+    dd.appendChild(bb);
+    return dd;
+}
+function makeClassName(ob, name) {
+    ob.className = `${name}`;
+    return ob;
+}
+function makeType(ob, kind) {
+    ob.type = kind;
+    return ob;
+}
+function makeValue(ob, key) {
+    ob.value = key;
+    return ob;
+}
+function makeInnerText(ob, text) {
+    ob.innerText = text;
+    return ob;
+}
+function makeFunction(ob, option, value) {
+    ob[`${option}`] = value;
+    return ob;
+}
+function makeStyle(ob, option, value) {
+    ob.style[option] = value;
+    return ob;
+}
+
+function makeHtml(ob, set) {
+    let newOb;
+    let child;
+    for (const key in ob) {
+        let keySorce = `${key}`
+        let keyy = keySorce.split('_')[0];
+        let sett = keySorce.split('_')[1];
+        const target = typeof ob[key];
+        //makeFunction(ob, option, value)
+        if (target == 'object') {
+            if (key == 'basic') {
+                continue
+            }
+            child = makeHtml(ob[key], set);
+            newOb = makeAppend(newOb, child);
+        } else if (target == 'string' && keyy == 'type') {
+            newOb = makeOb(ob[key]);
+        } else if (target == 'string' && keyy == 'kind') {
+            newOb = makeFunction(newOb, 'type', ob[key]);
+        } else if (target == 'string' && keyy == 'value') {
+            
+            newOb = makeFunction(newOb, keyy, set[sett]);
+
+        } else if (target == 'string' && keyy == 'event') {
+            newOb = makeEvent(newOb, ob[key]);
+        } else if (target == 'string' && keyy == 'style') {
+                let op = ob[key].split(':')[0];
+                let va = ob[key].split(':')[1];
+                newOb = makeStyle(newOb, op, va);
+        } else {
+                newOb = makeFunction(newOb, keyy, ob[key]);
+        }
+    }
+    return newOb;
+}
+*/
+//end make HTML ========================================================================
