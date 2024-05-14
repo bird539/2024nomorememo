@@ -190,15 +190,15 @@ class wob {
         winDiv.style.display = 'flex';
         winDiv.style.flexWrap = 'wrap';
         winDiv.style.flexDirection = 'column';
-        ////
+        //windiv-head
         let head = document.createElement("div");
         head.className = this.i.className + "_head";
-        ////
+        //head-title
         let title = document.createElement("div");
         title.className = this.i.className + "_title";
         title.style.display = 'flex';
-        title.style.borderBottom = `2px solid black`;
-        ////
+        title.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
+        //head-title-titlebtn
         let titleBtn = document.createElement("button");
         titleBtn.className = this.i.className + "_titleBtn";
         titleBtn.innerText = this.i.title;
@@ -215,7 +215,7 @@ class wob {
         titleBtn.style.backgroundColor = 'transparent';
         titleBtn.style.border = 'none';
         titleBtn.style.paddingLeft = '10px'
-        ////
+        //head-title-pls btn
         let plsBtn = document.createElement("button");
         plsBtn.innerText = '+';
 
@@ -237,14 +237,68 @@ class wob {
 
         plsBtn.style.backgroundColor = 'transparent';
         plsBtn.style.border = 'none';
+        //head-tapChoose btns
+        let tapChooseDiv = document.createElement('div');
+        tapChooseDiv.className = this.i.className+'_tapChoose';
+        tapChooseDiv.style.display = 'flex';
+        tapChooseDiv.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
+
+        for(let i=0; i<OP.tapType.length;i++){
+            let tapBtn = document.createElement('button');
+            tapBtn.className = this.i.className+`_tapBtn_${i}`;
+            tapBtn.innerText = OP.tapType[i];
+
+            tapBtn.style.fontSize = `${this.c.fontSize}pt`;
+            tapBtn.style.fontFamily = this.c.fontKind;
+            tapBtn.style.fontStyle = this.c.fontType;
+            tapBtn.style.fontWeight = this.c.fontThick;
+            tapBtn.style.color = this.c.font;
+            
+            tapBtn.style.flexGrow = 1;
+            tapBtn.style.backgroundColor = 'transparent';
+            tapBtn.style.border = 'none';
+            tapBtn.style.textAlign = 'left';
+            tapBtn.style.padding = '0';
+            tapBtn.style.paddingLeft = '10px';
+            tapBtn.style.paddingBottom = '5px';
+
+            tapChooseDiv.appendChild(tapBtn);
+        }
+        let winPlsBtn = document.createElement('button');
+        winPlsBtn.className = this.i.className+`_tapBtn_winPls`;
+        winPlsBtn.innerText = '+win';
+
+        winPlsBtn.style.fontSize = `${this.c.fontSize}pt`;
+        winPlsBtn.style.fontFamily = this.c.fontKind;
+        winPlsBtn.style.fontStyle = this.c.fontType;
+        winPlsBtn.style.fontWeight = this.c.fontThick;
+        winPlsBtn.style.color = this.c.font;
+        
+        winPlsBtn.style.flexGrow = 1;
+        winPlsBtn.style.backgroundColor = 'transparent';
+        winPlsBtn.style.border = 'none';
+        winPlsBtn.style.textAlign = 'left';
+        winPlsBtn.style.padding = '0';
+        winPlsBtn.style.paddingLeft = '10px';
+        winPlsBtn.style.paddingBottom = '5px';
+
+        tapChooseDiv.appendChild(winPlsBtn);
+        //head-winEdit
+        let winEdit = document.createElement('div');
+        winEdit.className = this.i.className+'_winEdit';
+        winEdit.style.display = 'flex';
+        winEdit.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
+
+        let wEdit = document.createElement('div');
 
 
         ////////////////
         title.appendChild(titleBtn);
         title.appendChild(plsBtn);
         head.appendChild(title);
+        head.appendChild(tapChooseDiv);
         winDiv.appendChild(head);
-
+        //windiv-body
         let body = document.createElement("div");
         body.className = this.i.className + "_body";
         body.innerText = 'body~';
