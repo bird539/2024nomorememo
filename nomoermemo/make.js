@@ -23,7 +23,7 @@ const OP = {
         pink: { back: '#ffb2ad', font: '#000000', row: '#B8D993', col: '#ff8c82' },
         green: { back: '#ddffb7', font: '#000000', row: '#B8D993', col: '#ff8c82' },
     },
-    btnPaddingSide: '10px', btnPaddingBottom: '5px',
+    btnPaddingSide: '10px', btnPaddingBottom: '0px',
     winBtnHeight: '40px',
 }
 const BA = {
@@ -298,6 +298,8 @@ class wob {
         //head-title-pls btn
         let plsBtn = document.createElement("button");
         plsBtn.innerText = '+';
+        plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
+        plsBtn.addEventListener('click', targetShow);
         this.basicFontSet(plsBtn);
 
         plsBtn.style.display = 'flex';
@@ -470,6 +472,25 @@ class wob {
         winDiv.appendChild(body);
 
         return winDiv;
+    }
+}
+function targetShow(event){
+    let eventClassName = event.target.className.split('.');
+    const check = 'target';
+    for(let i=0;i<eventClassName.length;i++){
+        if(eventClassName[i].includes(check)){
+            console.log(eventClassName[i])
+            let t = eventClassName[i].split(':');
+            let targetClassName = t[1]
+            let targetDisplayType = t[2]
+            let target = document.querySelector(`.${targetClassName}`);
+            if(target.style.display == 'none'){
+                target.style.display = targetDisplayType;
+            }else{
+                target.style.display == 'none'
+            }
+            return 0;
+        }
     }
 }
 
