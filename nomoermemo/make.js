@@ -71,12 +71,12 @@ class wob {
     firstSet() {
         //win info
         this.i.befo = null; this.i.next = null; this.i.index = this.targetIndex;
-        this.i.className = `${this.i.index}w`; this.i.title = this.i.className;
+        this.i.className = `w${this.i.index}`; this.i.title = this.i.className;
         this.i.showWin = true; this.i.showTap = null; this.i.cssIndex = this.i.index;
 
         //css
-        this.c.fontSize = BA.fontSize; this.c.fontThick = OP.fontThic[BA.fontThic];
-        this.c.fontType = OP.fontType[BA.fontThic]; this.c.fontKind = OP.fontKind[BA.fontKind];
+        this.c.fontSize = BA.fontSize; this.c.fontThick = BA.fontThic;
+        this.c.fontType = BA.fontType; this.c.fontKind = BA.fontKind
 
         this.c.back = OP.lightColor.yello.back;
         this.c.font = OP.lightColor.yello.font;
@@ -190,9 +190,9 @@ class wob {
     select() { }
     basicFontSet(ob) {
         ob.style.fontSize = `${this.c.fontSize}pt`;
-        ob.style.fontFamily = this.c.fontKind;
-        ob.style.fontStyle = this.c.fontType;
-        ob.style.fontWeight = this.c.fontThick;
+        ob.style.fontFamily = OP.fontKind[this.c.fontKind];
+        ob.style.fontStyle = OP.fontType[this.c.fontType];
+        ob.style.fontWeight = OP.fontThic[this.c.fontThick];
         ob.style.color = this.c.font;
     }
     basicBtnSet(ob) {
@@ -201,6 +201,7 @@ class wob {
         ob.style.backgroundColor = 'transparent';
         ob.style.marginLeft = OP.btnPaddingSide;
         ob.style.height = OP.winBtnHeight;
+
     }
     basicEditPage(ob, exOb) {
         let page = document.createElement('div');
@@ -256,6 +257,9 @@ class wob {
         befoBtn.style.height = '100%';
         befoBtn.style.marginRight = OP.btnPaddingSide;
 
+        befoBtn.className =this.i.className+'_befoBtn .target:'+ this.i.className+'_editPageSelect:flex:3' ;
+        befoBtn.addEventListener('click',befoNextToSelectClick);
+
         let nextBtn = document.createElement('button');
         nextBtn.innerText = '>';
         nextBtn.style.width = '5%';
@@ -264,10 +268,12 @@ class wob {
         nextBtn.style.marginRight = OP.btnPaddingSide;
         nextBtn.style.height = '100%';
 
+        nextBtn.className =this.i.className+'_befoBtn .target:'+ this.i.className+'_editPageSelect:flex:3' ;
+        nextBtn.addEventListener('click',befoNextToSelectClick);
+
         ob.appendChild(befoBtn);
         ob.appendChild(page);
         ob.appendChild(nextBtn);
-
     }
 
     real() {
@@ -295,6 +301,24 @@ class wob {
         titleBtn.style.flexGrow = 1;
         titleBtn.style.textAlign = 'left';
 
+        
+        //head-title-pls btn
+        let editBtn = document.createElement("button");
+        editBtn.innerText = 'e';
+        editBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_winEdit:flex .target:'+this.i.className+'_title:flex .target:'+this.i.className+'_tapChoose:none  .target:'+this.i.className+'_titleEdit:flex';//
+        editBtn.addEventListener('click', targetShow);
+        this.basicFontSet(editBtn);
+
+        editBtn.style.display = 'flex';
+        editBtn.style.alignItems = 'center';
+        editBtn.style.justifyContent = 'center';
+
+        this.basicBtnSet(editBtn);
+        editBtn.style.paddingBottom = OP.btnPaddingBottom;
+        editBtn.style.flexShrink = 0;
+        editBtn.style.width = OP.winBtnHeight;
+
+
         //head-title-pls btn
         let plsBtn = document.createElement("button");
         plsBtn.innerText = '+';
@@ -314,7 +338,7 @@ class wob {
         //head-title-edit 
         let titleEdit = document.createElement("div");
         titleEdit.className = this.i.className + "_titleEdit";
-        titleEdit.style.display = 'flex';
+        titleEdit.style.display = 'none'//'flex';
         titleEdit.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
 
         let winTitleInput = document.createElement('input');
@@ -331,9 +355,10 @@ class wob {
         let winCancelBtn = document.createElement('button');
         this.basicBtnSet(winCancelBtn);
         winCancelBtn.innerText = 'done';
-        winCancelBtn.style.width = '15%'
-
         this.basicFontSet(winCancelBtn);
+        winCancelBtn.style.width = '15%'
+        winCancelBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_winEdit:flex .target:'+this.i.className+'_title:flex .target:'+this.i.className+'_tapChoose:none  .target:'+this.i.className+'_titleEdit:flex';//
+        winCancelBtn.addEventListener('click', targetShow);
 
         let winDelBtn = document.createElement('button');
         winDelBtn.innerText = 'win_del';
@@ -364,7 +389,7 @@ class wob {
         //head-tapChoose btns
         let tapChooseDiv = document.createElement('div');
         tapChooseDiv.className = this.i.className + '_tapChoose';
-        tapChooseDiv.style.display = 'flex';
+        tapChooseDiv.style.display = 'none';//'flex';
         tapChooseDiv.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
 
         for (let i = 0; i < OP.tapType.length; i++) {
@@ -395,8 +420,8 @@ class wob {
         //head-winEdit
         let winEdit = document.createElement('div');
         winEdit.className = this.i.className + '_winEdit';
-        winEdit.style.display = 'flex';
-        winEdit.style.flexWrap = 'wrap'
+        winEdit.style.display = 'none';//'flex';
+        winEdit.style.flexWrap = 'wrap';
         winEdit.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
 
         //select page
@@ -411,12 +436,15 @@ class wob {
         this.basicFontSet(editPageSelect);
         this.basicBtnSet(editPageSelect);
         editPageSelect.style.width = '100%'
-        editPageSelect.style.marginRight = OP.btnPaddingSide;
+        editPageSelect.style.marginRight = OP.btnPaddingSide;//===
+        editPageSelect.className = this.i.className+'_editPageSelect .target:'+this.i.className+'_editBook:flex:4';
+        editPageSelect.addEventListener('change',targePageShow);
 
         //book
         let editBook = document.createElement('div');
         editBook.style.width = '100%';
         editBook.style.display = 'flex';
+        editBook.className = this.i.className+'_editBook';
 
         let editPage1 = document.createElement('div');
         let exOb1 = [
@@ -444,11 +472,20 @@ class wob {
         ];
         this.basicEditPage(editPage3, exOb3);
 
+        let editPage4 = document.createElement('div');
+        let exOb4 = [
+            { text: 'not yet done...', type: 'input', inputType: 'number', value: this.c.wwidth },
+            //{ text: 'line thick', type: 'input', inputType: 'number', value: this.c.rowThic },
+        ];
+        this.basicEditPage(editPage4, exOb4);
+
         editBook.appendChild(editPage1);
         editBook.appendChild(editPage2);
         editPage2.style.display = 'none';
         editBook.appendChild(editPage3);
         editPage3.style.display = 'none';
+        editBook.appendChild(editPage4);
+        editPage4.style.display = 'none';
 
         winEdit.appendChild(editPageSelect);
         winEdit.appendChild(editBook);
@@ -456,6 +493,7 @@ class wob {
 
         ////////////////
         title.appendChild(titleBtn);
+        title.appendChild(editBtn);
         title.appendChild(plsBtn);
 
         head.appendChild(title);
@@ -475,11 +513,11 @@ class wob {
     }
 }
 function targetShow(event){
+    //plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
     let eventClassName = event.target.className.split('.');
     const check = 'target';
-    for(let i=0;i<eventClassName.length;i++){
+    for(let i=1;i<eventClassName.length;i++){
         if(eventClassName[i].includes(check)){
-            console.log(eventClassName[i])
             let t = eventClassName[i].split(':');
             let targetClassName = t[1]
             let targetDisplayType = t[2]
@@ -487,106 +525,46 @@ function targetShow(event){
             if(target.style.display == 'none'){
                 target.style.display = targetDisplayType;
             }else{
-                target.style.display == 'none'
+                target.style.display = 'none'
             }
-            return 0;
         }
     }
 }
+function targePageShow(event){
+    //plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
+    let eventClassName = event.target.className.split('.');
+    let index = event.target.selectedIndex;
+    const check = 'target';
+    if(eventClassName[1].includes(check)){
+        let t = eventClassName[1].split(':');
+        let targetClassName = t[1];
+        let targetDisplayType = t[2];
+        let target = document.querySelector(`.${targetClassName}`);
+        for(let j=0;j<target.childNodes.length;j++){
+            target.childNodes[j].style.display = 'none';
+        }
+        target.childNodes[index].style.display = targetDisplayType;
+    }
+}
+function befoNextToSelectClick(event){
+    //befoBtn.className =this.i.className+'_befoBtn .target:'+ this.i.className+'_editPageSelect:flex:3' ;
 
+    let eventClassName = event.target.className.split('.');
+    let t = eventClassName[1].split(':');//===
+    let select = document.querySelector(`.${t[1]}`);
+    let index = select.selectedIndex;
+    let lastIndex = t[3];
+    if(event.target.innerText=='<'){
+        select.selectedIndex = index > 0 ? index-1 : lastIndex;
+    }else if(event.target.innerText=='>'){
+        select.selectedIndex = index < lastIndex ? index+1 : 0;
+    }
+    select.dispatchEvent(new Event('change'));
+}
 
 let newWin = new wob(0);
 newWin.setObArr();
 newWin.targetIndex = 0;
 newWin.open();
 
-
 mainDiv.appendChild(newWin.real());
-//ex HTML ========================================================================
-
-
-//make HTML ========================================================================
-/*
-function makeEvent(ob, option) {
-    let option1 = option.split(':')[0];
-    let clickOption = option.split(':')[1];
-    if (option1 == 'NextShowEvent') {
-        ob.addEventListener(`${clickOption}`, NextShowEvent);
-    } else if (option1 == 'NextShowEvent2') {
-        ob.addEventListener(`${clickOption}`, NextShowEvent2);
-    }
-    return ob;
-}
-
-function makeOb(ob) {
-    let newOb = document.createElement(ob);
-    return newOb;
-}
-function makeAppend(parents, child) {
-    let dd = parents;
-    let bb = child;
-    dd.appendChild(bb);
-    return dd;
-}
-function makeClassName(ob, name) {
-    ob.className = `${name}`;
-    return ob;
-}
-function makeType(ob, kind) {
-    ob.type = kind;
-    return ob;
-}
-function makeValue(ob, key) {
-    ob.value = key;
-    return ob;
-}
-function makeInnerText(ob, text) {
-    ob.innerText = text;
-    return ob;
-}
-function makeFunction(ob, option, value) {
-    ob[`${option}`] = value;
-    return ob;
-}
-function makeStyle(ob, option, value) {
-    ob.style[option] = value;
-    return ob;
-}
-
-function makeHtml(ob, set) {
-    let newOb;
-    let child;
-    for (const key in ob) {
-        let keySorce = `${key}`
-        let keyy = keySorce.split('_')[0];
-        let sett = keySorce.split('_')[1];
-        const target = typeof ob[key];
-        //makeFunction(ob, option, value)
-        if (target == 'object') {
-            if (key == 'basic') {
-                continue
-            }
-            child = makeHtml(ob[key], set);
-            newOb = makeAppend(newOb, child);
-        } else if (target == 'string' && keyy == 'type') {
-            newOb = makeOb(ob[key]);
-        } else if (target == 'string' && keyy == 'kind') {
-            newOb = makeFunction(newOb, 'type', ob[key]);
-        } else if (target == 'string' && keyy == 'value') {
-
-            newOb = makeFunction(newOb, keyy, set[sett]);
-
-        } else if (target == 'string' && keyy == 'event') {
-            newOb = makeEvent(newOb, ob[key]);
-        } else if (target == 'string' && keyy == 'style') {
-                let op = ob[key].split(':')[0];
-                let va = ob[key].split(':')[1];
-                newOb = makeStyle(newOb, op, va);
-        } else {
-                newOb = makeFunction(newOb, keyy, ob[key]);
-        }
-    }
-    return newOb;
-}
-*/
-//end make HTML ========================================================================
