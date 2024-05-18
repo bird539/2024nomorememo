@@ -30,6 +30,7 @@ const BA = {
     W: { Wsave: 'Wsave', WwArr: 0, WcssArr: 1 },
     lineThic: 1.5, winWith: '456', fontSize: 14,
     fontThic: 0, fontType: 2, fontKind: 0,
+    H: { Hsave: 'Hsave', }
 }
 
 function returnOb(ob, arr) {
@@ -48,6 +49,312 @@ function justNewOb(ob) {
     return newOb;
 }
 
+class likeQueue {
+    array = [];
+    ob = {value:null, next:null, befo:null}
+    outValue = null;
+    constructor(long) {
+        this.array = Array.from({ length: long }, () => null);
+    }
+    saveArr;
+
+    setObArr() {
+        for (let j = 0; j < this.saveArr.length; j++) {
+            if (this.saveArr[j] != null) {
+                let target = returnOb(this.ob, this.saveArr[j]);
+                this.array[j] = target;
+            }
+        }
+    }
+    intoArray() {
+        for (let j = 0; j < this.array.length; j++) {
+            if (this.array[j] != null) {
+                let target = Object.values(this.array[j]);
+                this.saveArr[j] = target;
+            }
+        }
+    }
+
+    insert(value) {
+        let ob = { value: value, next: null, befo: null };
+        let targetIndex = null; let nowBefo = null; let nowNext = null; let nowNull = null;
+        for (let j = 0; j < this.array.length; j++) {
+            if (this.array[j] == null) {
+                nowNull = j;
+            } else if (this.array[j] != null && this.array[j].befo == null) {
+                if (targetIndex != null) {
+                    targetIndex = j;
+                    nowBefo = j;
+                }
+            }
+            
+            if (this.array[j] != null && this.array[j].next == null) {
+                nowNext = j;
+            }
+        }
+
+        if (nowBefo != null) {
+            if (nowNull == null) {
+                let nextDelTarget = this.array[nowBefo].next;
+                this.array[nextDelTarget].befo = null;
+            }
+            ob.befo = nowNext;
+        }
+        if(nowNull!=null){ targetIndex = nowNull; }
+        if (nowNext != null) {
+            this.array[nowNext].next = targetIndex;
+        }
+        this.array[targetIndex] = ob;
+    }
+
+    del(delIndex){
+        let befo = this.array[delIndex].befo;
+        let next = this.array[delIndex].next;
+        if(befo!=null){this.array[befo].next = next;}
+        if(next!=null){this.array[next].befo = befo;}
+
+        this.outValue = array[delIndex].value; 
+
+        this.array[delIndex] = null;
+    }
+}
+
+class HTMLController {
+    option = {
+        //basicFontWidth: { font:null, width:null }, //font, width
+        basicDarkLightMode: { not:true, mode:false }, //not mode(false) or mode(true) | not, dark(true), light(false) 
+        backColor: { free:null, dark:null, light:null}, //basic, dark, light
+        trash: {
+            text: new likeQueue(60),
+            tap: new likeQueue(20),
+            win: new likeQueue(20),
+        },
+        thisBtnOption:{ 
+            backColor:null, fontColor:null, lineColor:null, 
+            fontStyle:null, fontFamily:null, fontThick:null, fontSize:null,
+            height:null, title:null
+        }
+    }
+    saveArr;
+    constructor() { this.htmlsave = 'htmlSet', this.setObArr() };
+
+    save() {
+        localStorage.setItem(BA.H.Hsave, JSON.stringify(this.saveArr));
+    }
+    firstSet(){
+        this.option.backColor.free = '#FFFFFF';
+        this.option.backColor.free = '#000000';
+        this.option.backColor.free = '#FFFFFF';
+
+        this.option.thisBtnOption.backColor = OP.lightColor.green.back;
+        this.option.thisBtnOption.fontColor = OP.lightColor.green.font;
+        this.option.thisBtnOption.lineColor = OP.lightColor.green.row;
+
+        this.option.thisBtnOption.fontStyle = BA.fontType;
+        this.option.thisBtnOption.fontFamily = BA.fontKind
+        this.option.thisBtnOption.fontThick = BA.fontThic;
+        this.option.thisBtnOption.fontSize = BA.fontSize;
+        
+        this.option.thisBtnOption.height = '40';
+    }
+    setObArr() {
+        let getArr = localStorage.getItem(BA.H.Hsave);
+        if (getArr == null) {
+            this.firstSet()
+            this.intoArray();
+            this.save();
+        } else {
+            this.saveArr = JSON.parse(getArr);
+            this.option.basicDarkLightMode = returnOb(this.option.basicDarkLightMode, this.saveArr[0]);
+            this.option.backColor = returnOb(this.option.backColor, this.saveArr[1]);
+
+            this.option.trash.text.saveArr = this.saveArr[2][0];
+            this.option.trash.text.setObArr();
+            this.option.trash.tap.saveArr = this.saveArr[2][1];
+            this.option.trash.tap.setObArr();
+            this.option.trash.win.saveArr = this.saveArr[2][2];
+            this.option.trash.win.setObArr();
+
+            this.option.thisBtnOption = returnOb(this.option.thisBtnOption, this.saveArr[3]);
+        }
+    }
+    intoArray() {
+        let array = [null,null,null];
+        array[0] = Object.values(this.option.basicDarkLightMode);
+        array[1] = Object.values(this.option.backColor);
+        let tt1 = Object.values(this.option.trash.tap.array);
+        let tt2 = Object.values(this.option.trash.text.array);
+        let tt3 = Object.values(this.option.trash.win.array);
+        array[2] = [tt1,tt2,tt3];
+        array[3] = Object.values(this.option.thisBtnOption);
+        this.saveArr = array;
+    }
+
+    basicFontSet(ob) {
+        ob.style.fontSize = `${this.option.thisBtnOption.fontSize}pt`;
+        ob.style.fontFamily = OP.fontKind[this.option.thisBtnOption.fontFamily];
+        ob.style.fontStyle = OP.fontType[this.option.thisBtnOption.fontStyle];
+        ob.style.fontWeight = OP.fontThic[this.option.thisBtnOption.fontThick];
+        ob.style.color = this.option.thisBtnOption.fontColor;
+    }
+    basicBtnSet(ob) {
+        ob.style.border = 'none';
+        ob.style.padding = '0';
+        ob.style.backgroundColor = 'transparent';
+        ob.style.marginLeft = OP.btnPaddingSide;
+        ob.style.height = OP.winBtnHeight;
+    }
+
+    basicEditPage(ob, exOb) {
+        let page = document.createElement('div');
+        page.style.width = '90%';
+        ob.style.display = 'flex';
+        ob.style.width = '100%';
+
+        for (let i = 0; i < exOb.length; i++) {
+            let form = document.createElement('form');
+            form.style.display = 'flex';
+            form.style.flexDirection = 'row';
+
+            let text = document.createElement('div');
+            text.innerText = exOb[i].text;
+            text.style.width = '50%';
+            text.style.height = OP.winBtnHeight;
+            this.basicFontSet(text);
+
+            if (exOb[i].type == 'input') {
+                let input = document.createElement('input');
+                input.style.width = '50%';
+                input.value = exOb[i].value;
+                input.type = exOb[i].inputType;
+                this.basicBtnSet(input);
+
+                form.appendChild(text);
+                form.appendChild(input);
+            } else if (exOb[i].type == 'select') {
+                let select = document.createElement('select');
+                for (let j = 0; j < exOb[i].selectText.length; j++) {
+                    let option = document.createElement('option');
+                    option.innerText = exOb[i].selectText[j];
+                    option.value = j;
+                    select.appendChild(option);
+
+                }
+                select.selectedIndex = exOb[i].selectedIndex;
+                this.basicBtnSet(select);
+                this.basicFontSet(select);
+                select.style.width = '50%';
+                form.appendChild(text);
+                form.appendChild(select);
+            }
+            form.style.flexGrow = 2;
+            page.appendChild(form);
+        }
+
+        let befoBtn = document.createElement('button');
+        befoBtn.innerText = '<';
+        befoBtn.style.width = '5%';
+        this.basicFontSet(befoBtn);
+        this.basicBtnSet(befoBtn);
+        befoBtn.style.height = '100%';
+        befoBtn.style.marginRight = OP.btnPaddingSide;
+
+        befoBtn.className = this.htmlsave + '_befoBtn .target:' + this.htmlsave + '_editPageSelect:flex:3';
+        befoBtn.addEventListener('click', befoNextToSelectClick);
+
+        let nextBtn = document.createElement('button');
+        nextBtn.innerText = '>';
+        nextBtn.style.width = '5%';
+        this.basicFontSet(nextBtn);
+        this.basicBtnSet(nextBtn);
+        nextBtn.style.marginRight = OP.btnPaddingSide;
+        nextBtn.style.height = '100%';
+
+        nextBtn.className = this.htmlsave + '_befoBtn .target:' + this.htmlsave + '_editPageSelect:flex:3';
+        nextBtn.addEventListener('click', befoNextToSelectClick);
+
+        ob.appendChild(befoBtn);
+        ob.appendChild(page);
+        ob.appendChild(nextBtn);
+    }
+
+    real(){
+        let htmlDiv = document.createElement('div');
+        htmlDiv.style.backgroundColor = this.option.thisBtnOption.backColor;
+        let headDiv = document.createElement('div');
+        let showBtn = document.createElement('button');
+        this.basicBtnSet(showBtn);
+        showBtn.innerText = ' m ';
+        if(this.option.thisBtnOption.title!=null){ showBtn.innerText = this.option.thisBtnOption.title };
+        
+        headDiv.appendChild(showBtn);
+        
+        let secondHead = document.createElement('div');
+        let trashBtn = document.createElement('button');
+        this.basicBtnSet(trashBtn);
+        let basicColorBtn = document.createElement('button');
+        this.basicBtnSet(basicColorBtn);
+        let thisBtnSetBen = document.createElement('button');
+        this.basicBtnSet(thisBtnSetBen);
+        
+        secondHead.appendChild(trashBtn); 
+        secondHead.appendChild(basicColorBtn); 
+        secondHead.appendChild(thisBtnSetBen);
+        secondHead.style.display = 'none';
+        headDiv.appendChild(secondHead);
+
+
+        let bodyDiv = document.createElement('div');//
+        //trash
+
+        //basic mode - checkbox, checkbox;
+        let basicmodePage1 = document.createElement('div');
+        let basicMode = [
+            { text: 'free or mode', type: 'input', inputType: 'checkbox', value: this.option.basicDarkLightMode.not },
+            { text: 'light mode or darkmode', type: 'input', inputType: 'checkbox', value: this.option.basicDarkLightMode.mode },
+        ];
+        this.basicEditPage(basicmodePage1, basicMode);
+        bodyDiv.appendChild(basicmodePage1);
+
+        //editBtn
+        let thisBtnSetBook = document.createElement('div');
+        let editPage1 = document.createElement('div');
+        let exOb1 = [
+            { text: 'background', type: 'input', inputType: 'color', value: this.option.thisBtnOption.backColor },
+            { text: 'font', type: 'input', inputType: 'color', value: this.option.thisBtnOption.fontColor },
+            { text: 'line', type: 'input', inputType: 'color', value: this.option.thisBtnOption.lineColor },
+        ];
+        this.basicEditPage(editPage1, exOb1);
+
+        let editPage2 = document.createElement('div');
+        let exOb2 = [
+            { text: 'fontSize', type: 'input', inputType: 'number', value: this.option.thisBtnOption.fontSize },
+            { text: 'fontThick', type: 'select', selectText: OP.fontThic, selectedIndex: this.option.thisBtnOption.fontThick },
+            { text: 'fontType', type: 'select', selectText: OP.fontType, selectedIndex: this.option.thisBtnOption.fontStyle },
+            { text: 'fontKind', type: 'select', selectText: OP.fontKind, selectedIndex: this.option.thisBtnOption.fontFamily },
+            //{text, type,inputType, value, selectText, selectedIndex},
+        ];
+        this.basicEditPage(editPage2, exOb2);
+        //this.basicEditPage(ob,textArray,Types,inputTypes,values,selectedIndexs)
+
+        let editPage3 = document.createElement('div');
+        let exOb3 = [
+            { text: 'size', type: 'input', inputType: 'number', value: this.option.thisBtnOption.height },
+            { text: 'title', type: 'input', inputType: 'text', value: this.option.thisBtnOption.title },
+        ];
+        this.basicEditPage(editPage3, exOb3);
+        thisBtnSetBook.appendChild(editPage1);
+        thisBtnSetBook.appendChild(editPage2);
+        thisBtnSetBook.appendChild(editPage3);
+        bodyDiv.appendChild(thisBtnSetBook);
+
+        htmlDiv.appendChild(headDiv);
+        bodyDiv.style.display = 'none'; 
+        htmlDiv.appendChild(bodyDiv);
+
+        return htmlDiv;
+    }
+}
 
 class wob {
     //win atribute
@@ -257,8 +564,8 @@ class wob {
         befoBtn.style.height = '100%';
         befoBtn.style.marginRight = OP.btnPaddingSide;
 
-        befoBtn.className =this.i.className+'_befoBtn .target:'+ this.i.className+'_editPageSelect:flex:3' ;
-        befoBtn.addEventListener('click',befoNextToSelectClick);
+        befoBtn.className = this.i.className + '_befoBtn .target:' + this.i.className + '_editPageSelect:flex:3';
+        befoBtn.addEventListener('click', befoNextToSelectClick);
 
         let nextBtn = document.createElement('button');
         nextBtn.innerText = '>';
@@ -268,8 +575,8 @@ class wob {
         nextBtn.style.marginRight = OP.btnPaddingSide;
         nextBtn.style.height = '100%';
 
-        nextBtn.className =this.i.className+'_befoBtn .target:'+ this.i.className+'_editPageSelect:flex:3' ;
-        nextBtn.addEventListener('click',befoNextToSelectClick);
+        nextBtn.className = this.i.className + '_befoBtn .target:' + this.i.className + '_editPageSelect:flex:3';
+        nextBtn.addEventListener('click', befoNextToSelectClick);
 
         ob.appendChild(befoBtn);
         ob.appendChild(page);
@@ -301,11 +608,11 @@ class wob {
         titleBtn.style.flexGrow = 1;
         titleBtn.style.textAlign = 'left';
 
-        
+
         //head-title-pls btn
         let editBtn = document.createElement("button");
         editBtn.innerText = 'e';
-        editBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_winEdit:flex .target:'+this.i.className+'_title:flex .target:'+this.i.className+'_tapChoose:none  .target:'+this.i.className+'_titleEdit:flex';//
+        editBtn.className = this.i.className + '_plsBtn .target:' + this.i.className + '_winEdit:flex .target:' + this.i.className + '_title:flex .target:' + this.i.className + '_tapChoose:none  .target:' + this.i.className + '_titleEdit:flex';//
         editBtn.addEventListener('click', targetShow);
         this.basicFontSet(editBtn);
 
@@ -322,7 +629,7 @@ class wob {
         //head-title-pls btn
         let plsBtn = document.createElement("button");
         plsBtn.innerText = '+';
-        plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
+        plsBtn.className = this.i.className + '_plsBtn .target:' + this.i.className + '_tapChoose:flex';
         plsBtn.addEventListener('click', targetShow);
         this.basicFontSet(plsBtn);
 
@@ -357,7 +664,7 @@ class wob {
         winCancelBtn.innerText = 'done';
         this.basicFontSet(winCancelBtn);
         winCancelBtn.style.width = '15%'
-        winCancelBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_winEdit:flex .target:'+this.i.className+'_title:flex .target:'+this.i.className+'_tapChoose:none  .target:'+this.i.className+'_titleEdit:flex';//
+        winCancelBtn.className = this.i.className + '_plsBtn .target:' + this.i.className + '_winEdit:flex .target:' + this.i.className + '_title:flex .target:' + this.i.className + '_tapChoose:none  .target:' + this.i.className + '_titleEdit:flex';//
         winCancelBtn.addEventListener('click', targetShow);
 
         let winDelBtn = document.createElement('button');
@@ -425,7 +732,7 @@ class wob {
         winEdit.style.borderBottom = `${this.c.rowThic}px solid ${this.c.row}`;
 
         //select page
-        let editTitle = ['1. window color', '2. window font', '3. window size','4. recent delete'];
+        let editTitle = ['1. window color', '2. window font', '3. window size', '4. recent delete'];
         let editPageSelect = document.createElement('select');
         for (let i = 0; i < editTitle.length; i++) {
             let editTitleOption = document.createElement('option');
@@ -437,14 +744,14 @@ class wob {
         this.basicBtnSet(editPageSelect);
         editPageSelect.style.width = '100%'
         editPageSelect.style.marginRight = OP.btnPaddingSide;//===
-        editPageSelect.className = this.i.className+'_editPageSelect .target:'+this.i.className+'_editBook:flex:4';
-        editPageSelect.addEventListener('change',targePageShow);
+        editPageSelect.className = this.i.className + '_editPageSelect .target:' + this.i.className + '_editBook:flex:4';
+        editPageSelect.addEventListener('change', targePageShow);
 
         //book
         let editBook = document.createElement('div');
         editBook.style.width = '100%';
         editBook.style.display = 'flex';
-        editBook.className = this.i.className+'_editBook';
+        editBook.className = this.i.className + '_editBook';
 
         let editPage1 = document.createElement('div');
         let exOb1 = [
@@ -512,41 +819,41 @@ class wob {
         return winDiv;
     }
 }
-function targetShow(event){
+function targetShow(event) {
     //plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
     let eventClassName = event.target.className.split('.');
     const check = 'target';
-    for(let i=1;i<eventClassName.length;i++){
-        if(eventClassName[i].includes(check)){
+    for (let i = 1; i < eventClassName.length; i++) {
+        if (eventClassName[i].includes(check)) {
             let t = eventClassName[i].split(':');
             let targetClassName = t[1]
             let targetDisplayType = t[2]
             let target = document.querySelector(`.${targetClassName}`);
-            if(target.style.display == 'none'){
+            if (target.style.display == 'none') {
                 target.style.display = targetDisplayType;
-            }else{
+            } else {
                 target.style.display = 'none'
             }
         }
     }
 }
-function targePageShow(event){
+function targePageShow(event) {
     //plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
     let eventClassName = event.target.className.split('.');
     let index = event.target.selectedIndex;
     const check = 'target';
-    if(eventClassName[1].includes(check)){
+    if (eventClassName[1].includes(check)) {
         let t = eventClassName[1].split(':');
         let targetClassName = t[1];
         let targetDisplayType = t[2];
         let target = document.querySelector(`.${targetClassName}`);
-        for(let j=0;j<target.childNodes.length;j++){
+        for (let j = 0; j < target.childNodes.length; j++) {
             target.childNodes[j].style.display = 'none';
         }
         target.childNodes[index].style.display = targetDisplayType;
     }
 }
-function befoNextToSelectClick(event){
+function befoNextToSelectClick(event) {
     //befoBtn.className =this.i.className+'_befoBtn .target:'+ this.i.className+'_editPageSelect:flex:3' ;
 
     let eventClassName = event.target.className.split('.');
@@ -554,10 +861,10 @@ function befoNextToSelectClick(event){
     let select = document.querySelector(`.${t[1]}`);
     let index = select.selectedIndex;
     let lastIndex = t[3];
-    if(event.target.innerText=='<'){
-        select.selectedIndex = index > 0 ? index-1 : lastIndex;
-    }else if(event.target.innerText=='>'){
-        select.selectedIndex = index < lastIndex ? index+1 : 0;
+    if (event.target.innerText == '<') {
+        select.selectedIndex = index > 0 ? index - 1 : lastIndex;
+    } else if (event.target.innerText == '>') {
+        select.selectedIndex = index < lastIndex ? index + 1 : 0;
     }
     select.dispatchEvent(new Event('change'));
 }
@@ -567,4 +874,7 @@ newWin.setObArr();
 newWin.targetIndex = 0;
 newWin.open();
 
+let newHtml = new HTMLController();
+
 mainDiv.appendChild(newWin.real());
+html.appendChild(newHtml.real());
