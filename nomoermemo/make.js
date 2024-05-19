@@ -1,4 +1,6 @@
 const html = document.querySelector('html');
+html.style.height = '100%';
+//html.style.flexDirection = 'row';
 //html.style.backgroundColor = 'black'
 
 const mainDiv = document.querySelector('.mainDiv');
@@ -281,30 +283,71 @@ class HTMLController {
     real(){
         let htmlDiv = document.createElement('div');
         htmlDiv.style.backgroundColor = this.option.thisBtnOption.backColor;
+        htmlDiv.className = 'htmlDiv';
+        htmlDiv.style.width = '40px';
+        htmlDiv.style.marginRight = '10px'
+        //htmlDiv.style.float = 'left';
+        htmlDiv.style.display = 'flex';
+        htmlDiv.style.flexDirection ='column'
+        //htmlDiv.style.flexFlow = 'wrap-reverse';
+        //htmlDiv.style.flexDirection = 'row-reverse';
+
+        htmlDiv.style.bottom = 0;
+        htmlDiv.style.position = 'absolute';
         let headDiv = document.createElement('div');
         let showBtn = document.createElement('button');
         this.basicBtnSet(showBtn);
-        showBtn.innerText = ' m ';
+        //showBtn.style.paddingRight ='30px';
+        showBtn.style.width = '40px';
+        showBtn.innerText = 'm';
+        showBtn.style.float = 'right';
+        showBtn.className = 'htmlshowBtn .target:html_secdonHead:block';
+        showBtn.addEventListener('click', targetShow);
         if(this.option.thisBtnOption.title!=null){ showBtn.innerText = this.option.thisBtnOption.title };
         
-        headDiv.appendChild(showBtn);
-        
+//plsBtn.className = this.i.className+'_plsBtn .target:'+this.i.className+'_tapChoose:flex';
+
+
+        //headDiv.style.display = 'flex';
+        //headDiv.style.flexDirection = 'row-reverse';
+        //secondHead.style.float = 'left';
+
         let secondHead = document.createElement('div');
         let trashBtn = document.createElement('button');
+        trashBtn.innerText = 'trash';
         this.basicBtnSet(trashBtn);
         let basicColorBtn = document.createElement('button');
         this.basicBtnSet(basicColorBtn);
+        basicColorBtn.innerText = 'colorMode';
         let thisBtnSetBen = document.createElement('button');
+        thisBtnSetBen.innerText = 'btnColor';
         this.basicBtnSet(thisBtnSetBen);
+        
+        trashBtn.style.float = 'right';
+        basicColorBtn.style.float = 'right';
+        thisBtnSetBen.style.float = 'right';
+        trashBtn.style.backgroundColor = this.option.thisBtnOption.backColor;
+        basicColorBtn.style.backgroundColor = this.option.thisBtnOption.backColor;
+        thisBtnSetBen.style.backgroundColor = this.option.thisBtnOption.backColor;
+        
+        trashBtn.style.paddingRight = '10px';
+        basicColorBtn.style.paddingRight = '10px';
+        thisBtnSetBen.style.paddingRight ='10px';
+        trashBtn.style.paddingLeft = '10px';
+        basicColorBtn.style.paddingLeft = '10px';
+        thisBtnSetBen.style.paddingLeft ='10px';
         
         secondHead.appendChild(trashBtn); 
         secondHead.appendChild(basicColorBtn); 
         secondHead.appendChild(thisBtnSetBen);
-        secondHead.style.display = 'none';
+        //secondHead.style.display = 'none';
+        secondHead.className = 'html_secdonHead';
         headDiv.appendChild(secondHead);
+        headDiv.appendChild(showBtn);
 
 
         let bodyDiv = document.createElement('div');//
+        bodyDiv.className = 'html_bodyDiv';
         //trash
 
         //basic mode - checkbox, checkbox;
@@ -813,7 +856,7 @@ class wob {
         //windiv-body
         let body = document.createElement("div");
         body.className = this.i.className + "_body";
-        body.innerText = 'body~';
+        body.innerText = 'body~\n\n\n\n\n\n\n\n\n\nkdkdkdkdkdkdkdk\n\n\n\n\ndksdkdk';
         winDiv.appendChild(body);
 
         return winDiv;
@@ -875,6 +918,10 @@ newWin.targetIndex = 0;
 newWin.open();
 
 let newHtml = new HTMLController();
+let newHtmlBottom = document.createElement('div');
+newHtmlBottom.style.display = 'flex';
+newHtmlBottom.style.flexDirection = 'row-reverse';
 
+newHtmlBottom.appendChild(newHtml.real());
 mainDiv.appendChild(newWin.real());
-html.appendChild(newHtml.real());
+html.appendChild(newHtmlBottom);
