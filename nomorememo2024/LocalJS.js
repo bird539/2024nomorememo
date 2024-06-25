@@ -38,13 +38,14 @@ class htmlControl {
     }
 }
 
+
 class htmlContol_Model {
     #htmlControlOb;
     constructor() {
         this.#htmlControlOb = new htmlControl.Builder()
-        .set_html_backgroundColor("black")
-        .set_html_ligthDarkMode("light")
-        .build();
+            .set_html_backgroundColor("black")
+            .set_html_ligthDarkMode("light")
+            .build();
     }
     firstPageOpen() {
         let getOb = localStorage.getItem("htmlControlDB");
@@ -78,3 +79,56 @@ class Tab_Memo {
 
 let mainDiv = document.querySelector(".main");
 mainDiv.innerHTML = "hello world!";
+
+
+/*
+const handler = {
+    get: function(target, name){
+        return name ==='name' ? `${target.a} ${target.b}` : target[name];
+    }
+}
+const p = new Proxy({a: 'hello~', b:'world~'}, handler);
+console.log(p);
+console.log(p.name);
+*/
+class Subject{
+    constructor(){ this.observers = []; }
+    subscribe(observer){ this.observers.push(observer); }
+    unsubscribe(observer){ this.observers = this.observers.filter((obs)=>obs !== observer); }
+    notifyAll(){
+        this.observers.forEach((subscriber)=>{
+            try{
+                subscriber.update(this.constructor.name);
+            }catch(err){ console.error("error", err); }
+        })
+    }
+}
+
+class Observer{
+    constructor(name){ this.name = name;}
+    update(subj){
+        console.log(`${this.name}: notified from ${subj} class!`);
+    }
+}
+
+const subj = new Subject();
+const a = new Observer("A");
+const b = new Observer("B");
+class c {
+    constructor(){ 
+        this.name = "c"
+    }
+
+    bbb(){
+        console.log("by")
+    }
+
+    update(){
+        console.log("~~");
+    }
+}
+const cc = new c("c");
+subj.subscribe(a);
+subj.subscribe(b);
+subj.subscribe(cc);
+subj.notifyAll();
