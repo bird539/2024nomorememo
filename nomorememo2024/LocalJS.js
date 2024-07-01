@@ -1,3 +1,7 @@
+const mainDiv = document.querySelector(".main");
+const mainHtml = document.querySelector('html');
+mainHtml.style.height = '100%';
+
 class htmlRemote {
     html_backgroundColor = "";
     html_ligthDarkMode = "";
@@ -76,23 +80,6 @@ class Tab_Memo {
 
 }
 
-let mainDiv = document.querySelector(".main");
-mainDiv.innerHTML = "hello world!";
-
-
-class Subject {
-    constructor() { this.observers = []; }
-    subscribe(observer) { this.observers.push(observer); }
-    unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
-    notifyAll() {
-        this.observers.forEach((subscriber) => {
-            try {
-                subscriber.update(this.constructor.name);
-            } catch (err) { console.error("error", err); }
-        })
-    }
-}
-
 function showHide(event) {
     const strArray = event.target.className.split('_');
     for (let i = 0; i < strArray.length; i++) {
@@ -103,7 +90,225 @@ function showHide(event) {
         }
     }
 }
+class htmlRemoteElement{
+    div = null;
+    button = null;
+    input = null;
+    form = null;
+    select = null;
+    option = null;
 
+    details = null;
+    summary = null;
+
+    htmlRemoteDiv = null;
+    db = {
+        //최근 연 페이지 인덱스
+        lastPageShow:null,
+        //remote 꾸미기
+        title: null,
+        fontSize: null, fontWeight: null, fontFamily: null, fontStyle: null,
+        fontColor: null, backgroundColor: null, 
+        //html 설정
+        htmlBackgroundColor: null, lightDarkMode: null, language: null,
+        //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
+        newInfo: [], schedule:[],
+        
+        //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
+        trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
+        //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
+        trashTab: [],           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
+        //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
+        trashTabText: [],      //삭제일  + 탭 글자들           + 복구 btn
+    }
+    constructor() {
+        this.div = document.createElement("div");
+        this.button = document.createElement("button");
+        this.input = document.createElement("input");
+        this.form = document.createElement("form");
+        this.select = document.createElement("select");
+        this.option = document.createElement("option");
+
+        this.details = document.createElement("details");
+        this.summary = document.createElement("summary");
+        this.htmlRemoteDiv = null;
+    }
+
+    setValue(db) {
+        this.db.lastPageShow = db.lastPageShow;
+        this.db.title = db.title;
+
+        this.db.fontSize = db.fontSize;
+        this.db.fontWeight = db.fontWeight;
+        this.db.fontFamily = db.fontFamily;
+        this.db.fontStyle = db.fontType;
+
+        this.db.fontColor = db.fontColor;
+        this.db.backgroundColor = db.backgroundColor;
+
+        this.db.htmlBackgroundColor = db.htmlBackgroundColor;
+        this.db.lightDarkMode = db.lightDarkMode;
+        this.db.language = db.language;
+
+        //make basic
+        this.button.style.backgroundColor = "transparent";
+        this.input.style.backgroundColor = "transparent";
+        this.div.style.backgroundColor = "transparent";
+        this.select.style.backgroundColor = "transparent";
+        this.details.style.backgroundColor = "transparent";
+        this.summary.style.backgroundColor = "transparent";
+
+        this.select.style.border = "none";
+        this.button.style.border = "none";
+        this.input.style.border = "none";
+
+        this.select.style.padding = "0";
+        this.button.style.padding = "0";
+        this.input.style.padding = "0";
+
+        this.select.style.marginRight = "10px";
+        this.button.style.marginRight = "10px";
+
+        this.select.style.height = "40px";
+        this.button.style.height = "40px";
+        this.input.style.height = "40px";
+
+        this.select.style.fontFamily = this.db.fontFamily;
+        this.select.style.fontSize = `${this.db.fontSize}pt`;
+        this.select.style.fontWeight = this.db.fontThick;
+        this.select.style.fontStyle = this.db.fontStyle;
+        this.select.style.color = this.db.fontColor;
+
+        this.button.style.fontFamily = this.db.fontFamily;
+        this.button.style.fontSize = `${this.db.fontSize}pt`;
+        this.button.style.fontWeight = this.db.fontThick;
+        this.button.style.fontStyle = this.db.fontStyle;
+        this.button.style.color = this.db.fontColor;
+        
+        this.input.style.fontFamily = this.db.fontFamily;
+        this.input.style.fontSize = `${this.db.fontSize}pt`;
+        this.input.style.fontWeight = this.db.fontThick;
+        this.input.style.fontStyle = this.db.fontStyle;
+        this.input.style.color = this.db.fontColor;
+
+        this.div.style.fontFamily = this.db.fontFamily;
+        this.div.style.fontSize = `${this.db.fontSize}pt`;
+        this.div.style.fontWeight = this.db.fontThick;
+        this.div.style.fontStyle = this.db.fontStyle;
+        this.div.style.color = this.db.fontColor;
+
+        this.details.style.fontFamily = this.db.fontFamily;
+        this.details.style.fontSize = `${this.db.fontSize}pt`;
+        this.details.style.fontWeight = this.db.fontThick;
+        this.details.style.fontStyle = this.db.fontStyle;
+        this.details.style.color = this.db.fontColor;
+
+        this.summary.style.fontFamily = this.db.fontFamily;
+        this.summary.style.fontSize = `${this.db.fontSize}pt`;
+        this.summary.style.fontWeight = this.db.fontThick;
+        this.summary.style.fontStyle = this.db.fontStyle;
+        this.summary.style.color = this.db.fontColor;
+    }
+
+    recentPlsPage(){
+        const pageDiv = this.div.cloneNode(true);
+        pageDiv.innerText = "page1";
+        pageDiv.style.float = "right";//*
+
+        return pageDiv;
+    }
+
+    setElementEditBook(){
+        const bodyDiv = this.div.cloneNode(true);
+        bodyDiv.style.marginRight = "10px";
+        bodyDiv.style.display = "block";
+        //bodyDiv.style.flexDirection = "column";
+        bodyDiv.style.backgroundColor = this.db.backgroundColor;
+        bodyDiv.style.float = "right";
+
+        const pageSelect = this.select.cloneNode(true);
+        pageSelect.style.width = "100%"
+        let pageName = ["최근 추가","남은 일정", "쓰레기통","remote 꾸미기",];
+        for (let i = 0; i < pageName.length; i++) {
+            const editOption = this.option.cloneNode(true);
+            editOption.innerText = `${i}.${pageName[i]}`;
+            pageSelect.appendChild(editOption);
+        }
+        bodyDiv.appendChild(pageSelect);
+        
+        const BookDiv = this.div.cloneNode(true);
+        BookDiv.style.display = "flex";
+        BookDiv.style.flexDirection = "row";
+        BookDiv.style.float = "right";
+        BookDiv.style.width = "100%";
+
+        const next = this.button.cloneNode(true);
+        next.style.display = "flex";
+        next.style.alignItems = "center";
+        next.style.justifyContent = "center";
+        next.style.flexShirink = 0;
+        next.style.height = "100%";
+        const befo = next.cloneNode(true);
+        befo.innerText = "<";
+        next.innerText = ">";
+
+        const pagesDiv = this.div.cloneNode(true);
+        pagesDiv.className = "pagesDiv";
+        pagesDiv.style.display = "flex";
+        pagesDiv.style.float = "right";
+        pagesDiv.style.flexDirection = "row";
+        
+
+        BookDiv.appendChild(befo);
+
+        pagesDiv.appendChild(this.recentPlsPage());
+        
+        BookDiv.appendChild(pagesDiv);
+        BookDiv.appendChild(next);
+
+        bodyDiv.appendChild(BookDiv);
+        this.htmlRemoteDiv.appendChild(bodyDiv);
+    }
+    setElementAll(){
+        this.htmlRemoteDiv = this.div.cloneNode(true);
+        this.htmlRemoteDiv.className = `htmlRemoteDiv`;
+        this.htmlRemoteDiv.style.display = "block";
+        this.htmlRemoteDiv.style.zIndex = "1";
+        this.htmlRemoteDiv.style.width = `${this.db.width}px`;
+        //this.htmlRemoteDiv.style.flexDirection = "column-reverse";//row-reverse column-reverse
+        this.htmlRemoteDiv.style.bottom = "0px";
+        this.htmlRemoteDiv.style.position = "absolute";
+        //this.htmlRemoteDiv.style.marginRight = "20px";
+
+        this.htmlRemoteDiv.style.width = "200px";
+
+        const headBtn = this.button.cloneNode(true);
+        headBtn.innerText = this.db.title.length > 0 ? this.db.title : "m";
+        headBtn.style.backgroundColor = this.db.backgroundColor;
+        headBtn.style.display = "flex";
+        headBtn.style.float = "right";
+        headBtn.style.alignItems = "center";
+        headBtn.style.justifyContent = "center";
+        headBtn.style.flexShirink = 0;
+        headBtn.className = "htmlRemoteHeadBtn";
+        headBtn.style.width = "40px";
+        
+        this.setElementEditBook();
+        this.htmlRemoteDiv.appendChild(headBtn);
+
+        const makeRightDiv = this.div.cloneNode(true);
+        makeRightDiv.style.display = "flex";
+        makeRightDiv.style.flexDirection = "row-reverse";
+
+
+        makeRightDiv.appendChild(this.htmlRemoteDiv);
+        return makeRightDiv;
+    }
+
+}
+
+
+///////////////////
 class windowElement {
     div = null;
     button = null;
@@ -574,7 +779,43 @@ el.setValue(eldb);
 const elel = el.setElementCss();
 mainDiv.appendChild(elel);
 
+const remot = new htmlRemoteElement();
+let remoteDb = {
+    lastPageShow:0,
+    //remote 꾸미기
+    title: "nnn",
+    fontSize: 14, fontWeight: 100, fontFamily: "sans-serif", fontType: "normal",
+    fontColor: "#ffffff", backgroundColor: "#000000",
+    //html 설정
+    htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
+    //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
+    newInfo: [], schedule:[],
+    
+    //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
+    trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
+    //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
+    trashTab: [],           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
+    //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
+    trashTabText: [],      //삭제일  + 탭 글자들           + 복구 btn
+}
+remot.setValue(remoteDb);
+const remoteEl = remot.setElementAll();
+mainHtml.appendChild(remoteEl);
+
 //실험실
+
+class Subject {
+    constructor() { this.observers = []; }
+    subscribe(observer) { this.observers.push(observer); }
+    unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
+    notifyAll() {
+        this.observers.forEach((subscriber) => {
+            try {
+                subscriber.update(this.constructor.name);
+            } catch (err) { console.error("error", err); }
+        })
+    }
+}
 
 class Observer {
     constructor(name) { this.name = name; }
