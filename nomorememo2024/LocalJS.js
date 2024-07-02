@@ -157,6 +157,7 @@ class htmlRemoteElement{
         this.select.style.backgroundColor = "transparent";
         this.details.style.backgroundColor = "transparent";
         this.summary.style.backgroundColor = "transparent";
+        this.option.style.backgroundColor = this.db.backgroundColor;
 
         this.select.style.border = "none";
         this.button.style.border = "none";
@@ -178,6 +179,12 @@ class htmlRemoteElement{
         this.select.style.fontWeight = this.db.fontThick;
         this.select.style.fontStyle = this.db.fontStyle;
         this.select.style.color = this.db.fontColor;
+        
+        this.option.style.fontFamily = this.db.fontFamily;
+        this.option.style.fontSize = `${this.db.fontSize}pt`;
+        this.option.style.fontWeight = this.db.fontThick;
+        this.option.style.fontStyle = this.db.fontStyle;
+        this.option.style.color = this.db.fontColor;
 
         this.button.style.fontFamily = this.db.fontFamily;
         this.button.style.fontSize = `${this.db.fontSize}pt`;
@@ -225,6 +232,7 @@ class htmlRemoteElement{
         //bodyDiv.style.flexDirection = "column";
         bodyDiv.style.backgroundColor = this.db.backgroundColor;
         bodyDiv.style.float = "right";
+        bodyDiv.className = "htmlRemoteBody";
 
         const pageSelect = this.select.cloneNode(true);
         pageSelect.style.width = "100%"
@@ -280,7 +288,7 @@ class htmlRemoteElement{
         this.htmlRemoteDiv.style.position = "absolute";
         //this.htmlRemoteDiv.style.marginRight = "20px";
 
-        this.htmlRemoteDiv.style.width = "200px";
+        this.htmlRemoteDiv.style.width = "300px";
 
         const headBtn = this.button.cloneNode(true);
         headBtn.innerText = this.db.title.length > 0 ? this.db.title : "m";
@@ -291,7 +299,9 @@ class htmlRemoteElement{
         headBtn.style.justifyContent = "center";
         headBtn.style.flexShirink = 0;
         headBtn.className = "htmlRemoteHeadBtn";
-        headBtn.style.width = "40px";
+        headBtn.style.padding = "20px";
+        headBtn.className = `htmlRemoteBtn_showHide:htmlRemoteBody:block`;
+        headBtn.addEventListener("click",showHide);
         
         this.setElementEditBook();
         this.htmlRemoteDiv.appendChild(headBtn);
@@ -783,7 +793,7 @@ const remot = new htmlRemoteElement();
 let remoteDb = {
     lastPageShow:0,
     //remote 꾸미기
-    title: "nnn",
+    title: "카프카의 꿈",
     fontSize: 14, fontWeight: 100, fontFamily: "sans-serif", fontType: "normal",
     fontColor: "#ffffff", backgroundColor: "#000000",
     //html 설정
