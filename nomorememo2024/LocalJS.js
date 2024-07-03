@@ -150,6 +150,16 @@ class htmlRemoteElement{
         this.db.lightDarkMode = db.lightDarkMode;
         this.db.language = db.language;
 
+        this.db.newInfo = db.newInfo;
+        this.db.schedule = db.schedule;
+    
+    //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
+        this.db.trashWindow = db.trashWindow;        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
+    //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
+        this.db.trashTab = db.trashTab;           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
+    //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
+        this.db.trashTabText= db.trashTabText;//삭제일  + 탭 글자들           + 복구 btn
+
         //make basic
         this.button.style.backgroundColor = "transparent";
         this.input.style.backgroundColor = "transparent";
@@ -219,8 +229,30 @@ class htmlRemoteElement{
 
     recentPlsPage(){
         const pageDiv = this.div.cloneNode(true);
-        pageDiv.innerText = "page1";
-        pageDiv.style.float = "right";//*
+        pageDiv.style.width = "flex";
+        console.log(this.db.newInfo);
+        for(let i=0; i<this.db.newInfo.length; i++){
+            const newInfoDiv = this.div.cloneNode(true);
+            newInfoDiv.style.display = "flex";
+            newInfoDiv.style.flexGrow = "1";
+
+            const dateDiv = newInfoDiv.cloneNode(true);
+            dateDiv.innerText = this.db.newInfo[i].date;
+
+            const windowDiv = newInfoDiv.cloneNode(true);
+            windowDiv.innerText = this.db.newInfo[i].window;
+
+            const textDiv = newInfoDiv.cloneNode(true);
+            textDiv.innerText = this.db.newInfo[i].text;
+
+            newInfoDiv.appendChild(dateDiv);
+            newInfoDiv.appendChild(windowDiv);
+            newInfoDiv.appendChild(textDiv);
+
+            pageDiv.appendChild(newInfoDiv);
+        }
+
+
 
         return pageDiv;
     }
@@ -255,6 +287,7 @@ class htmlRemoteElement{
         next.style.alignItems = "center";
         next.style.justifyContent = "center";
         next.style.flexShirink = 0;
+        next.style.width = "40px"
         next.style.height = "100%";
         const befo = next.cloneNode(true);
         befo.innerText = "<";
@@ -265,6 +298,7 @@ class htmlRemoteElement{
         pagesDiv.style.display = "flex";
         pagesDiv.style.float = "right";
         pagesDiv.style.flexDirection = "row";
+        pagesDiv.style.width = "100%"
         
 
         BookDiv.appendChild(befo);
@@ -788,8 +822,9 @@ let eldb = {
 el.setValue(eldb);
 const elel = el.setElementCss();
 mainDiv.appendChild(elel);
-
 const remot = new htmlRemoteElement();
+const locale = new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+const today = new Date(locale);
 let remoteDb = {
     lastPageShow:0,
     //remote 꾸미기
@@ -799,7 +834,7 @@ let remoteDb = {
     //html 설정
     htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
     //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
-    newInfo: [], schedule:[],
+    newInfo: [{date:today.toLocaleString('ko-KR',{ hour12: false }),window:"win1",text:"text1"},], schedule:[],
     
     //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
     trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
