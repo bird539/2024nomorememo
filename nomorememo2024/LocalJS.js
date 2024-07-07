@@ -237,7 +237,9 @@ class htmlRemoteElement{
             newInfoDiv.style.flexGrow = "1";
 
             const dateDiv = newInfoDiv.cloneNode(true);
-            dateDiv.innerText = this.db.newInfo[i].date;
+            const befoTime =new Date(this.db.newInfo[i].date);
+            const afterTime = `${befoTime.getMonth()}/${befoTime.getDate()}/${befoTime.getHours()}:${befoTime.getMinutes()}`
+            dateDiv.innerText = afterTime;
 
             const windowDiv = newInfoDiv.cloneNode(true);
             windowDiv.innerText = this.db.newInfo[i].window;
@@ -251,9 +253,6 @@ class htmlRemoteElement{
 
             pageDiv.appendChild(newInfoDiv);
         }
-
-
-
         return pageDiv;
     }
 
@@ -825,6 +824,7 @@ mainDiv.appendChild(elel);
 const remot = new htmlRemoteElement();
 const locale = new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
 const today = new Date(locale);
+
 let remoteDb = {
     lastPageShow:0,
     //remote 꾸미기
@@ -834,7 +834,7 @@ let remoteDb = {
     //html 설정
     htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
     //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
-    newInfo: [{date:today.toLocaleString('ko-KR',{ hour12: false }),window:"win1",text:"text1"},], schedule:[],
+    newInfo: [{date:today,window:"win1",text:"text1"},], schedule:[],
     
     //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
     trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
