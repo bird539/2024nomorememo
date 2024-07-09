@@ -27,13 +27,13 @@ function timeSomthing(time){
         hours:befo.getHours(),
         minuts:befo.getMinutes(),
         seconds:befo.getSeconds(),
+
         day:befo.getDay() //요일
     }
-
     const plsT = {
         year : 0,
         month: 0,
-        date  : 0,
+        date  : 11,
         hours: 0,
         minuts: 80,
         seconds: 300
@@ -59,21 +59,20 @@ function timeSomthing(time){
         hours:now.getHours(),
         minuts:now.getMinutes(),
         seconds:now.getSeconds(),
+
         day:now.getDay() //요일
     }
-
     
     let endT = {
         year : 0,
         month: 0,
-        day  : 0,
+        date  : 0,
         hours: 0,
         minuts: 0,
         seconds: 0
     };
-    const after = new Date();
+    const after = new Date("Tue Jul 09 2024 03:25:25 GMT+0900 (한국 표준시)");
     console.log("after", after);
-
     if(plsT.year != 0){ endT.year = befoT.year + plsT.year; after.setFullYear(endT.year); };
     if(plsT.month != 0){ endT.month = befoT.month + plsT.month; after.setMonth(endT.month); };
     if(plsT.date != 0){ endT.date = befoT.date + plsT.date; after.setDate(endT.date); };
@@ -81,13 +80,35 @@ function timeSomthing(time){
     if(plsT.minuts != 0){ endT.minuts = befoT.minuts + plsT.minuts; after.setMinutes(endT.minuts); };
     if(plsT.seconds != 0){ endT.seconds = befoT.seconds + plsT.seconds; after.setSeconds(endT.seconds); };
 
-    console.log(befoT.hours, plsT.hours);
-    console.log(befo);
-    console.log(now);
-    console.log(after);
-    console.log(endT);
-    console.log(`${endT.hours}:${endT.minuts}=${nowT.minuts}+${plsT.minuts}` );
-    console.log(`rest = ${endT.minuts - nowT.minuts}` );
+
+    endT = {
+        year:befo.getFullYear(),
+        month:befo.getMonth(),
+        date:befo.getDate(),
+        hours:befo.getHours(),
+        minuts:befo.getMinutes(),
+        seconds:befo.getSeconds(),
+
+        day:befo.getDay() //요일
+    };
+
+    let restT = {
+        year : endT.year - nowT.year,
+        month: endT.month - nowT.month,
+        date  : endT.date - nowT.date,
+        hours: endT.hours - nowT.hours,
+        minuts: endT.minuts - nowT.minuts,
+        seconds: endT.seconds - nowT.seconds
+    }
+
+    let restText = "";
+    if(restT.year != 0){restText += `${restT.year}year `};
+    if(restT.month != 0){restText += `${restT.month}month `};
+    if(restT.date != 0){restText += `${restT.date}day `};
+    if(restT.hours != 0){restText += `${restT.hours}hours `};
+    if(restT.minuts != 0){restText += `${restT.minuts}minuts `};
+    if(restT.seconds != 0){restText += `${restT.seconds}seconds `};
+
 
     /*
     let time = {
@@ -421,7 +442,7 @@ class htmlRemoteElement{
         pageDiv.style.width = "flex";
         for(let i=0; i<this.db.newInfo.length; i++){
             this.db.newInfo[i].text = "work work";
-            console.log(this.db.schedule);
+            //console.log(this.db.schedule);
             //pageDiv.appendChild(this.newRestWorkInfoMake(this.db.schedule[i]));
         }
         //임시 숨기기
