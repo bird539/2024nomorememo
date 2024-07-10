@@ -19,7 +19,20 @@ const date = new Date();
 //console.log(date);
 
 function timeSomthing(time){
-    const old = new Date("Tue Jul 09 2024 01:52:40 GMT+0900 (한국 표준시)");
+/**
+    let time = {
+        old,
+        futur,
+        plsTime: {
+            year:0,
+            date:10,
+            hours:3,
+            minutes:4,
+            seconds:50
+        }
+    }
+ */
+    const old = new Date(time.old);
     const now = new Date();
 
     let plsTime = {
@@ -30,12 +43,18 @@ function timeSomthing(time){
         seconds:50
     }
 
-    const futur = new Date("Tue Jul 09 2024 01:52:40 GMT+0900 (한국 표준시)");
-    futur.setFullYear(old.getFullYear() + plsTime.year);
-    futur.setDate(old.getDate() + plsTime.date);
-    futur.setHours(old.getHours() + plsTime.hours);
-    futur.setMinutes(old.getMinutes() + plsTime.minutes);
-    futur.setSeconds(old.getSeconds() + plsTime.seconds);
+
+    let futur;
+    if(time.futur == null){
+        futur = new Date(time.old);
+        futur.setFullYear(old.getFullYear() + time.plsTime.year);
+        futur.setDate(old.getDate() + time.plsTime.date);
+        futur.setHours(old.getHours() + time.plsTime.hours);
+        futur.setMinutes(old.getMinutes() + time.plsTime.minutes);
+        futur.setSeconds(old.getSeconds() + time.plsTime.seconds);
+    }else{
+        futur = new Date(time.futur);
+    }
 
     const diff = futur.getTime() - now.getTime();
 
@@ -57,34 +76,32 @@ function timeSomthing(time){
     if(minutes != 0){txt+=`${minutes}m `};
     if(seconds != 0){txt+=`${seconds}s `};
 
-    console.log("마감",futur);
-    console.log("현재",now);
-    console.log(txt);
+    let timeTxt = {
+        old : `${old.getFullYear()}.${old.getMonth()}.${old.getDate()}·${old.getHours()}:${old.getMinutes()}:${old.getSeconds()}`,
+        futur : `${futur.getFullYear()}.${futur.getMonth()}.${futur.getDate()}·${futur.getHours()}:${futur.getMinutes()}:${futur.getSeconds()}`,
+        diff : txt,
 
-    /*
-    let time = {
-        madeT : Tue Jul 09 2024 01:52:40 GMT+0900 (한국 표준시)
-        plsT : {year,month,day,hours,minuts,seconds},
-        endT : null <- made + pls
+        realOld : old,
+        realFutur : futur,
     }
-    return time = {
-        made : Tue Jul 09 2024 01:52:40 GMT+0900 (한국 표준시)
-        madeTime : {year,month,day,hours,minuts,seconds},
-        pluseTime : {year,month,day,hours,minuts,seconds},
-        endTime : made + pls
-        repeat : 
+    return timeTxt;
+}
 
-        text : "~후 까지"
+    let time3 = {
+        old : new Date(),
+        futur : null,
+        plsTime: {
+            year:0,
+            date:10,
+            hours:1,
+            minutes:20,
+            seconds:0
+        }
     }
-    */
-    
-}
-let time = {
-    madeT : date,
-    plsT : null,//{year,month,day,hours,minuts,seconds},
-    endT : null,//null <- made + pls
-}
-timeSomthing(time);
+
+    console.log(timeSomthing(time3));
+
+
 class htmlRemote {
     html_backgroundColor = "";
     html_ligthDarkMode = "";
@@ -328,18 +345,23 @@ class htmlRemoteElement{
     newRecentInfoMake(newInfo){
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
-        newInfoDiv.style.flexGrow = "1";
+        //newInfoDiv.style.flexGrow = "1";
 
         const dateDiv = newInfoDiv.cloneNode(true);
         const befoTime =new Date(newInfo.date);
         const afterTime = `${befoTime.getMonth()}/${befoTime.getDate()}/${befoTime.getHours()}:${befoTime.getMinutes()}`
         dateDiv.innerText = afterTime;
+        //dateDiv.style.wordBreak = "break-all"; 
 
         const windowDiv = newInfoDiv.cloneNode(true);
+        windowDiv.style.paddingLeft = "10px";
         windowDiv.innerText = newInfo.window;
+        windowDiv.style.wordBreak = "break-all"; 
+        //windowDiv.style.flexGrow = "1";
 
-        const textDiv = newInfoDiv.cloneNode(true);
+        const textDiv = windowDiv.cloneNode(true);
         textDiv.innerText = newInfo.text;
+        //textDiv.style.flexGrow = "2";
 
         newInfoDiv.appendChild(dateDiv);
         newInfoDiv.appendChild(windowDiv);
@@ -381,7 +403,7 @@ class htmlRemoteElement{
 
     recentPlsPage(){
         const pageDiv = this.div.cloneNode(true);
-        pageDiv.style.width = "flex";
+        pageDiv.style.width = "block";
         for(let i=0; i<this.db.newInfo.length; i++){
             pageDiv.appendChild(this.newRecentInfoMake(this.db.newInfo[i]));
         }
@@ -411,10 +433,11 @@ class htmlRemoteElement{
         bodyDiv.style.backgroundColor = this.db.backgroundColor;
         bodyDiv.style.float = "right";
         bodyDiv.className = "htmlRemoteBody";
+        bodyDiv.style.width = "400px";
 
         //`w${this.db.index}editSelectDiv_w${this.db.index}editBookDiv`;
         const pageSelect = this.select.cloneNode(true);
-        pageSelect.className = "htmlEditSelectDiv_htmpPagesDiv:flex";
+        pageSelect.className = "htmlEditSelectDiv_htmpPagesDiv:block";
         //function_selectEvent
         pageSelect.addEventListener("change",this.function_selectEvent);
         pageSelect.style.width = "100%"
@@ -988,7 +1011,7 @@ let remoteDb = {
     //html 설정
     htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
     //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
-    newInfo: [{date:today,window:"win1",text:"text1"},{date:today,window:"win2win2",text:"text2text2"},], 
+    newInfo: [{date:today,window:"long title window name",text:"short txt"},{date:today,window:"win2win2",text:"text2text2text2text2text2text2text2text2"},], 
     schedule:[{endTime:today, text:"이것 저것 구매하기 목록"}],
     
     //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
