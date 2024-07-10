@@ -19,96 +19,47 @@ const date = new Date();
 //console.log(date);
 
 function timeSomthing(time){
-    const befo = new Date("Tue Jul 09 2024 03:25:25 GMT+0900 (한국 표준시)");
-    const befoT = {
-        year:befo.getFullYear(),
-        month:befo.getMonth(),
-        date:befo.getDate(),
-        hours:befo.getHours(),
-        minuts:befo.getMinutes(),
-        seconds:befo.getSeconds(),
-
-        day:befo.getDay() //요일
-    }
-    const plsT = {
-        year : 0,
-        month: 0,
-        date  : 11,
-        hours: 0,
-        minuts: 80,
-        seconds: 300
-    };
-
-    let tem = 0;
-    if(plsT.seconds > 60){
-        tem += plsT.seconds;
-        plsT.seconds = tem % 60; plsT.minuts += parseInt(tem / 60); 
-    }
-    if(plsT.minuts > 60){ 
-        tem =0; tem += plsT.minuts;
-        plsT.minuts = tem % 60; plsT.hours += parseInt(tem / 60); }
-    if(plsT.hours > 24){ 
-        tem =0; tem += plsT.hours;
-        plsT.hours = tem % 60; plsT.date += parseInt(tem / 24); }
-
+    const old = new Date("Tue Jul 09 2024 01:52:40 GMT+0900 (한국 표준시)");
     const now = new Date();
-    const nowT = {
-        year:now.getFullYear(),
-        month:now.getMonth(),
-        date:now.getDate(),
-        hours:now.getHours(),
-        minuts:now.getMinutes(),
-        seconds:now.getSeconds(),
 
-        day:now.getDay() //요일
-    }
-    
-    let endT = {
-        year : 0,
-        month: 0,
-        date  : 0,
-        hours: 0,
-        minuts: 0,
-        seconds: 0
-    };
-    const after = new Date("Tue Jul 09 2024 03:25:25 GMT+0900 (한국 표준시)");
-    console.log("after", after);
-    if(plsT.year != 0){ endT.year = befoT.year + plsT.year; after.setFullYear(endT.year); };
-    if(plsT.month != 0){ endT.month = befoT.month + plsT.month; after.setMonth(endT.month); };
-    if(plsT.date != 0){ endT.date = befoT.date + plsT.date; after.setDate(endT.date); };
-    if(plsT.hours != 0){ endT.hours = befoT.hours + plsT.hours; after.setHours(endT.hours); };
-    if(plsT.minuts != 0){ endT.minuts = befoT.minuts + plsT.minuts; after.setMinutes(endT.minuts); };
-    if(plsT.seconds != 0){ endT.seconds = befoT.seconds + plsT.seconds; after.setSeconds(endT.seconds); };
-
-
-    endT = {
-        year:befo.getFullYear(),
-        month:befo.getMonth(),
-        date:befo.getDate(),
-        hours:befo.getHours(),
-        minuts:befo.getMinutes(),
-        seconds:befo.getSeconds(),
-
-        day:befo.getDay() //요일
-    };
-
-    let restT = {
-        year : endT.year - nowT.year,
-        month: endT.month - nowT.month,
-        date  : endT.date - nowT.date,
-        hours: endT.hours - nowT.hours,
-        minuts: endT.minuts - nowT.minuts,
-        seconds: endT.seconds - nowT.seconds
+    let plsTime = {
+        year:0,
+        date:10,
+        hours:3,
+        minutes:4,
+        seconds:50
     }
 
-    let restText = "";
-    if(restT.year != 0){restText += `${restT.year}year `};
-    if(restT.month != 0){restText += `${restT.month}month `};
-    if(restT.date != 0){restText += `${restT.date}day `};
-    if(restT.hours != 0){restText += `${restT.hours}hours `};
-    if(restT.minuts != 0){restText += `${restT.minuts}minuts `};
-    if(restT.seconds != 0){restText += `${restT.seconds}seconds `};
+    const futur = new Date("Tue Jul 09 2024 01:52:40 GMT+0900 (한국 표준시)");
+    futur.setFullYear(old.getFullYear() + plsTime.year);
+    futur.setDate(old.getDate() + plsTime.date);
+    futur.setHours(old.getHours() + plsTime.hours);
+    futur.setMinutes(old.getMinutes() + plsTime.minutes);
+    futur.setSeconds(old.getSeconds() + plsTime.seconds);
 
+    const diff = futur.getTime() - now.getTime();
+
+    const secInMs = Math.floor(diff / 1000);
+    const minInMs = Math.floor(secInMs / 60);
+    const hourInMs = Math.floor(minInMs / 60);
+
+    const days = Math.floor(hourInMs / 24 % 365);
+    const years = Math.floor(hourInMs /24 / 365);
+
+    const seconds = secInMs % 60;
+    const minutes = minInMs % 60;
+    const hours = minutes % 24;
+
+    let txt = "";
+    if(years != 0){txt+=`${years}year `};
+    if(days != 0){txt+=`${days}day `};
+    if(hours != 0){txt+=`${hours}h `};
+    if(minutes != 0){txt+=`${minutes}m `};
+    if(seconds != 0){txt+=`${seconds}s `};
+
+    console.log("마감",futur);
+    console.log("현재",now);
+    console.log(txt);
 
     /*
     let time = {
