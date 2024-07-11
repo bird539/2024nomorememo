@@ -45,6 +45,7 @@ function timeSomthing(time){
 
 
     let futur;
+
     if(time.futur == null){
         futur = new Date(time.old);
         futur.setFullYear(old.getFullYear() + time.plsTime.year);
@@ -98,9 +99,6 @@ function timeSomthing(time){
             seconds:0
         }
     }
-
-    console.log(timeSomthing(time3));
-
 
 class htmlRemote {
     html_backgroundColor = "";
@@ -369,28 +367,32 @@ class htmlRemoteElement{
 
         return newInfoDiv;
     }
-    newRestWorkInfoMake(newInfo){
+    newRestWorkInfoMake(newInfo2){
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
         newInfoDiv.style.flexGrow = "1";
 
         const endTimeDiv = newInfoDiv.cloneNode(true);
         const retTimeDiv = newInfoDiv.cloneNode(true);
-        const endTime =new Date(newInfo.endTime);
-        const now = new Date();
 
-        console.log("end",endTime);
-        console.log("end info",newInfo.endTime);
-        console.log("now",now);
-        
-        endTimeDiv.innerText = `${endTime.getMonth()}/${endTime.getDate()}/${endTime.getHours()}:${endTime.getMinutes()}`
-        retTimeDiv.innerText = `${endTime.getMonth() - now.getMonth()}/${endTime.getDate() - now.getDate()}/${endTime.getHours() - now.getHours()}:${endTime.getMinutes() - now.getMinutes()}`
+        console.log("newInfo", newInfo2);
+        console.log("newInfo", newInfo2.old);
+        let tt = {
+            old: null,
+            futur: null
+        }
+        tt.old = newInfo2.old;
+        tt.futur = newInfo2.futur;
+
+        let time = timeSomthing(tt);
+        endTimeDiv.innerText = `${time.futur}`
+        retTimeDiv.innerText = `${time.diff}`
         
         const windowDiv = newInfoDiv.cloneNode(true);
-        windowDiv.innerText = newInfo.window;
+        windowDiv.innerText = time.futur;
 
         const textDiv = newInfoDiv.cloneNode(true);
-        textDiv.innerText = newInfo.text;
+        textDiv.innerText = newInfo2.text;
 
         newInfoDiv.appendChild(endTimeDiv);
         newInfoDiv.appendChild(retTimeDiv);
@@ -413,10 +415,9 @@ class htmlRemoteElement{
     restWorkPage(){
         const pageDiv = this.div.cloneNode(true);
         pageDiv.style.width = "flex";
-        for(let i=0; i<this.db.newInfo.length; i++){
-            this.db.newInfo[i].text = "work work";
-            //console.log(this.db.schedule);
-            //pageDiv.appendChild(this.newRestWorkInfoMake(this.db.schedule[i]));
+        for(let i=0; i<this.db.schedule.length; i++){
+
+            pageDiv.appendChild(this.newRestWorkInfoMake(this.db.schedule[i]));
         }
         //임시 숨기기
         pageDiv.className = "restWorkPage";
@@ -999,8 +1000,9 @@ el.setValue(eldb);
 const elel = el.setElementCss();
 mainDiv.appendChild(elel);
 const remot = new htmlRemoteElement();
-const locale = new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
-const today = new Date(locale);
+//const locale = new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+const today = new Date("Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)");
+const toFutur = new Date("Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)");
 
 let remoteDb = {
     lastPageShow:0,
@@ -1012,7 +1014,7 @@ let remoteDb = {
     htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
     //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
     newInfo: [{date:today,window:"long title window name",text:"short txt"},{date:today,window:"win2win2",text:"text2text2text2text2text2text2text2text2"},], 
-    schedule:[{endTime:today, text:"이것 저것 구매하기 목록"}],
+    schedule:[{old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"이것 저것 구매하기 목록"}],
     
     //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
     trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
