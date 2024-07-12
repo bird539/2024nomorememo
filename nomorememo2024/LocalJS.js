@@ -11,13 +11,6 @@ function showHide(event) {
         }
     }
 }
-
-const date = new Date();
-
-//console.log(date);
-//console.log(date.setDate(20));
-//console.log(date);
-
 function timeSomthing(time){
 /**
     let time = {
@@ -76,10 +69,15 @@ function timeSomthing(time){
     if(hours != 0){txt+=`${hours}h `};
     if(minutes != 0){txt+=`${minutes}m `};
     if(seconds != 0){txt+=`${seconds}s `};
+//        old : `${old.getFullYear()}.${old.getMonth()}.${old.getDate()}·${old.getHours()}:${old.getMinutes()}:${old.getSeconds()}`,
+//        futur : `${futur.getFullYear()}.${futur.getMonth()}.${futur.getDate()}·${futur.getHours()}:${futur.getMinutes()}:${futur.getSeconds()}`,
+    
+    let oldYear = "" + old.getFullYear();
+    let futurYear = "" +futur.getFullYear();
 
     let timeTxt = {
-        old : `${old.getFullYear()}.${old.getMonth()}.${old.getDate()}·${old.getHours()}:${old.getMinutes()}:${old.getSeconds()}`,
-        futur : `${futur.getFullYear()}.${futur.getMonth()}.${futur.getDate()}·${futur.getHours()}:${futur.getMinutes()}:${futur.getSeconds()}`,
+        old : `${oldYear.substr(2)}.${old.getMonth()}.${old.getDate()}\n${old.getHours()}:${old.getMinutes()}:${old.getSeconds()}`,
+        futur : `${futurYear.substr(2)}.${futur.getMonth()}.${futur.getDate()}\n${futur.getHours()}:${futur.getMinutes()}:${futur.getSeconds()}`,
         diff : txt,
 
         realOld : old,
@@ -87,18 +85,6 @@ function timeSomthing(time){
     }
     return timeTxt;
 }
-
-    let time3 = {
-        old : new Date(),
-        futur : null,
-        plsTime: {
-            year:0,
-            date:10,
-            hours:1,
-            minutes:20,
-            seconds:0
-        }
-    }
 
 class htmlRemote {
     html_backgroundColor = "";
@@ -328,7 +314,6 @@ class htmlRemoteElement{
         target.childNodes[select.selectedIndex].style.display = targetClassName[1];
         //select.dispatchEvent(new Event('change'));
     }
-
     function_nextBefoEvent(event){
         const btn = event.target;
         const select = btn.parentNode.previousSibling;
@@ -339,7 +324,9 @@ class htmlRemoteElement{
         select.selectedIndex = index;
         select.dispatchEvent(new Event('change'));
     }
+    //<-- function event
 
+    //make tuple -->
     newRecentInfoMake(newInfo){
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
@@ -368,40 +355,45 @@ class htmlRemoteElement{
         return newInfoDiv;
     }
     newRestWorkInfoMake(newInfo2){
+        //윈도명도 넣어야 할 지 의문
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
-        newInfoDiv.style.flexGrow = "1";
+        newInfoDiv.style.borderTop = `0.1px solid ${this.db.fontColor}`;
 
-        const endTimeDiv = newInfoDiv.cloneNode(true);
-        const retTimeDiv = newInfoDiv.cloneNode(true);
+        const endTimeDiv = this.div.cloneNode(true);
+        endTimeDiv.style.display = "flex";
+        endTimeDiv.style.width = "60px";
+        endTimeDiv.style.flexShrink = "0";
+        const diffTimeDiv = endTimeDiv.cloneNode(true);
+        diffTimeDiv.style.paddingLeft ="10px";
+        diffTimeDiv.style.width ="80px";
 
-        console.log("newInfo", newInfo2);
-        console.log("newInfo", newInfo2.old);
         let tt = {
-            old: null,
-            futur: null
+            old: newInfo2.old,
+            futur: newInfo2.futur,
         }
-        tt.old = newInfo2.old;
-        tt.futur = newInfo2.futur;
-
         let time = timeSomthing(tt);
         endTimeDiv.innerText = `${time.futur}`
-        retTimeDiv.innerText = `${time.diff}`
+        diffTimeDiv.innerText = `${time.diff}`
         
         const windowDiv = newInfoDiv.cloneNode(true);
         windowDiv.innerText = time.futur;
 
-        const textDiv = newInfoDiv.cloneNode(true);
+        const textDiv =  this.div.cloneNode(true);
         textDiv.innerText = newInfo2.text;
+        textDiv.style.paddingLeft ="10px";        
+        textDiv.style.display = "flex";
+        textDiv.style.flexGrow = "1";
 
         newInfoDiv.appendChild(endTimeDiv);
-        newInfoDiv.appendChild(retTimeDiv);
-        newInfoDiv.appendChild(windowDiv);
+        newInfoDiv.appendChild(diffTimeDiv);
+        //newInfoDiv.appendChild(windowDiv);
         newInfoDiv.appendChild(textDiv);
 
         return newInfoDiv;
     }
-    //<-- function event
+    //<--make tuple
+    
 
     recentPlsPage(){
         const pageDiv = this.div.cloneNode(true);
@@ -1014,7 +1006,11 @@ let remoteDb = {
     htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
     //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
     newInfo: [{date:today,window:"long title window name",text:"short txt"},{date:today,window:"win2win2",text:"text2text2text2text2text2text2text2text2"},], 
-    schedule:[{old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"이것 저것 구매하기 목록"}],
+    schedule:[{old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"이것 저것 구매하기 목록"},
+        {old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"과자 3 빵 2 밀가루 칫실 3"},
+        {old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"운동하기"},
+        {old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"식물 물주기"},
+    ],
     
     //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
     trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
