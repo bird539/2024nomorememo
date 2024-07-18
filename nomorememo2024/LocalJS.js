@@ -1,6 +1,18 @@
 const mainDiv = document.querySelector(".main");
 const mainHtml = document.querySelector('html');
 mainHtml.style.height = '100%';
+
+const all_fontWeight = [100,200,300,400,500,600,700,800];
+const all_fontFamily = ['serif','sans-serif','monospace','cursive','fantasy','system-ui','ui-serif','ui-sans-serif','ui-monospace','ui-rounded','emoji','math','fangsong'];
+const all_fontStyle = ['normal','italic','oblique'];
+const all_tapType_kr = ['메모','계산','링크','시간','그림','달력','확률'];
+const all_backgroundColor = ['#FEF896','#E4F1E7','#C9DAEE','#FAD5E6'];
+
+const basic_width = 600;
+const basic_lineWeight = 1.5;
+const basic_fontSize = 14;
+const basic_fontColor = "#000000";
+
 function showHide(event) {
     const strArray = event.target.className.split('_');
     for (let i = 0; i < strArray.length; i++) {
@@ -85,7 +97,7 @@ function timeSomthing(time){
     }
     return timeTxt;
 }
-
+//==========================================================
 class htmlRemote {
     html_backgroundColor = "";
     html_ligthDarkMode = "";
@@ -151,19 +163,147 @@ class htmlRemote_Model {
 const newhtmlContol_Model = new htmlRemote_Model();
 newhtmlContol_Model.firstPageOpen();
 //const htmlContolOne = new 
+/*
+let eldb = {
+    befoIndex: null, index: 1, nextIndex: 2,
+    title: "heelo world", show: true,
+    fontSize: 14, fontThick: 100, fontFamily: "sans-serif", fontType: "normal",
+    fontColor: "#000000", backgroundColor: "#FEF896", lineColor: "#B8D993",
+    width: 600, lineThick: 1.5
+}
+ */
+/*
+let remoteDb = {
+    lastPageShow:0,
+    //remote 꾸미기
+    title: "카프카의 꿈",
+    fontSize: 14, fontWeight: 100, fontFamily: "sans-serif", fontType: "normal",
+    fontColor: "#ffffff", backgroundColor: "#000000",
+    //html 설정
+    htmlBackgroundColor: "#95C2FE", lightDarkMode: false, language: 0,
+    //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
+    newInfo: [{date:today,window:"long title window name",text:"short txt"},{date:today,window:"win2win2",text:"text2text2text2text2text2text2text2text2"},], 
+    schedule:[{old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"이것 저것 구매하기 목록"},
+        {old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"과자 3 빵 2 밀가루 칫실 3"},
+        {old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"운동하기"},
+        {old:"Thu Jul 11 2024 17:28:06 GMT+0900 (한국 표준시)", futur:"Sun Jul 21 2024 18:48:06 GMT+0900 (한국 표준시)", text:"식물 물주기"},
+    ],
+    
+    //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
+    trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
+    //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
+    trashTab: [],           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
+    //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
+    trashTabText: [],      //삭제일  + 탭 글자들           + 복구 btn
+}
+*/
+class htmlInfo {
+    lastPageShow=null; title=null;
+    fontSize=null; fontWeight=null; fontFamily=null; fontType=null;
+    fontColor=null; backgroundColor=null;
+    htmlBackgroundColor=null; lightDarkMode=null;
+    language=null;
+
+    newInfo=[];
+    schedule=[];
+    constructor(){
+        lastPageShow=0; title='hello!';
+        fontSize=basic_fontSize; fontWeight=all_fontWeight[0]; fontFamily=all_fontFamily[1]; fontType=null;
+        fontColor=null; backgroundColor=null;
+        htmlBackgroundColor=null; lightDarkMode=null;
+        language=null;    
+    }
+}
 
 class Window {
-
+    index = null; indexBefo = null; indexNext = null; name=null; show=null; 
+    fontSize=null; fontWeight=null; fontFamily=null; fontStyle=null; 
+    fontColor=null; backgroundColor=null;
+    width=null; lineWeight=null;
+    
+    constructor(){
+        this.index = 0; this.indexBefo = null; this.indexNext = 1; 
+        this.name=`${this.index}win`; this.show=true; 
+        this.fontSize=basic_fontSize; this.fontWeight=100; this.fontFamily=all_fontFamily[1]; this.fontStyle=all_fontStyle[0]; 
+        this.fontColor=basic_fontColor; this.backgroundColor=all_backgroundColor[0];
+        this.width=basic_width; this.lineWeight=basic_lineWeight;
+    }
 }
 
 class TabInfo {
+    index=null; fk_windowInex=null; type=null; name=null; show=null; sort=null; fontSize=null;
+    fontColor=null; backgroundColor=null; width=null;
 
+    constructor(typeNum){
+        this.index=0; this.fk_windowInex=0; this.type=typeNum; this.name=all_tapType_kr[typeNum]; this.show=true; this.sort=0; this.fontSize=basic_fontSize;
+        this.fontColor=basic_fontColor; this.backgroundColor=all_backgroundColor[0]; this.width=basic_width;
+    }
 }
 
-class Tab_Memo {
-
+class Tab_Memo_color {
+    fk_tabIndex=null; color1=null; color2=null; color3=null;
+    constructor(tabIndex){
+        this.fk_tabIndex=tabIndex; this.color1='#fe0000'; this.color2='#1500ff'; this.color3='#00ff19';
+    }
+}
+class Tab_Memo_text {
+    fk_tabIndex=null; key_madeDate=null; 
+    checked=null; text=null; fk_colorIndex = null;
+    constructor(tabIndex){
+        this.fk_tabIndex=tabIndex; this.key_madeDate=new Date(); 
+        this.checked=true; this.text=null; this.fk_colorIndex = 0;
+    }
 }
 
+class Model {
+    htmlInfo = null;
+    windowArr = [];
+    tabInfoArr = [];
+
+    tab_memo_colorArr = [];
+    tab_memo_textArr = [];
+
+    constructor(){
+        this.htmlInfo = JSON.parse(localStorage.getItem("htmlDB"));
+        this.windowArr = JSON.parse(localStorage.getItem("windowDB"));
+        this.tabInfoArr = JSON.parse(localStorage.getItem("tabInfoDB"));
+
+        this.tab_memo_colorArr = JSON.parse(localStorage.getItem("memo_color"));
+        this.tab_memo_textArr = JSON.parse(localStorage.getItem("memo_text"));
+        
+        if(this.htmlInfo == null){
+            this.htmlInfo = [];
+            localStorage.setItem("htmlDB", JSON.stringify(this.htmlInfo));
+        }
+        if(this.windowArr == null){
+            this.windowArr = [];
+            localStorage.setItem("windowDB", JSON.stringify(this.windowArr));
+        }
+        if(this.tabInfoArr == null){
+            this.tabInfoArr = [];
+            localStorage.setItem("tabInfoDB", JSON.stringify(this.tabInfoArr));
+        }
+
+        if(this.tab_memo_colorArr == null){
+            this.tab_memo_colorArr = [];
+            localStorage.setItem("memo_color", JSON.stringify(this.tab_memo_colorArr));
+        }
+        if(this.tab_memo_textArr == null){
+            this.tab_memo_textArr = [];
+            localStorage.setItem("memo_text", JSON.stringify(this.tab_memo_textArr));
+        }
+    }
+
+    htmlInfo_C(){
+
+    }
+}
+class View {
+
+}
+class Controller {
+
+}
 
 class htmlRemoteElement{
     div = null;
@@ -392,6 +532,9 @@ class htmlRemoteElement{
 
         return newInfoDiv;
     }
+    trasInfoMake(newInfo){
+
+    }
     //<--make tuple
     
 
@@ -520,8 +663,6 @@ class htmlRemoteElement{
 
 }
 
-
-///////////////////
 class windowElement {
     div = null;
     button = null;
@@ -979,7 +1120,7 @@ class windowElement {
         return winDiv;
     }
 }
-
+//========================================================================
 const el = new windowElement();
 let eldb = {
     befoIndex: null, index: 1, nextIndex: 2,
@@ -1023,8 +1164,8 @@ remot.setValue(remoteDb);
 const remoteEl = remot.setElementAll();
 mainHtml.appendChild(remoteEl);
 
-//실험실
 
+//실험실------------------------------------------------------------------------------------------
 class Subject {
     constructor() { this.observers = []; }
     subscribe(observer) { this.observers.push(observer); }
