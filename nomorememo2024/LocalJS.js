@@ -102,27 +102,36 @@ function timeSomthing(time) {
 //==========================================================
 
 //옵저버 디자인 패턴 ===>
-class Subject {
-    constructor() { this.observers = []; }
+class Subject_sendGetData {
+    exValue = null; check = null;
+    constructor() { this.observers = []; this.exValue = null; this.check = true;}
     subscribe(observer) { this.observers.push(observer); }
     unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
     notifyAll() {
         this.observers.forEach((subscriber) => {
             try {
-                console.log(subscriber);
-                subscriber.update();
+                //console.log(subscriber);
+                this.check = subscriber.checkFunction();
+                if(this.check == true){
+                    this.exValue = subscriber.sendValue(); 
+                }else if(this.check == false){
+                    subscriber.getValue(this.exValue);
+                    this.exValue = null;
+                }
+                //subscriber.update();
             } catch (err) { console.error("error", err); }
         })
     }
     //clean(){  this.observers = []  }
 }
-class Observer {
-    constructor(name) { this.name = name; }
-    update() {
-        console.log(`${this.name}`);
-    }
+class Observer_sendGetData {
+    check = null; value = null;
+    constructor(check) { this.check = check; this.value = null; }
+    checkFunction(){ return this.check; }
+    sendValue(){ return this.value; }
+    getValue(value){ this.value = value; }
 }
-const subj = new Subject();
+const subj = new Subject_sendGetData();
 //<===
 
 //View - element all ==========>
@@ -529,7 +538,7 @@ class windowElement {
         select.dispatchEvent(new Event('change'));
     }
     function_createWindow(event){
-        const observer = new Observer("hi? I am window");
+        const observer = new Observer_sendGetData(true);
         subj.subscribe(observer);
         subj.notifyAll();
     }
@@ -606,6 +615,7 @@ class windowElement {
         winDiv.style.display = "flex";
         winDiv.style.flexDirection = "column";
         winDiv.style.width = `${this.db.width}px`;
+        winDiv.style.marginBottom = "5px"
 
         const winHeadDiv = this.div.cloneNode(true);
         const winBodyDiv = this.div.cloneNode(true);
@@ -1026,9 +1036,10 @@ class Model {
         tab_memo_text: "memo_text",
     }
 
-    observer = null;
+    check = null; value = null;
 
     constructor() {
+        this.check = true; this.value = null;
         this.htmlInfo = JSON.parse(localStorage.getItem("htmlDB"));
         this.windowArr = JSON.parse(localStorage.getItem("windowDB"));
         this.tabInfoArr = JSON.parse(localStorage.getItem("tabInfoDB"));
@@ -1061,17 +1072,13 @@ class Model {
     }
 
     observer_update = "hear, I am Model";
-    update() {
-        this.window_C();
-    }
+
     window_C() {
         const newWin = new Window();
-        console.log(this.windowArr.length <= 0);
         if (this.windowArr.length <= 0) {
             newWin.index = 0;
             newWin.name += newWin.index;
             this.windowArr.push(newWin);
-            console.log("1", this.windowArr.length);
         } else {
             let check = false;
             for (let i = 0; i < this.windowArr.length; i++) {
@@ -1088,14 +1095,22 @@ class Model {
                 newWin.index = this.windowArr.length ;
                 newWin.name += newWin.index;
                 this.windowArr.push(newWin);
-                console.log("2-1");
             } else {
                 newWin.name += newWin.index;
                 this.windowArr[newWin.index] = newWin;
-                console.log("2-2");
             }
         }
+        this.value = newWin;
         this.window_save();
+    }
+
+    checkFunction(){ return this.check; }
+    sendValue(){ 
+        this.window_C();
+        return this.value; 
+    }
+    getValue(value){ 
+        this.value = value; 
     }
 
     htmlInfo_save() { localStorage.setItem(this.DBname.html, JSON.stringify(this.htmlInfo)); }
@@ -1119,25 +1134,37 @@ class View {
     }
 }
 class Controller {
-    ex = null;
+    ex = null; value = null;
     constructor() { this.ex = true; }
     firstPageOpen() {
+        this.value = null;
         const m_data = new Model();
         const v_element_html = new View("html", m_data.htmlInfo);
         mainHtml.appendChild(v_element_html.returnElement);
 
         for (let i = 0; i < m_data.windowArr.length; i++) {
             if (m_data.windowArr[i] != null) {
-                const v_element_window = new View("window", m_data.windowArr[i]);
-                mainDiv.appendChild(v_element_window.returnElement);
+                this.windowAppend(m_data.windowArr[i]);
             }
         }
 
         subj.subscribe(m_data);
     }
+    windowAppend(data){
+        const v_element_window = new View("window", data);
+        mainDiv.appendChild(v_element_window.returnElement);
+    }
+
+    //
+    checkFunction(){ return false; }
+    sendValue(){return this.value; }
+    getValue(value){
+        this.windowAppend(value);
+    }
 }
 const start_main = new Controller();
 start_main.firstPageOpen();
+subj.subscribe(start_main);
 
 //<==========MVC pattern all
 let array10 = new Array(10);
