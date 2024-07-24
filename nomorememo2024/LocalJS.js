@@ -1,6 +1,8 @@
 const mainDiv = document.querySelector(".main");
 const mainHtml = document.querySelector('html');
 mainHtml.style.height = '100%';
+mainHtml.style.textAlign = "center"
+;
 
 const all_fontWeight = [100, 200, 300, 400, 500, 600, 700, 800];
 const all_fontFamily = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong'];
@@ -103,33 +105,36 @@ function timeSomthing(time) {
 
 //옵저버 디자인 패턴 ===>
 class Subject_sendGetData {
-    exValue = null; check = null;
-    constructor() { this.observers = []; this.exValue = null; this.check = true;}
+    exValue = null; check = null; target = null; 
+    constructor() { this.observers = []; this.exValue = null; this.check = true; this.target = null; }
     subscribe(observer) { this.observers.push(observer); }
     unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
     notifyAll() {
         this.observers.forEach((subscriber) => {
             try {
-                //console.log(subscriber);
                 this.check = subscriber.checkFunction();
                 if(this.check == true){
-                    this.exValue = subscriber.sendValue(); 
+                    this.exValue = subscriber.sendValue();
+                    this.target = subscriber.sendTarget();
                 }else if(this.check == false){
-                    subscriber.getValue(this.exValue);
-                    this.exValue = null;
+                    let check_target = subscriber.sendName();
+                    if(this.target == check_target){
+                        subscriber.getValue(this.exValue);
+                        this.exValue = null;
+                    }
                 }
-                //subscriber.update();
             } catch (err) { console.error("error", err); }
         })
     }
-    //clean(){  this.observers = []  }
 }
 class Observer_sendGetData {
-    check = null; value = null;
-    constructor(check) { this.check = check; this.value = null; }
+    check = null; value = null; target = null; name = null;
+    constructor(check) { this.check = check; this.value = null; this.target = null; this.name = null; }
     checkFunction(){ return this.check; }
     sendValue(){ return this.value; }
     getValue(value){ this.value = value; }
+    sendTarget(){ return this.target; }
+    sendName(){ return this.name; }
 }
 const subj = new Subject_sendGetData();
 //<===
@@ -539,6 +544,8 @@ class windowElement {
     }
     function_createWindow(event){
         const observer = new Observer_sendGetData(true);
+        observer.name = "make new window event";
+        observer.target = "window_C";
         subj.subscribe(observer);
         subj.notifyAll();
     }
@@ -551,9 +558,9 @@ class windowElement {
         this.db.show = db.show;
 
         this.db.fontSize = db.fontSize;
-        this.db.fontThick = all_fontWeight[db.fontThick];
+        this.db.fontThick = all_fontWeight[db.fontWeight];
         this.db.fontFamily = all_fontFamily[db.fontFamily];
-        this.db.fontStyle = all_fontStyle[db.fontType];
+        this.db.fontStyle = all_fontStyle[db.fontStyle];
 
         this.db.fontColor = db.fontColor;
         this.db.backgroundColor = db.backgroundColor;
@@ -612,10 +619,11 @@ class windowElement {
         const winDiv = this.div.cloneNode(false);
         winDiv.style.backgroundColor = this.db.backgroundColor;
         winDiv.className = `w${this.db.index}`;
-        winDiv.style.display = "flex";
-        winDiv.style.flexDirection = "column";
+        winDiv.style.display = "inline-block"; //flex
+//        winDiv.style.flexDirection = "column";
         winDiv.style.width = `${this.db.width}px`;
-        winDiv.style.marginBottom = "5px"
+        winDiv.style.marginBottom = "5px";
+        winDiv.style.marginRight = "5px";
 
         const winHeadDiv = this.div.cloneNode(true);
         const winBodyDiv = this.div.cloneNode(true);
@@ -710,7 +718,7 @@ class windowElement {
         hideEditPage.className = `w${this.db.index}hideEditPage_showHide:w${this.db.index}editDiv:flex`;
         hideEditPage.addEventListener("click", showHide);
         const delWinBtn = LEFT_BTN.cloneNode(true);
-        delWinBtn.innerText = "del-win";
+        delWinBtn.innerText = "del(X)";
         delWinBtn.style.removeProperty("width");
 
         const titleForm = this.form.cloneNode(true);
@@ -843,14 +851,11 @@ class windowElement {
         fontFamilyTxt.innerText = "글자 종류"
         const fontFamilySelect = this.select.cloneNode(true);
         fontFamilySelect.style.width = "50%";
-        let fontFamily = [
-            "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui", "ui-serif", "ui-sans-serif", "ui-monospace",
-            "ui-rounded", "emoji", "math", "fangsong"
-        ];
-        for (let i = 0; i < fontFamily.length; i++) {
+        for (let i = 0; i < all_fontFamily.length; i++) {
             const editOption = this.option.cloneNode(true);
-            editOption.innerText = `${i}.${fontFamily[i]}`;
+            editOption.innerText = `${i}.${all_fontFamily[i]}`;
             fontFamilySelect.appendChild(editOption);
+            if(this.db.fontFamily == all_fontFamily[i]){  fontFamilySelect.selectedIndex = i; }
         }
         fontFamilyDiv.appendChild(fontFamilyTxt);
         fontFamilyDiv.appendChild(fontFamilySelect);
@@ -861,13 +866,11 @@ class windowElement {
         fontStyleTxt.innerText = "글자 종류"
         const fontStyleSelect = this.select.cloneNode(true);
         fontStyleSelect.style.width = "50%";
-        let fontStyle = [
-            "normal", "italic", "oblique"
-        ];
-        for (let i = 0; i < fontStyle.length; i++) {
+        for (let i = 0; i < all_fontStyle.length; i++) {
             const editOption = this.option.cloneNode(true);
-            editOption.innerText = `${i}.${fontStyle[i]}`;
+            editOption.innerText = `${i}.${all_fontStyle[i]}`;
             fontStyleSelect.appendChild(editOption);
+            if(this.db.fontStyle == all_fontStyle[i]){  fontStyleSelect.selectedIndex = i; }
         }
         fontStyleDiv.appendChild(fontStyleTxt);
         fontStyleDiv.appendChild(fontStyleSelect);
@@ -1087,10 +1090,10 @@ class Model {
                     check = true;
                 }
                 if (this.windowArr[i].indexNext == null) {
-                    newWin.indexBefo = i;
+                    newWin.indexBefo = i;                    
                 }
             }
-            this.windowArr[newWin.indexBefo].indexNext = newWin.index;
+            //this.windowArr[newWin.indexNext].indexNext = newWin.index;
             if (check == false) {
                 newWin.index = this.windowArr.length ;
                 newWin.name += newWin.index;
@@ -1099,6 +1102,18 @@ class Model {
                 newWin.name += newWin.index;
                 this.windowArr[newWin.index] = newWin;
             }
+            
+            //배경색 지정
+            if(newWin.index % 2 == 0){
+                newWin.backgroundColor = all_backgroundColor[1];
+                if(newWin.index % 4 == 0){newWin.backgroundColor =  all_backgroundColor[3]; }
+            }else if(newWin.index % 3 == 0){
+                newWin.backgroundColor = all_backgroundColor[3];
+            }else{
+                newWin.backgroundColor =  all_backgroundColor[0]; 
+            }
+
+            this.windowArr[newWin.indexBefo].indexNext = newWin.index;
         }
         this.value = newWin;
         this.window_save();
@@ -1109,6 +1124,8 @@ class Model {
         this.window_C();
         return this.value; 
     }
+    sendTarget(){ return "make new window append" }
+    sendName(){ return "window_C" }
     getValue(value){ 
         this.value = value; 
     }
@@ -1156,11 +1173,11 @@ class Controller {
     }
 
     //
-    checkFunction(){ return false; }
-    sendValue(){return this.value; }
-    getValue(value){
-        this.windowAppend(value);
-    }
+    checkFunction(){    return false; }
+    sendValue() {       return this.value; }
+    getValue(value){    this.windowAppend(value); }
+    sendTarget(){       return "windowAppend"; }
+    sendName(){         return "make new window append"; }
 }
 const start_main = new Controller();
 start_main.firstPageOpen();
