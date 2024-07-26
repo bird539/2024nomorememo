@@ -17,6 +17,8 @@ const basic_fontColor = "#000000";
 const basic_htmlBacground = "#ffffff";
 const basic_lineColor = "#B8D993";
 
+let new_windwo_colorIndex = 0;
+
 function showHide(event) {
     const strArray = event.target.className.split('_');
     for (let i = 0; i < strArray.length; i++) {
@@ -109,22 +111,61 @@ class Subject_sendGetData {
     constructor() { this.observers = []; this.exValue = null; this.check = true; this.target = null; }
     subscribe(observer) { this.observers.push(observer); }
     unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
+    clear(){
+        let newOB = []; 
+        for(let i=0; i<2; i++){
+            newOB.push(this.observers[i]);
+        }
+        this.observers = newOB;
+    }
     notifyAll() {
-        this.observers.forEach((subscriber) => {
+        console.log(this.observers);
+        for(let i = this.observers.length-1; i>-1; i--){
+            let subscriber = this.observers[i];
             try {
+                if(subscriber.name == "Controller_observer"){ //컨트롤러는 무조건 실행
+                    subscriber.getValue(this.target,this.exValue); 
+                }
                 this.check = subscriber.checkFunction();
-                if(this.check == true){
+                if(this.check == true){ //보낼 정보가 있느냐 없느냐
                     this.exValue = subscriber.sendValue();
                     this.target = subscriber.sendTarget();
                 }else if(this.check == false){
                     let check_target = subscriber.sendName();
                     if(this.target == check_target){
+                        subscriber.target = this.target;
                         subscriber.getValue(this.exValue);
                         this.exValue = null;
                     }
                 }
+                console.log(this.target);
+                
+            } catch (err) { console.error("error", err); }
+        }
+        /*
+        this.observers.forEach((subscriber) => {
+            try {
+                if(subscriber.name == "Controller_observer"){ //컨트롤러는 무조건 실행
+                    subscriber.target = this.target;
+                    subscriber.getValue(this.exValue); 
+                }
+                this.check = subscriber.checkFunction();
+                if(this.check == true){ //보낼 정보가 있느냐 없느냐
+                    this.exValue = subscriber.sendValue();
+                    this.target = subscriber.sendTarget();
+                }else if(this.check == false){
+                    let check_target = subscriber.sendName();
+                    if(this.target == check_target){
+                        subscriber.target = this.target;
+                        subscriber.getValue(this.exValue);
+                        this.exValue = null;
+                    }
+                }
+                
             } catch (err) { console.error("error", err); }
         })
+        */
+        this.clear();
     }
 }
 class Observer_sendGetData {
@@ -549,6 +590,18 @@ class windowElement {
         subj.subscribe(observer);
         subj.notifyAll();
     }
+    function_removeWindow(event){
+        //element.remove();
+        const delWin = document.querySelector(`.w${event.target.className}`);
+        const observer = new Observer_sendGetData(true);
+        observer.name = "window delete event";
+        observer.target = "window_D";
+        observer.value = event.target.className;
+        observer.check = true;
+        subj.subscribe(observer);
+        subj.notifyAll();
+        delWin.remove();
+    }
     setValue(db) {
         this.db.befoIndex = db.befoIndex;
         this.db.index = db.index;
@@ -718,8 +771,10 @@ class windowElement {
         hideEditPage.className = `w${this.db.index}hideEditPage_showHide:w${this.db.index}editDiv:flex`;
         hideEditPage.addEventListener("click", showHide);
         const delWinBtn = LEFT_BTN.cloneNode(true);
+        delWinBtn.className = `${this.db.index}`;
         delWinBtn.innerText = "del(X)";
         delWinBtn.style.removeProperty("width");
+        delWinBtn.addEventListener("click", this.function_removeWindow);
 
         const titleForm = this.form.cloneNode(true);
         titleForm.style.display = "flex";
@@ -1039,10 +1094,10 @@ class Model {
         tab_memo_text: "memo_text",
     }
 
-    check = null; value = null;
+    check = null; value = null; target = null; name = null;
 
     constructor() {
-        this.check = true; this.value = null;
+        this.check = true; this.value = null; this.target = null; this.name = null;
         this.htmlInfo = JSON.parse(localStorage.getItem("htmlDB"));
         this.windowArr = JSON.parse(localStorage.getItem("windowDB"));
         this.tabInfoArr = JSON.parse(localStorage.getItem("tabInfoDB"));
@@ -1089,7 +1144,7 @@ class Model {
                     newWin.index = i;
                     check = true;
                 }
-                if (this.windowArr[i].indexNext == null) {
+                if (this.windowArr[i]!=null && this.windowArr[i].indexNext == null) {
                     newWin.indexBefo = i;                    
                 }
             }
@@ -1104,18 +1159,35 @@ class Model {
             }
             
             //배경색 지정
-            if(newWin.index % 2 == 0){
-                newWin.backgroundColor = all_backgroundColor[1];
-                if(newWin.index % 4 == 0){newWin.backgroundColor =  all_backgroundColor[3]; }
-            }else if(newWin.index % 3 == 0){
-                newWin.backgroundColor = all_backgroundColor[3];
-            }else{
-                newWin.backgroundColor =  all_backgroundColor[0]; 
+            new_windwo_colorIndex += 1;
+            if(newWin.indexBefo != null){
+                for(let i=0;i<all_backgroundColor.length;i++){
+                    if(all_backgroundColor[i] == this.windowArr[newWin.indexBefo].backgroundColor){
+                        newWin.backgroundColor = i < all_backgroundColor.length-1 ? all_backgroundColor[i + 1]:all_backgroundColor[0];
+                    }
+                }
+            }else if(newWin.indexBefo == null){
+                newWin.backgroundColor = all_backgroundColor[0];
             }
-
             this.windowArr[newWin.indexBefo].indexNext = newWin.index;
         }
         this.value = newWin;
+        this.window_save();
+    }
+    window_D(index){
+        const befo = this.windowArr[index].indexBefo;
+        const next = this.windowArr[index].indexNext;
+        console.log(befo, next)
+        if(befo != null){this.windowArr[befo].indexNext = next; }
+        if(next != null){this.windowArr[next].indexBefo = befo; }
+        this.windowArr[index] = null;
+        if(index == this.windowArr.length -1){
+            let newArr = [];
+            for(let i=0; i<this.windowArr.length-2; i++){
+                newArr.push(this.windowArr[i]); 
+            }
+            this.windowArr = newArr;
+        }
         this.window_save();
     }
 
@@ -1124,10 +1196,11 @@ class Model {
         this.window_C();
         return this.value; 
     }
-    sendTarget(){ return "make new window append" }
-    sendName(){ return "window_C" }
+    sendTarget(){ return this.target }
+    sendName(){ return this.name }
     getValue(value){ 
-        this.value = value; 
+        this.value = value;
+        this.window_D(value); 
     }
 
     htmlInfo_save() { localStorage.setItem(this.DBname.html, JSON.stringify(this.htmlInfo)); }
@@ -1151,37 +1224,42 @@ class View {
     }
 }
 class Controller {
-    ex = null; value = null;
-    constructor() { this.ex = true; }
+    ex = null; value = null; model = null; name = null;
+    constructor() { this.ex = true; this.name="Controller_observer" }
     firstPageOpen() {
         this.value = null;
-        const m_data = new Model();
-        const v_element_html = new View("html", m_data.htmlInfo);
+        this.model = new Model();
+        const v_element_html = new View("html", this.model.htmlInfo);
         mainHtml.appendChild(v_element_html.returnElement);
 
-        for (let i = 0; i < m_data.windowArr.length; i++) {
-            if (m_data.windowArr[i] != null) {
-                this.windowAppend(m_data.windowArr[i]);
+        for (let i = 0; i < this.model.windowArr.length; i++) {
+            if (this.model.windowArr[i] != null) {
+                this.windowAppend(this.model.windowArr[i]);
             }
         }
-
-        subj.subscribe(m_data);
     }
     windowAppend(data){
         const v_element_window = new View("window", data);
         mainDiv.appendChild(v_element_window.returnElement);
     }
-
-    //
     checkFunction(){    return false; }
     sendValue() {       return this.value; }
-    getValue(value){    this.windowAppend(value); }
+    getValue(target,value){
+        console.log("target : ", target, value);
+        if(target == "window_C"){
+            this.model.window_C();
+            console.log(this.model.value);
+            this.windowAppend(this.model.value);
+        }else if(target == "window_D"){
+            this.model.window_D(value);
+        }
+    }
     sendTarget(){       return "windowAppend"; }
-    sendName(){         return "make new window append"; }
+    sendName(){         return "Controller_observer"; }
 }
 const start_main = new Controller();
-start_main.firstPageOpen();
 subj.subscribe(start_main);
+start_main.firstPageOpen();
 
 //<==========MVC pattern all
 let array10 = new Array(10);
