@@ -16,6 +16,7 @@ const basic_fontSize = 14;
 const basic_fontColor = "#000000";
 const basic_htmlBacground = "#ffffff";
 const basic_lineColor = "#B8D993";
+const baseic_regex = /[^0-9]/g;	
 
 let new_windwo_colorIndex = 0;
 
@@ -112,19 +113,14 @@ class Subject_sendGetData {
     subscribe(observer) { this.observers.push(observer); }
     unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
     clear(){
-        let newOB = []; 
-        for(let i=0; i<2; i++){
-            newOB.push(this.observers[i]);
-        }
-        this.observers = newOB;
+        this.observers = [this.observers[0], ];
     }
     notifyAll() {
-        console.log(this.observers);
         for(let i = this.observers.length-1; i>-1; i--){
             let subscriber = this.observers[i];
             try {
                 if(subscriber.name == "Controller_observer"){ //컨트롤러는 무조건 실행
-                    subscriber.getValue(this.target,this.exValue); 
+                    subscriber.getValue(this.target, this.exValue); 
                 }
                 this.check = subscriber.checkFunction();
                 if(this.check == true){ //보낼 정보가 있느냐 없느냐
@@ -137,9 +133,7 @@ class Subject_sendGetData {
                         subscriber.getValue(this.exValue);
                         this.exValue = null;
                     }
-                }
-                console.log(this.target);
-                
+                }                
             } catch (err) { console.error("error", err); }
         }
         /*
@@ -545,7 +539,6 @@ class windowElement {
     form = null;
     select = null;
     option = null;
-
     db = {
         befoIndex: null, index: null, nextIndex: null,
         title: null, show: null,
@@ -601,6 +594,21 @@ class windowElement {
         subj.subscribe(observer);
         subj.notifyAll();
         delWin.remove();
+    }
+    function_editWindow(event){
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "window update event";
+        observer.target = "window_U";
+        const index = event.target.className.split("_")[0].replace(baseic_regex, "");
+        const key = event.target.className.split("_")[1];
+        let value = event.target.value;
+        if(key == "fontFamily" || key == "fontStyle"){
+            value = event.target.selectedIndex;
+        }
+        observer.value = `${index}/${key}/${value}`;
+        subj.subscribe(observer);
+        subj.notifyAll();
     }
     setValue(db) {
         this.db.befoIndex = db.befoIndex;
@@ -668,12 +676,58 @@ class windowElement {
         this.div.style.color = this.db.fontColor;
     }
 
+    showHide(event) {
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "window update event";
+        observer.target = "window_U";
+        observer.value = null;
+        const strArray = event.target.className.split('_');
+        for (let i = 0; i < strArray.length; i++) {
+            if (strArray[i].includes("showHide")) {
+                const targetName = strArray[i].split(":")[1];
+                const target = document.querySelector(`.${targetName}`);
+                target.style.display = target.style.display != "none" ? "none" : strArray[i].split(":")[2];
+                if(targetName.includes("body")){
+                    const indexStr = strArray[0];
+                    const index = indexStr.replace(baseic_regex, "");
+                    const show = target.style.display != "none";
+                    observer.value = `${index}/show/${show}`;
+                }
+            }
+        }
+        subj.subscribe(observer);
+        subj.notifyAll();
+    }
+    showHide2(event){
+        const name =  event.target.className;
+        const win = name.replace(baseic_regex, "");
+        let target_classNames = ["body", "TabSelectDiv", "EditDiv"]; 
+        let click_classNames = [`w${win}titleBtn_showHide:w${win}body:flex`, "TabPlsBtn", "Edit"]; 
+        for(let i = 0; i<click_classNames.length; i++){
+            if(name.includes(click_classNames[i])){
+                let display = document.querySelector(`.w${win}${target_classNames[i]}`).style.display == "none" ? "none" : "flex";
+                if(display != "none"){
+                    for(let j = i; j<target_classNames.length; j++){
+                        const target = document.querySelector(`.w${win}${target_classNames[j]}`);
+                        target.style.display = "none";
+                    }
+                }else{
+                    const target = document.querySelector(`.w${win}${target_classNames[i]}`);
+                    target.style.display = "flex";
+                    break;
+                }
+            }
+        }
+    }
+
     setElementCss() {
         const winDiv = this.div.cloneNode(false);
         winDiv.style.backgroundColor = this.db.backgroundColor;
+        console.log(this.db.backgroundColor);
         winDiv.className = `w${this.db.index}`;
         winDiv.style.display = "inline-block"; //flex
-//        winDiv.style.flexDirection = "column";
+        //winDiv.style.flexDirection = "column";
         winDiv.style.width = `${this.db.width}px`;
         winDiv.style.marginBottom = "5px";
         winDiv.style.marginRight = "5px";
@@ -709,16 +763,16 @@ class windowElement {
         const titleBtn = LEFT_BTN.cloneNode(true);
         titleBtn.innerText = this.db.title;
         titleBtn.className = `w${this.db.index}titleBtn_showHide:w${this.db.index}body:flex`;
-        titleBtn.addEventListener('click', showHide);
+        titleBtn.addEventListener('click', this.showHide);
 
         const tapPlsBtn = MIN_BTN.cloneNode(true);
         tapPlsBtn.innerText = "+";
-        tapPlsBtn.className = `w${this.db.index}tapPlsBtn_showHide:w${this.db.index}tapSelectDiv:flex`
-        tapPlsBtn.addEventListener("click", showHide);
+        tapPlsBtn.className = `w${this.db.index}TabPlsBtn`
+        tapPlsBtn.addEventListener("click", this.showHide2);
 
         const tapSelectDiv = MAIN_LINE_DIV.cloneNode(true);
         tapSelectDiv.style.display = "none";
-        tapSelectDiv.className = `w${this.db.index}tapSelectDiv`;
+        tapSelectDiv.className = `w${this.db.index}TabSelectDiv`;
         const plsBtnType = LEFT_BTN.cloneNode(true);
         let tapTypeName = ["메모", "계산", "링크", "시간", "그림", "달력", "확율", "윈도"];
         for (let i = 0; i < tapTypeName.length; i++) {
@@ -731,20 +785,20 @@ class windowElement {
         }
         const plsBtnType_e = MIN_BTN.cloneNode(true);
         plsBtnType_e.innerText = "e";
-        plsBtnType_e.className = `w${this.db.index}plsBtnTypeE_showHide:w${this.db.index}editDiv:flex`;
-        plsBtnType_e.addEventListener("click", showHide);
+        plsBtnType_e.className = `w${this.db.index}Edit`;
+        plsBtnType_e.addEventListener("click", this.showHide2);
         tapSelectDiv.appendChild(plsBtnType_e);
 
         const editDiv = MAIN_LINE_DIV.cloneNode(true);
         editDiv.style.display = "none";
         editDiv.style.flexWrap = 'wrap';
         editDiv.style.flexDirection = 'column';
-        editDiv.className = `w${this.db.index}editDiv`;
+        editDiv.className = `w${this.db.index}EditDiv`;
         const editPageSelect = this.select.cloneNode(true);
         editPageSelect.className = `w${this.db.index}editSelectDiv_w${this.db.index}editBookDiv:flex`;
         editPageSelect.style.marginRight = "10px";
         editPageSelect.addEventListener("change", this.function_selectEvent);
-        let editSelect_text = ["제목, 삭제", "색상 수정", "글자 수정", "크기 수정",];
+        let editSelect_text = ["제목, 삭제, 순서변경", "색상 수정", "글자 수정", "크기 수정",];
         for (let i = 0; i < editSelect_text.length; i++) {
             const editOption = this.option.cloneNode(true);
             editOption.innerText = `${i}.${editSelect_text[i]}`;
@@ -783,7 +837,9 @@ class windowElement {
         const titleInput = this.input.cloneNode(true);
         const titleSub = this.input.cloneNode(true);
         titleInput.value = this.db.title;
+        titleInput.className = `w${this.db.index}_name`;
         titleInput.style.flexGrow = 1;
+        titleInput.addEventListener("change", this.function_editWindow);
         titleSub.value = "sub";
         titleSub.type = "submit";
         titleSub.style.flexGrow = 0;
@@ -835,6 +891,9 @@ class windowElement {
         backColorInput.value = this.db.backgroundColor;
         backColorInput.style.display = "flex";
         backColorInput.style.flexGrow = 1;
+        backColorInput.className = `w${this.db.index}_backgroundColor`;
+        backColorInput.addEventListener("change", this.function_editWindow);
+        
         backColorDiv.appendChild(backColorTxt);
         backColorDiv.appendChild(backColorInput);
         textAll2.appendChild(backColorDiv);
@@ -844,6 +903,8 @@ class windowElement {
         fontColorTxt.innerText = "글자 색"
         const fontColorInput = backColorInput.cloneNode(true);
         fontColorInput.value = this.db.fontColor;
+        fontColorInput.className = `w${this.db.index}_fontColor`;
+        fontColorInput.addEventListener("change", this.function_editWindow);
         fontColorDiv.appendChild(fontColorTxt);
         fontColorDiv.appendChild(fontColorInput);
         textAll2.appendChild(fontColorDiv);
@@ -853,6 +914,8 @@ class windowElement {
         lineColorTxt.innerText = "라인 색"
         const lineColorInput = backColorInput.cloneNode(true);
         lineColorInput.value = this.db.lineColor;
+        lineColorInput.className = `w${this.db.index}_lineColor`;
+        lineColorInput.addEventListener("change", this.function_editWindow);
         lineColorDiv.appendChild(lineColorTxt);
         lineColorDiv.appendChild(lineColorInput);
         textAll2.appendChild(lineColorDiv);
@@ -886,6 +949,9 @@ class windowElement {
         fontSizeInput.type = "number";
         fontSizeInput.value = this.db.fontSize;
         fontSizeInput.style.width = "50%";
+        fontSizeInput.className = `w${this.db.index}_fontSize`;
+        fontSizeInput.addEventListener("change", this.function_editWindow);
+
         fontSizeDiv.appendChild(fontSizeTxt);
         fontSizeDiv.appendChild(fontSizeInput);
         textAll3.appendChild(fontSizeDiv);
@@ -894,9 +960,11 @@ class windowElement {
         const fontWeightTxt = fontSizeTxt.cloneNode(true);
         fontWeightTxt.innerText = "글자 두께"
         const fontWeightInput = fontSizeInput.cloneNode(true);
-        fontWeightInput.min = 100; fontWeightInput.max = 800;
-        fontWeightInput.step = 100;
-        fontWeightInput.value = this.db.fontThick;
+        fontWeightInput.min = 0; fontWeightInput.max = 7;
+        fontWeightInput.step = 1;
+        fontWeightInput.value = this.db.fontThick / 100 - 1;
+        fontWeightInput.className = `w${this.db.index}_fontWeight`;
+        fontWeightInput.addEventListener("change", this.function_editWindow);
         fontWeightDiv.appendChild(fontWeightTxt);
         fontWeightDiv.appendChild(fontWeightInput);
         textAll3.appendChild(fontWeightDiv);
@@ -912,13 +980,15 @@ class windowElement {
             fontFamilySelect.appendChild(editOption);
             if(this.db.fontFamily == all_fontFamily[i]){  fontFamilySelect.selectedIndex = i; }
         }
+        fontFamilySelect.className = `w${this.db.index}_fontFamily`;
+        fontFamilySelect.addEventListener("change", this.function_editWindow);
         fontFamilyDiv.appendChild(fontFamilyTxt);
         fontFamilyDiv.appendChild(fontFamilySelect);
         textAll3.appendChild(fontFamilyDiv);
 
         const fontStyleDiv = SUB_DIV.cloneNode(true);
         const fontStyleTxt = fontSizeTxt.cloneNode(true);
-        fontStyleTxt.innerText = "글자 종류"
+        fontStyleTxt.innerText = "글자 모양";
         const fontStyleSelect = this.select.cloneNode(true);
         fontStyleSelect.style.width = "50%";
         for (let i = 0; i < all_fontStyle.length; i++) {
@@ -927,6 +997,8 @@ class windowElement {
             fontStyleSelect.appendChild(editOption);
             if(this.db.fontStyle == all_fontStyle[i]){  fontStyleSelect.selectedIndex = i; }
         }
+        fontStyleSelect.className = `w${this.db.index}_fontStyle`;
+        fontStyleSelect.addEventListener("change", this.function_editWindow);
         fontStyleDiv.appendChild(fontStyleTxt);
         fontStyleDiv.appendChild(fontStyleSelect);
         textAll3.appendChild(fontStyleDiv);
@@ -962,6 +1034,8 @@ class windowElement {
         winWidthInput.type = "number";
         winWidthInput.value = this.db.width;
         winWidthInput.style.width = "50%";
+        winWidthInput.className = `w${this.db.index}_width`;
+        winWidthInput.addEventListener("change", this.function_editWindow);
         winWidthDiv.appendChild(winWidthTxt);
         winWidthDiv.appendChild(winWidthInput);
         textAll4.appendChild(winWidthDiv);
@@ -973,6 +1047,8 @@ class windowElement {
         lineWeightInput.min = 0; lineWeightInput.max = 10;
         lineWeightInput.step = 0.1;
         lineWeightInput.value = this.db.lineThick;
+        lineWeightInput.className = `w${this.db.index}_lineWeight`;
+        lineWeightInput.addEventListener("change", this.function_editWindow);
         lineWeightDiv.appendChild(lineWeightTxt);
         lineWeightDiv.appendChild(lineWeightInput);
         textAll4.appendChild(lineWeightDiv);
@@ -1174,10 +1250,13 @@ class Model {
         this.value = newWin;
         this.window_save();
     }
+    window_U(index, key, value){
+        this.windowArr[index][key] = value;
+        this.window_save();
+    }
     window_D(index){
         const befo = this.windowArr[index].indexBefo;
         const next = this.windowArr[index].indexNext;
-        console.log(befo, next)
         if(befo != null){this.windowArr[befo].indexNext = next; }
         if(next != null){this.windowArr[next].indexBefo = befo; }
         this.windowArr[index] = null;
@@ -1245,13 +1324,17 @@ class Controller {
     checkFunction(){    return false; }
     sendValue() {       return this.value; }
     getValue(target,value){
-        console.log("target : ", target, value);
         if(target == "window_C"){
             this.model.window_C();
-            console.log(this.model.value);
             this.windowAppend(this.model.value);
         }else if(target == "window_D"){
             this.model.window_D(value);
+        }else if(target == "window_U"){
+            const index = value.split("/")[0];
+            const key = value.split("/")[1];
+            let value2 = value.split("/")[2];
+            if(value2 == "true" || value2 == "false"){ value2 = value2 == "true" ? true : false; }
+            this.model.window_U(index, key, value2)
         }
     }
     sendTarget(){       return "windowAppend"; }
