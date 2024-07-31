@@ -1,8 +1,7 @@
 const mainDiv = document.querySelector(".main");
 const mainHtml = document.querySelector('html');
 mainHtml.style.height = '100%';
-mainHtml.style.textAlign = "center"
-;
+mainHtml.style.textAlign = "center";
 
 const all_fontWeight = [100, 200, 300, 400, 500, 600, 700, 800];
 const all_fontFamily = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong'];
@@ -19,6 +18,8 @@ const basic_lineColor = "#B8D993";
 const baseic_regex = /[^0-9]/g;	
 
 let new_windwo_colorIndex = 0;
+//해야 할 것 - html_U 구현, window_U : 순서 변경
+//메모 CRUD 구현 - R : element 요소 구성 및 읽어서 만들기 / C : 새로 추가하기
 
 function showHide(event) {
     const strArray = event.target.className.split('_');
