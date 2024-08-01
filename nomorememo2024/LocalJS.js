@@ -535,7 +535,8 @@ class htmlRemoteElement {
         const lightDarkModeInput = this.input.cloneNode(true);
         lightDarkModeInput.type = "checkbox";
         lightDarkModeInput.checked = this.db.lightDarkMode;
-        lightDarkModeInput.style.width = "45%";
+        lightDarkModeInput.style.width = "40px";
+        lightDarkModeInput.style.accentColor = this.db.htmlBackgroundColor;
         lightDarkModeInput.className = `html_lightDarkMode`;
         lightDarkModeInput.addEventListener("change", this.function_htmlEdit);
         lightDarkModeDiv.appendChild(lightDarkModeText);
@@ -696,6 +697,7 @@ class htmlRemoteElement {
         BookDiv.style.flexDirection = "row";
         BookDiv.style.float = "right";
         BookDiv.style.width = "100%";
+        BookDiv.style.height = "300px"
 
         const next = this.button.cloneNode(true);
         next.style.display = "flex";
