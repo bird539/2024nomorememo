@@ -8,6 +8,7 @@ const all_fontFamily = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy'
 const all_fontStyle = ['normal', 'italic', 'oblique'];
 const all_tapType_kr = ['메모', '계산', '링크', '시간', '그림', '달력', '확률'];
 const all_backgroundColor = ['#FEF896', '#E4F1E7', '#C9DAEE', '#FAD5E6'];
+const all_langauge = ['kr','en','ch','jp'];
 
 const basic_width = 600;
 const basic_lineWeight = 1.5;
@@ -18,7 +19,9 @@ const basic_lineColor = "#B8D993";
 const baseic_regex = /[^0-9]/g;	
 
 let new_windwo_colorIndex = 0;
-//해야 할 것 - html_U 구현, window_U : 순서 변경
+//해야 할 것 - index 값 따로 저장하기, 언어 선택 가능케 만들기(전역변수)
+//window_U : 순서 변경
+//htmlRemote : 
 //메모 CRUD 구현 - R : element 요소 구성 및 읽어서 만들기 / C : 새로 추가하기
 
 function showHide(event) {
@@ -206,6 +209,10 @@ class htmlRemoteElement {
         trashTab: [],           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
         //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
         trashTabText: [],      //삭제일  + 탭 글자들           + 복구 btn
+
+        index_fontWeight :  null,
+        index_fontFamily : null,
+        index_fontStyle : null,
     }
     constructor() {
         this.div = document.createElement("div");
@@ -224,6 +231,11 @@ class htmlRemoteElement {
         this.db.title = db.title;
 
         this.db.fontSize = db.fontSize;
+
+        this.db.index_fontWeight = db.fontWeight;
+        this.db.index_fontFamily = db.fontFamily;
+        this.db.index_fontStyle = db.fontStyle;
+        
         this.db.fontWeight = all_fontWeight[db.fontWeight];
         this.db.fontFamily = all_fontFamily[db.fontFamily];
         this.db.fontStyle = all_fontStyle[db.fontStyle];
@@ -271,43 +283,43 @@ class htmlRemoteElement {
 
         this.select.style.fontFamily = this.db.fontFamily;
         this.select.style.fontSize = `${this.db.fontSize}pt`;
-        this.select.style.fontWeight = this.db.fontThick;
+        this.select.style.fontWeight = this.db.fontWeight;
         this.select.style.fontStyle = this.db.fontStyle;
         this.select.style.color = this.db.fontColor;
 
         this.option.style.fontFamily = this.db.fontFamily;
         this.option.style.fontSize = `${this.db.fontSize}pt`;
-        this.option.style.fontWeight = this.db.fontThick;
+        this.option.style.fontWeight = this.db.fontWeight;
         this.option.style.fontStyle = this.db.fontStyle;
         this.option.style.color = this.db.fontColor;
 
         this.button.style.fontFamily = this.db.fontFamily;
         this.button.style.fontSize = `${this.db.fontSize}pt`;
-        this.button.style.fontWeight = this.db.fontThick;
+        this.button.style.fontWeight = this.db.fontWeight;
         this.button.style.fontStyle = this.db.fontStyle;
         this.button.style.color = this.db.fontColor;
 
         this.input.style.fontFamily = this.db.fontFamily;
         this.input.style.fontSize = `${this.db.fontSize}pt`;
-        this.input.style.fontWeight = this.db.fontThick;
+        this.input.style.fontWeight = this.db.fontWeight;
         this.input.style.fontStyle = this.db.fontStyle;
         this.input.style.color = this.db.fontColor;
 
         this.div.style.fontFamily = this.db.fontFamily;
         this.div.style.fontSize = `${this.db.fontSize}pt`;
-        this.div.style.fontWeight = this.db.fontThick;
+        this.div.style.fontWeight = this.db.fontWeight;
         this.div.style.fontStyle = this.db.fontStyle;
         this.div.style.color = this.db.fontColor;
 
         this.details.style.fontFamily = this.db.fontFamily;
         this.details.style.fontSize = `${this.db.fontSize}pt`;
-        this.details.style.fontWeight = this.db.fontThick;
+        this.details.style.fontWeight = this.db.fontWeight;
         this.details.style.fontStyle = this.db.fontStyle;
         this.details.style.color = this.db.fontColor;
 
         this.summary.style.fontFamily = this.db.fontFamily;
         this.summary.style.fontSize = `${this.db.fontSize}pt`;
-        this.summary.style.fontWeight = this.db.fontThick;
+        this.summary.style.fontWeight = this.db.fontWeight;
         this.summary.style.fontStyle = this.db.fontStyle;
         this.summary.style.color = this.db.fontColor;
     }
@@ -323,6 +335,15 @@ class htmlRemoteElement {
             target.childNodes[i].style.display = "none";
         }
         target.childNodes[select.selectedIndex].style.display = targetClassName[1];
+        
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "html update event";
+        observer.target = "html_U";
+        observer.value = `lastPageShow/${select.selectedIndex}`;
+
+        subj.subscribe(observer);
+        subj.notifyAll();
         //select.dispatchEvent(new Event('change'));
     }
     function_nextBefoEvent(event) {
@@ -334,6 +355,23 @@ class htmlRemoteElement {
         if (index < 0) { index = lastIndex } else if (index > lastIndex) { index = 0 }
         select.selectedIndex = index;
         select.dispatchEvent(new Event('change'));
+    }
+    function_htmlEdit(event){
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "html update event";
+        observer.target = "html_U";
+        const key = event.target.className.split("_")[1];
+        let value = event.target.value;
+        if(key == "fontFamily" || key == "fontStyle" || key == "language"){
+            value = event.target.selectedIndex;
+        }else if(key=="lightDarkMode"){
+            value = event.target.checked;
+        }
+        observer.value = `${key}/${value}`;
+
+        subj.subscribe(observer);
+        subj.notifyAll();
     }
     //<-- function event
 
@@ -408,7 +446,7 @@ class htmlRemoteElement {
     }
     //<--make tuple
 
-
+    //pages
     recentPlsPage() {
         const pageDiv = this.div.cloneNode(true);
         pageDiv.style.width = "block";
@@ -430,7 +468,203 @@ class htmlRemoteElement {
         pageDiv.style.display = "none";
         return pageDiv;
     }
+    trashPage(){
+        const pageDiv = this.div.cloneNode(true);
+        pageDiv.style.width = "flex";
 
+        pageDiv.innerText = "trash Page..."
+        return pageDiv;
+    }
+    remoteEditPage(){
+        const pageDiv = this.div.cloneNode(true);
+        pageDiv.style.width = "flex";
+        pageDiv.style.width = "100%";
+        pageDiv.style.height = "300px";
+        pageDiv.style.overflowY = "scroll";
+        pageDiv.style.scrollbarColor = "#28FE0B";
+
+        const sub_div = this.div.cloneNode(true);
+        sub_div.style.display = "flex";
+        sub_div.style.flexWrap = "wrap";
+
+        //html 변경 - htmlBackgroundColor / language / lightDarkMode
+        const html_edit_text = sub_div.cloneNode(true);
+        html_edit_text.innerText = "html 편집 "
+        html_edit_text.style.borderBottom = `1.5px solid ${this.db.fontColor}`;
+        pageDiv.appendChild(html_edit_text);
+
+        const htmlBackgroundColorDiv = sub_div.cloneNode(true);
+        htmlBackgroundColorDiv.style.width = "100%";
+        const htmlBackgroundColorText = sub_div.cloneNode(true);
+        htmlBackgroundColorText.innerText = "html 배경 색";
+        const htmlBackgroundColorInput = this.input.cloneNode(true);
+        htmlBackgroundColorInput.type = "color";
+        htmlBackgroundColorInput.value = this.db.htmlBackgroundColor;
+        htmlBackgroundColorInput.style.width = "50%";
+        htmlBackgroundColorText.style.width = "50%";
+        htmlBackgroundColorInput.className = `html_htmlBackgroundColor`;
+        htmlBackgroundColorInput.addEventListener("change", this.function_htmlEdit);
+        htmlBackgroundColorDiv.appendChild(htmlBackgroundColorText);
+        htmlBackgroundColorDiv.appendChild(htmlBackgroundColorInput);
+        pageDiv.appendChild(htmlBackgroundColorDiv);
+
+        const htmlLanguageDiv = sub_div.cloneNode(true);
+        htmlLanguageDiv.style.width = "100%";
+        const htmlLanguageText = sub_div.cloneNode(false);
+        htmlLanguageText.innerText = "html 언어";
+        htmlLanguageText.style.width = "50%";
+        const htmlLanguageSelect = this.select.cloneNode(true);
+        htmlLanguageSelect.style.width = "45%";
+        for(let i=0; i<all_langauge.length; i++){
+            const option = this.option.cloneNode(true);
+            option.innerText = `${i}.${all_langauge[i]}`;
+            htmlLanguageSelect.appendChild(option);
+        }
+        htmlLanguageSelect.className = `html_language`;
+        htmlLanguageSelect.selectedIndex = this.db.language;
+        htmlLanguageSelect.addEventListener("change", this.function_htmlEdit);
+        htmlLanguageDiv.appendChild(htmlLanguageText);
+        htmlLanguageDiv.appendChild(htmlLanguageSelect);
+        pageDiv.appendChild(htmlLanguageDiv);
+
+        const lightDarkModeDiv = sub_div.cloneNode(true);
+        lightDarkModeDiv.style.width = "100%";
+        const lightDarkModeText = sub_div.cloneNode(false);
+        lightDarkModeText.innerText = "html 다크모드";
+        lightDarkModeText.style.width = "50%";
+        const lightDarkModeInput = this.input.cloneNode(true);
+        lightDarkModeInput.type = "checkbox";
+        lightDarkModeInput.checked = this.db.lightDarkMode;
+        lightDarkModeInput.style.width = "45%";
+        lightDarkModeInput.className = `html_lightDarkMode`;
+        lightDarkModeInput.addEventListener("change", this.function_htmlEdit);
+        lightDarkModeDiv.appendChild(lightDarkModeText);
+        lightDarkModeDiv.appendChild(lightDarkModeInput);
+        pageDiv.appendChild(lightDarkModeDiv);
+
+        //remote 변경 - title / backgroundColor  / fontColor / fontFamily / fontSize / fontStyle / fontWeight /  
+        const remote_edit_text = sub_div.cloneNode(true);
+        remote_edit_text.innerText = "remote 편집 "
+        remote_edit_text.style.borderBottom = `1.5px solid ${this.db.fontColor}`;
+        pageDiv.appendChild(remote_edit_text);
+
+        const remoteTitleDiv = sub_div.cloneNode(true);
+        remoteTitleDiv.style.width = "100%";
+        const remoteTitleDivText = sub_div.cloneNode(true);
+        remoteTitleDivText.innerText = "제목";
+        remoteTitleDivText.style.width = "50%";
+        const remoteTitleDivInput = this.input.cloneNode(true);
+        remoteTitleDivInput.style.width = "50%";
+        remoteTitleDivInput.value = this.db.title;
+        remoteTitleDivInput.className = `html_title`;
+        remoteTitleDivInput.addEventListener("change", this.function_htmlEdit);
+        remoteTitleDiv.appendChild(remoteTitleDivText);
+        remoteTitleDiv.appendChild(remoteTitleDivInput);
+        pageDiv.appendChild(remoteTitleDiv);
+
+        const remotebackgroundColorDiv = sub_div.cloneNode(true);
+        remotebackgroundColorDiv.style.width = "100%";
+        const remotebackgroundColorText = sub_div.cloneNode(true);
+        remotebackgroundColorText.innerText = "배경 색";
+        remotebackgroundColorText.style.width = "50%";
+        const remotebackgroundColorInput = this.input.cloneNode(true);
+        remotebackgroundColorInput.style.width = "50%";
+        remotebackgroundColorInput.type = "color";
+        remotebackgroundColorInput.value = this.db.backgroundColor;
+        remotebackgroundColorInput.className = `html_backgroundColor`;
+        remotebackgroundColorInput.addEventListener("change", this.function_htmlEdit);
+        remotebackgroundColorDiv.appendChild(remotebackgroundColorText);
+        remotebackgroundColorDiv.appendChild(remotebackgroundColorInput);
+        pageDiv.appendChild(remotebackgroundColorDiv);
+
+        const remoteFontColorDiv = sub_div.cloneNode(true);
+        remoteFontColorDiv.style.width = "100%";
+        const remoteFontColorText = sub_div.cloneNode(true);
+        remoteFontColorText.innerText = "글자 색";
+        remoteFontColorText.style.width = "50%";
+        const remoteFontColorInput = this.input.cloneNode(true);
+        remoteFontColorInput.style.width = "50%";
+        remoteFontColorInput.type = "color";
+        remoteFontColorInput.className = `html_fontColor`;
+        remoteFontColorInput.addEventListener("change", this.function_htmlEdit);
+        remoteFontColorInput.value = this.db.fontColor;
+        remoteFontColorDiv.appendChild(remoteFontColorText);
+        remoteFontColorDiv.appendChild(remoteFontColorInput);
+        pageDiv.appendChild(remoteFontColorDiv);
+
+        const remoteFontSizeDiv = sub_div.cloneNode(true);
+        remoteFontSizeDiv.style.width = "100%";
+        const remoteFontSizeText = sub_div.cloneNode(true);
+        remoteFontSizeText.innerText = "글자 크기";
+        remoteFontSizeText.style.width = "50%";
+        const remoteFontSizeInput = this.input.cloneNode(true);
+        remoteFontSizeInput.style.width = "50%";
+        remoteFontSizeInput.type = "number";
+        remoteFontSizeInput.min = 1; remoteFontSizeInput.max = 50;
+        remoteFontSizeInput.value = this.db.fontSize;
+        remoteFontSizeInput.className = `html_fontSize`;
+        remoteFontSizeInput.addEventListener("change", this.function_htmlEdit);
+        remoteFontSizeDiv.appendChild(remoteFontSizeText);
+        remoteFontSizeDiv.appendChild(remoteFontSizeInput);
+        pageDiv.appendChild(remoteFontSizeDiv);
+
+        const remotfontFamilyDiv = sub_div.cloneNode(true);
+        remotfontFamilyDiv.style.width = "100%";
+        const remotfontFamilyText = sub_div.cloneNode(true);
+        remotfontFamilyText.innerText = "글자 종류";
+        remotfontFamilyText.style.width = "50%";
+        const remotfontFamilySelect = this.select.cloneNode(true);
+        remotfontFamilySelect.style.width = "45%";
+        for(let i=0; i<all_fontFamily.length; i++){
+            const option = this.option.cloneNode(true);
+            option.innerText = `${i}.${all_fontFamily[i]}`;
+            remotfontFamilySelect.appendChild(option);
+        }
+        remotfontFamilySelect.selectedIndex = this.db.index_fontFamily;
+        remotfontFamilySelect.className = `html_fontFamily`;
+        remotfontFamilySelect.addEventListener("change", this.function_htmlEdit);
+        remotfontFamilyDiv.appendChild(remotfontFamilyText);
+        remotfontFamilyDiv.appendChild(remotfontFamilySelect);
+        pageDiv.appendChild(remotfontFamilyDiv);
+
+        const remotfontTypeDiv = sub_div.cloneNode(true);
+        remotfontTypeDiv.style.width = "100%";
+        const remotfontTypeText = sub_div.cloneNode(true);
+        remotfontTypeText.innerText = "글자 모양";
+        remotfontTypeText.style.width = "50%";
+        const remotfontTypeSelect = this.select.cloneNode(true);
+        remotfontTypeSelect.style.width = "45%";
+        for(let i=0; i<all_fontStyle.length; i++){
+            const option = this.option.cloneNode(true);
+            option.innerText = `${i}.${all_fontStyle[i]}`;
+            remotfontTypeSelect.appendChild(option);
+        }
+        remotfontTypeSelect.selectedIndex = this.db.index_fontStyle;
+        remotfontTypeSelect.className = `html_fontStyle`;
+        remotfontTypeSelect.addEventListener("change", this.function_htmlEdit);
+        remotfontTypeDiv.appendChild(remotfontTypeText);
+        remotfontTypeDiv.appendChild(remotfontTypeSelect);
+        pageDiv.appendChild(remotfontTypeDiv);
+
+        const fontWeightDiv = sub_div.cloneNode(true);
+        fontWeightDiv.style.width = "100%";
+        const fontWeightTxt = sub_div.cloneNode(true);
+        fontWeightTxt.innerText = "글자 두께"
+        fontWeightTxt.style.width = "50%";
+        const fontWeightInput = this.input.cloneNode(true);
+        fontWeightInput.type = "number"
+        fontWeightInput.min = 0; fontWeightInput.max = 7;
+        fontWeightInput.step = 1;
+        fontWeightInput.value = this.db.index_fontWeight;
+        fontWeightInput.style.width = "50%";
+        fontWeightInput.className = `html_fontWeight`;
+        fontWeightInput.addEventListener("change", this.function_htmlEdit);
+        fontWeightDiv.appendChild(fontWeightTxt);
+        fontWeightDiv.appendChild(fontWeightInput);
+        pageDiv.appendChild(fontWeightDiv);
+
+        return pageDiv;
+    }
 
     setElementEditBook() {
         const bodyDiv = this.div.cloneNode(true);
@@ -454,6 +688,7 @@ class htmlRemoteElement {
             editOption.innerText = `${i}.${pageName[i]}`;
             pageSelect.appendChild(editOption);
         }
+        pageSelect.selectedIndex = this.db.lastPageShow;
         bodyDiv.appendChild(pageSelect);
 
         const BookDiv = this.div.cloneNode(true);
@@ -474,6 +709,8 @@ class htmlRemoteElement {
         next.innerText = ">";
         befo.addEventListener("click", this.function_nextBefoEvent);
         next.addEventListener("click", this.function_nextBefoEvent);
+        befo.style.height = "100%";
+        next.style.height = "100%";
 
         const pagesDiv = this.div.cloneNode(true);
         pagesDiv.className = "htmpPagesDiv";
@@ -485,8 +722,22 @@ class htmlRemoteElement {
 
         BookDiv.appendChild(befo);
 
-        pagesDiv.appendChild(this.recentPlsPage());
-        pagesDiv.appendChild(this.restWorkPage());
+        let page;
+        page = this.recentPlsPage();
+        if(this.db.lastPageShow != "0"){page.style.display = "none";}
+        pagesDiv.appendChild(page);
+        
+        page = this.restWorkPage();
+        if(this.db.lastPageShow != "1"){page.style.display = "none";}
+        pagesDiv.appendChild(page);
+        
+        page = this.trashPage();
+        if(this.db.lastPageShow != "2"){page.style.display = "none";}
+        pagesDiv.appendChild(page);
+
+        page = this.remoteEditPage();
+        if(this.db.lastPageShow != "3"){page.style.display = "none";}
+        pagesDiv.appendChild(page);
 
         BookDiv.appendChild(pagesDiv);
         BookDiv.appendChild(next);
@@ -495,6 +746,8 @@ class htmlRemoteElement {
         this.htmlRemoteDiv.appendChild(bodyDiv);
     }
     setElementAll() {
+        mainHtml.style.backgroundColor = this.db.htmlBackgroundColor;
+
         this.htmlRemoteDiv = this.div.cloneNode(true);
         this.htmlRemoteDiv.className = `htmlRemoteDiv`;
         this.htmlRemoteDiv.style.display = "block";
@@ -531,7 +784,6 @@ class htmlRemoteElement {
         makeRightDiv.appendChild(this.htmlRemoteDiv);
         return makeRightDiv;
     }
-
 }
 class windowElement {
     div = null;
@@ -545,7 +797,11 @@ class windowElement {
         title: null, show: null,
         fontSize: null, fontThick: null, fontFamily: null, fontStyle: null,
         fontColor: null, backgroundColor: null, lineColor: null,
-        width: null, lineThick: null
+        width: null, lineThick: null,
+
+        index_fontFamily:null,
+        index_fontStyle:null,
+        index_fontWeight:null 
     }
     constructor() {
         this.div = document.createElement("div");
@@ -618,6 +874,10 @@ class windowElement {
 
         this.db.title = db.name;
         this.db.show = db.show;
+
+        this.db.index_fontFamily = db.fontFamily;
+        this.db.index_fontStyle = db.fontStyle;
+        this.db.index_fontWeight = db.fontWeight;
 
         this.db.fontSize = db.fontSize;
         this.db.fontThick = all_fontWeight[db.fontWeight];
@@ -725,7 +985,6 @@ class windowElement {
     setElementCss() {
         const winDiv = this.div.cloneNode(false);
         winDiv.style.backgroundColor = this.db.backgroundColor;
-        console.log(this.db.backgroundColor);
         winDiv.className = `w${this.db.index}`;
         winDiv.style.display = "inline-block"; //flex
         //winDiv.style.flexDirection = "column";
@@ -963,7 +1222,8 @@ class windowElement {
         const fontWeightInput = fontSizeInput.cloneNode(true);
         fontWeightInput.min = 0; fontWeightInput.max = 7;
         fontWeightInput.step = 1;
-        fontWeightInput.value = this.db.fontThick / 100 - 1;
+        fontWeightInput.value = this.db.index_fontWeight;
+        console.log(this.db.index_fontWeight)
         fontWeightInput.className = `w${this.db.index}_fontWeight`;
         fontWeightInput.addEventListener("change", this.function_editWindow);
         fontWeightDiv.appendChild(fontWeightTxt);
@@ -979,8 +1239,8 @@ class windowElement {
             const editOption = this.option.cloneNode(true);
             editOption.innerText = `${i}.${all_fontFamily[i]}`;
             fontFamilySelect.appendChild(editOption);
-            if(this.db.fontFamily == all_fontFamily[i]){  fontFamilySelect.selectedIndex = i; }
         }
+        fontFamilySelect.selectedIndex = this.db.index_fontFamily;
         fontFamilySelect.className = `w${this.db.index}_fontFamily`;
         fontFamilySelect.addEventListener("change", this.function_editWindow);
         fontFamilyDiv.appendChild(fontFamilyTxt);
@@ -996,8 +1256,8 @@ class windowElement {
             const editOption = this.option.cloneNode(true);
             editOption.innerText = `${i}.${all_fontStyle[i]}`;
             fontStyleSelect.appendChild(editOption);
-            if(this.db.fontStyle == all_fontStyle[i]){  fontStyleSelect.selectedIndex = i; }
         }
+        fontStyleSelect.selectedIndex = this.db.index_fontStyle;
         fontStyleSelect.className = `w${this.db.index}_fontStyle`;
         fontStyleSelect.addEventListener("change", this.function_editWindow);
         fontStyleDiv.appendChild(fontStyleTxt);
@@ -1271,6 +1531,11 @@ class Model {
         this.window_save();
     }
 
+    html_U(key, value){
+        this.htmlInfo[key] = value;
+        this.htmlInfo_save();
+    }
+
     checkFunction(){ return this.check; }
     sendValue(){ 
         this.window_C();
@@ -1335,7 +1600,14 @@ class Controller {
             const key = value.split("/")[1];
             let value2 = value.split("/")[2];
             if(value2 == "true" || value2 == "false"){ value2 = value2 == "true" ? true : false; }
+            if(isNaN(value2)==false){ value2 = Number(value2)  }
             this.model.window_U(index, key, value2)
+        }else if(target == "html_U"){
+            const key = value.split("/")[0];
+            let value2 = value.split("/")[1];
+            if(value2 == "true" || value2 == "false"){ value2 = value2 == "true" ? true : false; }
+            if(isNaN(value2)==false){ value2 = Number(value2)  }
+            this.model.html_U(key, value2);
         }
     }
     sendTarget(){       return "windowAppend"; }
