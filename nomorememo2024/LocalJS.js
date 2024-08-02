@@ -9,6 +9,12 @@ const all_fontStyle = ['normal', 'italic', 'oblique'];
 const all_tapType_kr = ['메모', '계산', '링크', '시간', '그림', '달력', '확률'];
 const all_backgroundColor = ['#FEF896', '#E4F1E7', '#C9DAEE', '#FAD5E6'];
 const all_langauge = ['kr','en','ch','jp'];
+const all_labgaugeText = [
+    ko={},
+    en={},
+    ch={},
+    jp={}
+]
 
 const basic_width = 600;
 const basic_lineWeight = 1.5;
@@ -19,7 +25,7 @@ const basic_lineColor = "#B8D993";
 const baseic_regex = /[^0-9]/g;	
 
 let new_windwo_colorIndex = 0;
-//해야 할 것 - index 값 따로 저장하기, 언어 선택 가능케 만들기(전역변수)
+//해야 할 것 - 언어 선택 가능케 만들기(전역변수)
 //window_U : 순서 변경
 //htmlRemote : 
 //메모 CRUD 구현 - R : element 요소 구성 및 읽어서 만들기 / C : 새로 추가하기
@@ -869,6 +875,21 @@ class windowElement {
         subj.subscribe(observer);
         subj.notifyAll();
     }
+
+    function_newTab(event){
+        const winIndex = event.target.className.split("_")[0].replace(baseic_regex, "");
+        const tabType =  event.target.className.split("_")[1];
+
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "new tab pluse event";
+        observer.target = "tab_C";
+
+        observer.value = `${winIndex}/${tabType}`;
+        subj.subscribe(observer);
+        subj.notifyAll();
+    }
+
     setValue(db) {
         this.db.befoIndex = db.befoIndex;
         this.db.index = db.index;
@@ -897,6 +918,7 @@ class windowElement {
         this.input.style.backgroundColor = "transparent";
         this.div.style.backgroundColor = "transparent";
         this.select.style.backgroundColor = "transparent";
+        this.option.style.backgroundColor = this.db.backgroundColor;
 
         this.select.style.border = "none";
         this.button.style.border = "none";
@@ -919,6 +941,12 @@ class windowElement {
         this.select.style.fontStyle = this.db.fontStyle;
         this.select.style.color = this.db.fontColor;
 
+        this.option.style.fontFamily = this.db.fontFamily;
+        this.option.style.fontSize = `${this.db.fontSize}pt`;
+        this.option.style.fontWeight = this.db.fontWeight;
+        this.option.style.fontStyle = this.db.fontStyle;
+        this.option.style.color = this.db.fontColor;
+
         this.button.style.fontFamily = this.db.fontFamily;
         this.button.style.fontSize = `${this.db.fontSize}pt`;
         this.button.style.fontWeight = this.db.fontThick;
@@ -930,7 +958,6 @@ class windowElement {
         this.input.style.fontWeight = this.db.fontThick;
         this.input.style.fontStyle = this.db.fontStyle;
         this.input.style.color = this.db.fontColor;
-
 
         this.div.style.fontFamily = this.db.fontFamily;
         this.div.style.fontSize = `${this.db.fontSize}pt`;
@@ -994,12 +1021,12 @@ class windowElement {
         winDiv.style.marginBottom = "5px";
         winDiv.style.marginRight = "5px";
 
+        //body
         const winHeadDiv = this.div.cloneNode(true);
         const winBodyDiv = this.div.cloneNode(true);
         winBodyDiv.className = `w${this.db.index}body`
-        winBodyDiv.innerText = "body";
-        winBodyDiv.style.display = this.db.show == true ? "flex" : "none";
-        //
+        winBodyDiv.style.display = this.db.show == true ? "block" : "none";
+        winBodyDiv.style.overflow = "scroll";
         const MAIN_LINE_DIV = this.div.cloneNode(true);
         MAIN_LINE_DIV.style.display = "flex";
         MAIN_LINE_DIV.style.borderBottom = `${this.db.lineThick}px solid ${this.db.lineColor}`;
@@ -1024,7 +1051,7 @@ class windowElement {
 
         const titleBtn = LEFT_BTN.cloneNode(true);
         titleBtn.innerText = this.db.title;
-        titleBtn.className = `w${this.db.index}titleBtn_showHide:w${this.db.index}body:flex`;
+        titleBtn.className = `w${this.db.index}titleBtn_showHide:w${this.db.index}body:block`;
         titleBtn.addEventListener('click', this.showHide);
 
         const tapPlsBtn = MIN_BTN.cloneNode(true);
@@ -1040,8 +1067,11 @@ class windowElement {
         for (let i = 0; i < tapTypeName.length; i++) {
             const plsBtn_new = plsBtnType.cloneNode(true);
             plsBtn_new.innerText = tapTypeName[i];
+            plsBtn_new.className = `w${this.db.index}_${i}`;
             if(i==7){
                 plsBtn_new.addEventListener("click", this.function_createWindow);
+            }else{
+                plsBtn_new.addEventListener("click", this.function_newTab);
             }
             tapSelectDiv.appendChild(plsBtn_new);
         }
@@ -1225,7 +1255,6 @@ class windowElement {
         fontWeightInput.min = 0; fontWeightInput.max = 7;
         fontWeightInput.step = 1;
         fontWeightInput.value = this.db.index_fontWeight;
-        console.log(this.db.index_fontWeight)
         fontWeightInput.className = `w${this.db.index}_fontWeight`;
         fontWeightInput.addEventListener("change", this.function_editWindow);
         fontWeightDiv.appendChild(fontWeightTxt);
@@ -1353,6 +1382,351 @@ class windowElement {
         return winDiv;
     }
 }
+class tabElement{
+    div = null;
+    button = null;
+    input = null;
+    form = null;
+    select = null;
+    option = null;
+
+    details = null;
+    summary = null;
+
+    htmlRemoteDiv = null;
+    db = {
+        index :null,  indexBefo :null,  indexNext :null, 
+        show : null, 
+        type:null,
+        sort : null, 
+        
+        //수정 가능
+        name:null,
+        fontSize:null,
+        fontColor:null, backgroundColor:null,
+        width:null,
+
+        //window 상속받기
+        fk_windowInex :null,
+
+        fontFamily :null, fontStyle :null, fontWeight :null, 
+        lineColor :null,  lineWeight :null, 
+        width :null, 
+
+        index_fontWeight :  null,
+        index_fontFamily : null,
+        index_fontStyle : null,
+
+    }
+    constructor() {
+        this.div = document.createElement("div");
+        this.button = document.createElement("button");
+        this.input = document.createElement("input");
+        this.form = document.createElement("form");
+        this.select = document.createElement("select");
+        this.option = document.createElement("option");
+
+        this.details = document.createElement("details");
+        this.summary = document.createElement("summary");
+        this.htmlRemoteDiv = null;
+    }
+    setValue(db) {
+        this.db.fk_windowInex = db.fk_windowInex;
+
+        this.db.index = db.index;
+        this.db.indexBefo = db.indexBefo;
+        this.db.indexNext = db.indexNext;
+
+        this.db.show =db.show; 
+        this.db.type =db.type;
+        this.db.sort =db.sort;
+
+        this.db.name = db.name;
+        this.db.fontSize = db.fontSize;
+        this.db.lineWeight = db.lineWeight;
+        this.db.lineColor = db.lineColor;
+
+        this.db.index_fontWeight = db.fontWeight;
+        this.db.index_fontFamily = db.fontFamily;
+        this.db.index_fontStyle = db.fontStyle;
+
+        this.db.width = db.width;
+        
+        this.db.fontWeight = all_fontWeight[db.fontWeight];
+        this.db.fontFamily = all_fontFamily[db.fontFamily];
+        this.db.fontStyle = all_fontStyle[db.fontStyle];
+
+        this.db.fontColor = db.fontColor;
+        this.db.backgroundColor = db.backgroundColor;
+
+        //make basic
+        this.button.style.backgroundColor = "transparent";
+        this.input.style.backgroundColor = "transparent";
+        this.div.style.backgroundColor = "transparent";
+        this.select.style.backgroundColor = "transparent";
+        this.details.style.backgroundColor = "transparent";
+        this.summary.style.backgroundColor = "transparent";
+        this.option.style.backgroundColor = this.db.backgroundColor;
+
+        this.select.style.border = "none";
+        this.button.style.border = "none";
+        this.input.style.border = "none";
+
+        this.select.style.padding = "0";
+        this.button.style.padding = "0";
+        this.input.style.padding = "0";
+
+        this.select.style.marginRight = "10px";
+        this.button.style.marginRight = "10px";
+
+        this.select.style.height = "40px";
+        this.button.style.height = "40px";
+        this.input.style.height = "40px";
+
+        this.select.style.fontFamily = this.db.fontFamily;
+        this.select.style.fontSize = `${this.db.fontSize}pt`;
+        this.select.style.fontWeight = this.db.fontWeight;
+        this.select.style.fontStyle = this.db.fontStyle;
+        this.select.style.color = this.db.fontColor;
+
+        this.option.style.fontFamily = this.db.fontFamily;
+        this.option.style.fontSize = `${this.db.fontSize}pt`;
+        this.option.style.fontWeight = this.db.fontWeight;
+        this.option.style.fontStyle = this.db.fontStyle;
+        this.option.style.color = this.db.fontColor;
+
+        this.button.style.fontFamily = this.db.fontFamily;
+        this.button.style.fontSize = `${this.db.fontSize}pt`;
+        this.button.style.fontWeight = this.db.fontWeight;
+        this.button.style.fontStyle = this.db.fontStyle;
+        this.button.style.color = this.db.fontColor;
+
+        this.input.style.fontFamily = this.db.fontFamily;
+        this.input.style.fontSize = `${this.db.fontSize}pt`;
+        this.input.style.fontWeight = this.db.fontWeight;
+        this.input.style.fontStyle = this.db.fontStyle;
+        this.input.style.color = this.db.fontColor;
+
+        this.div.style.fontFamily = this.db.fontFamily;
+        this.div.style.fontSize = `${this.db.fontSize}pt`;
+        this.div.style.fontWeight = this.db.fontWeight;
+        this.div.style.fontStyle = this.db.fontStyle;
+        this.div.style.color = this.db.fontColor;
+
+    }
+
+    tabEditPage(){
+        const editDiv = this.div.cloneNode(true);
+        editDiv.innerText = "edit somthing...";
+
+        return editDiv;
+    }
+    tabMainPage(){
+        const tabDiv = this.div.cloneNode(true);
+        tabDiv.innerText = "tab memo or other somthing...";
+
+        return tabDiv;
+    }
+    
+    setElementAll(){
+        //basic element set
+        const MAIN_LINE_DIV = this.div.cloneNode(true);
+        MAIN_LINE_DIV.style.display = "flex";
+        MAIN_LINE_DIV.style.borderBottom = `${this.db.lineWeight}px solid ${this.db.lineColor}`;
+        console.log(`${this.db.lineWeight}px solid ${this.db.lineColor}`);
+        
+        const LEFT_BTN = this.button.cloneNode(true);
+        LEFT_BTN.style.flexGrow = 1;
+        LEFT_BTN.style.textAlign = "left";
+
+        const MIN_BTN = this.button.cloneNode(true);
+        MIN_BTN.style.display = "flex";
+        MIN_BTN.style.alignItems = "center";
+        MIN_BTN.style.justifyContent = "center";
+        MIN_BTN.style.flexShirink = 0;
+        MIN_BTN.style.width = "40px";
+
+        //start ---
+        const tabDiv = this.div.cloneNode(false);
+        tabDiv.style.backgroundColor = this.db.backgroundColor;
+        tabDiv.className = `t${this.db.index}_k${this.db.type}`;
+        tabDiv.style.display = "inline-block"; 
+        tabDiv.style.width = `${this.db.width}px`;
+        tabDiv.style.marginBottom = "5px";
+        tabDiv.style.marginRight = "5px";
+        
+        //tab head / body
+        const tabHeadDiv = this.div.cloneNode(true);
+        const tabBodyDiv = this.div.cloneNode(true);
+        tabBodyDiv.className = `t${this.db.index}body`
+        tabBodyDiv.style.display = this.db.show == true ? "block" : "none";
+
+        //title btn / edit btn
+        const titleDiv = MAIN_LINE_DIV.cloneNode(true);
+        titleDiv.style.display = "flex";
+        const titleBtn = LEFT_BTN.cloneNode(true);
+        titleBtn.innerText = this.db.name;
+        titleBtn.style.marginLeft = "10px"
+        titleBtn.className = `t${this.db.index}_titleBtn_show:body`;
+        //titleBtn.addEventListener('click', this.showHide);
+        const tapPlsBtn = MIN_BTN.cloneNode(true);
+        tapPlsBtn.innerText = "e";
+        tapPlsBtn.className = `t${this.db.index}EditBtn`
+
+        titleDiv.appendChild(titleBtn);
+        titleDiv.appendChild(tapPlsBtn);
+        tabHeadDiv.appendChild(titleDiv);
+
+        const tabEditPage = this.tabEditPage();
+        const tabMainPage = this.tabMainPage();
+        tabBodyDiv.appendChild(tabEditPage);
+        tabBodyDiv.appendChild(tabMainPage);
+
+        tabDiv.appendChild(tabHeadDiv);
+        tabDiv.appendChild(tabBodyDiv);
+
+        return tabDiv;
+    }
+}
+class tabElement_memo{
+    div = null;
+    button = null;
+    input = null;
+    form = null;
+    select = null;
+    option = null;
+
+    details = null;
+    summary = null;
+
+    htmlRemoteDiv = null;
+    db = {
+        //최근 연 페이지 인덱스
+        lastPageShow: null,
+        //remote 꾸미기
+        title: null,
+        fontSize: null, fontWeight: null, fontFamily: null, fontStyle: null,
+        fontColor: null, backgroundColor: null,
+        //html 설정
+        htmlBackgroundColor: null, lightDarkMode: null, language: null,
+        //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
+
+        index_fontWeight :  null,
+        index_fontFamily : null,
+        index_fontStyle : null,
+    }
+    constructor() {
+        this.div = document.createElement("div");
+        this.button = document.createElement("button");
+        this.input = document.createElement("input");
+        this.form = document.createElement("form");
+        this.select = document.createElement("select");
+        this.option = document.createElement("option");
+
+        this.details = document.createElement("details");
+        this.summary = document.createElement("summary");
+        this.htmlRemoteDiv = null;
+    }
+    setValue(db) {
+        this.db.lastPageShow = db.lastPageShow;
+        this.db.title = db.title;
+
+        this.db.fontSize = db.fontSize;
+
+        this.db.index_fontWeight = db.fontWeight;
+        this.db.index_fontFamily = db.fontFamily;
+        this.db.index_fontStyle = db.fontStyle;
+        
+        this.db.fontWeight = all_fontWeight[db.fontWeight];
+        this.db.fontFamily = all_fontFamily[db.fontFamily];
+        this.db.fontStyle = all_fontStyle[db.fontStyle];
+
+        this.db.fontColor = db.fontColor;
+        this.db.backgroundColor = db.backgroundColor;
+
+        this.db.htmlBackgroundColor = db.htmlBackgroundColor;
+        this.db.lightDarkMode = db.lightDarkMode;
+        this.db.language = db.language;
+
+        this.db.newInfo = db.newInfo;
+        this.db.schedule = db.schedule;
+
+        //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
+        this.db.trashWindow = db.trashWindow;        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
+        //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
+        this.db.trashTab = db.trashTab;           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
+        //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
+        this.db.trashTabText = db.trashTabText;//삭제일  + 탭 글자들           + 복구 btn
+
+        //make basic
+        this.button.style.backgroundColor = "transparent";
+        this.input.style.backgroundColor = "transparent";
+        this.div.style.backgroundColor = "transparent";
+        this.select.style.backgroundColor = "transparent";
+        this.details.style.backgroundColor = "transparent";
+        this.summary.style.backgroundColor = "transparent";
+        this.option.style.backgroundColor = this.db.backgroundColor;
+
+        this.select.style.border = "none";
+        this.button.style.border = "none";
+        this.input.style.border = "none";
+
+        this.select.style.padding = "0";
+        this.button.style.padding = "0";
+        this.input.style.padding = "0";
+
+        this.select.style.marginRight = "10px";
+        this.button.style.marginRight = "10px";
+
+        this.select.style.height = "40px";
+        this.button.style.height = "40px";
+        this.input.style.height = "40px";
+
+        this.select.style.fontFamily = this.db.fontFamily;
+        this.select.style.fontSize = `${this.db.fontSize}pt`;
+        this.select.style.fontWeight = this.db.fontWeight;
+        this.select.style.fontStyle = this.db.fontStyle;
+        this.select.style.color = this.db.fontColor;
+
+        this.option.style.fontFamily = this.db.fontFamily;
+        this.option.style.fontSize = `${this.db.fontSize}pt`;
+        this.option.style.fontWeight = this.db.fontWeight;
+        this.option.style.fontStyle = this.db.fontStyle;
+        this.option.style.color = this.db.fontColor;
+
+        this.button.style.fontFamily = this.db.fontFamily;
+        this.button.style.fontSize = `${this.db.fontSize}pt`;
+        this.button.style.fontWeight = this.db.fontWeight;
+        this.button.style.fontStyle = this.db.fontStyle;
+        this.button.style.color = this.db.fontColor;
+
+        this.input.style.fontFamily = this.db.fontFamily;
+        this.input.style.fontSize = `${this.db.fontSize}pt`;
+        this.input.style.fontWeight = this.db.fontWeight;
+        this.input.style.fontStyle = this.db.fontStyle;
+        this.input.style.color = this.db.fontColor;
+
+        this.div.style.fontFamily = this.db.fontFamily;
+        this.div.style.fontSize = `${this.db.fontSize}pt`;
+        this.div.style.fontWeight = this.db.fontWeight;
+        this.div.style.fontStyle = this.db.fontStyle;
+        this.div.style.color = this.db.fontColor;
+
+        this.details.style.fontFamily = this.db.fontFamily;
+        this.details.style.fontSize = `${this.db.fontSize}pt`;
+        this.details.style.fontWeight = this.db.fontWeight;
+        this.details.style.fontStyle = this.db.fontStyle;
+        this.details.style.color = this.db.fontColor;
+
+        this.summary.style.fontFamily = this.db.fontFamily;
+        this.summary.style.fontSize = `${this.db.fontSize}pt`;
+        this.summary.style.fontWeight = this.db.fontWeight;
+        this.summary.style.fontStyle = this.db.fontStyle;
+        this.summary.style.color = this.db.fontColor;
+    }
+    //<-- set value
+
+}
 //<==========View - element all
 
 //Model - make tuple all ==========>
@@ -1423,6 +1797,9 @@ class Model {
 
     tab_memo_colorArr = [];
     tab_memo_textArr = [];
+    observer_update = "hear, I am Model";
+    check = null; value = null; target = null; name = null;
+
 
     DBname = {
         html: "htmlDB",
@@ -1433,7 +1810,6 @@ class Model {
         tab_memo_text: "memo_text",
     }
 
-    check = null; value = null; target = null; name = null;
 
     constructor() {
         this.check = true; this.value = null; this.target = null; this.name = null;
@@ -1468,7 +1844,56 @@ class Model {
         }
     }
 
-    observer_update = "hear, I am Model";
+    tab_C(winIndex, type){
+        const newTab = new TabInfo();
+        newTab.type = type;
+        newTab.fk_windowInex = winIndex;
+        newTab.name = `${all_tapType_kr[type]}`;
+
+        newTab.fontColor = this.windowArr[winIndex].fontColor;
+        newTab.backgroundColor = this.windowArr[winIndex].backgroundColor;
+
+        newTab.fontSize = this.windowArr[winIndex].fontSize;
+        newTab.fontFamily = this.windowArr[winIndex].fontFamily;
+        newTab.fontStyle = this.windowArr[winIndex].fontStyle;
+        newTab.fontWeight = this.windowArr[winIndex].fontWeight;
+
+        newTab.lineColor = this.windowArr[winIndex].lineColor;
+        newTab.lineWeight = this.windowArr[winIndex].lineWeight;
+        newTab.width = this.windowArr[winIndex].width;
+        if (this.tabInfoArr.length <= 0) {
+            newTab.index = 0;
+            newTab.name += newTab.index;
+            this.tabInfoArr.push(newTab);
+        } else {
+            let check = false;
+            for (let i = 0; i < this.tabInfoArr.length; i++) {
+                if (this.tabInfoArr[i] == null) {
+                    newTab.index = i;
+                    check = true;
+                }
+                if (this.tabInfoArr[i]!=null && this.tabInfoArr[i].indexNext == null) {
+                    newTab.indexBefo = i;                    
+                }
+            }
+            //this.windowArr[newWin.indexNext].indexNext = newWin.index;
+            if (check == false) {
+                newTab.index = this.tabInfoArr.length ;
+                newTab.name += newTab.index;
+                this.tabInfoArr.push(newTab);
+            } else {
+                newTab.name += newTab.index;
+                this.tabInfoArr[newTab.index] = newTab;
+            }
+            
+            //윈도우 한테 정보 내려받기
+
+            
+            this.tabInfoArr[newTab.indexBefo].indexNext = newTab.index;
+        }
+        this.value = newTab;
+        this.tab_save();
+    }
 
     window_C() {
         const newWin = new Window();
@@ -1553,6 +1978,7 @@ class Model {
     htmlInfo_save() { localStorage.setItem(this.DBname.html, JSON.stringify(this.htmlInfo)); }
     window_save() { localStorage.setItem(this.DBname.window, JSON.stringify(this.windowArr)); }
     tab_save() { localStorage.setItem(this.DBname.tabInfo, JSON.stringify(this.tabInfoArr)); }
+    
     tab_memo_color_save() { localStorage.setItem(this.DBname.tab_memo_color, JSON.stringify(this.tab_memo_colorArr)); }
     tab_memo_text_save() { localStorage.setItem(this.DBname.tab_memo_text, JSON.stringify(this.tab_memo_textArr)); }
 }
@@ -1567,6 +1993,10 @@ class View {
             const element = new windowElement();
             element.setValue(info);
             this.returnElement = element.setElementCss();
+        }else if(type=="tab"){
+            const element = new tabElement();
+            element.setValue(info);
+            this.returnElement = element.setElementAll();
         }
     }
 }
@@ -1584,10 +2014,20 @@ class Controller {
                 this.windowAppend(this.model.windowArr[i]);
             }
         }
+        for(let i=0; i< this.model.tabInfoArr.length; i++){
+            if (this.model.tabInfoArr[i] != null) {
+                this.tabAppend(this.model.tabInfoArr[i]);
+            }
+        }
     }
     windowAppend(data){
         const v_element_window = new View("window", data);
         mainDiv.appendChild(v_element_window.returnElement);
+    }
+    tabAppend(data){
+        const v_element_tab = new View("tab", data);
+        const targetWindow = document.querySelector(`.w${data.fk_windowInex}body`);
+        targetWindow.appendChild(v_element_tab.returnElement);
     }
     checkFunction(){    return false; }
     sendValue() {       return this.value; }
@@ -1610,6 +2050,11 @@ class Controller {
             if(value2 == "true" || value2 == "false"){ value2 = value2 == "true" ? true : false; }
             if(isNaN(value2)==false){ value2 = Number(value2)  }
             this.model.html_U(key, value2);
+        }else if(target == "tab_C"){
+            const winIndex = Number(value.split("/")[0]);
+            const type = Number(value.split("/")[1]);
+            this.model.tab_C(winIndex, type);
+            this.tabAppend(this.model.value, winIndex);
         }
     }
     sendTarget(){       return "windowAppend"; }
