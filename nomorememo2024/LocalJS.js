@@ -1595,25 +1595,17 @@ class tabElement_memo{
     form = null;
     select = null;
     option = null;
-
-    details = null;
-    summary = null;
-
-    htmlRemoteDiv = null;
     db = {
-        //최근 연 페이지 인덱스
-        lastPageShow: null,
-        //remote 꾸미기
-        title: null,
-        fontSize: null, fontWeight: null, fontFamily: null, fontStyle: null,
-        fontColor: null, backgroundColor: null,
-        //html 설정
-        htmlBackgroundColor: null, lightDarkMode: null, language: null,
-        //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
+        index:null,
+        sort: null,
+        
+        fontSize: null, fontThick: null, fontFamily: null, fontStyle: null,
+        fontColor: null, backgroundColor: null, 
+        lineColor: null,lineThick: null,
 
-        index_fontWeight :  null,
-        index_fontFamily : null,
-        index_fontStyle : null,
+        index_fontFamily:null,
+        index_fontStyle:null,
+        index_fontWeight:null 
     }
     constructor() {
         this.div = document.createElement("div");
@@ -1622,49 +1614,35 @@ class tabElement_memo{
         this.form = document.createElement("form");
         this.select = document.createElement("select");
         this.option = document.createElement("option");
-
-        this.details = document.createElement("details");
-        this.summary = document.createElement("summary");
-        this.htmlRemoteDiv = null;
     }
     setValue(db) {
-        this.db.lastPageShow = db.lastPageShow;
-        this.db.title = db.title;
+        this.db.befoIndex = db.befoIndex;
+        this.db.index = db.index;
+        this.db.nextIndex = db.nextIndex;
 
-        this.db.fontSize = db.fontSize;
+        this.db.title = db.name;
+        this.db.show = db.show;
 
-        this.db.index_fontWeight = db.fontWeight;
         this.db.index_fontFamily = db.fontFamily;
         this.db.index_fontStyle = db.fontStyle;
-        
-        this.db.fontWeight = all_fontWeight[db.fontWeight];
+        this.db.index_fontWeight = db.fontWeight;
+
+        this.db.fontSize = db.fontSize;
+        this.db.fontThick = all_fontWeight[db.fontWeight];
         this.db.fontFamily = all_fontFamily[db.fontFamily];
         this.db.fontStyle = all_fontStyle[db.fontStyle];
 
         this.db.fontColor = db.fontColor;
         this.db.backgroundColor = db.backgroundColor;
+        this.db.lineColor = db.lineColor;
 
-        this.db.htmlBackgroundColor = db.htmlBackgroundColor;
-        this.db.lightDarkMode = db.lightDarkMode;
-        this.db.language = db.language;
-
-        this.db.newInfo = db.newInfo;
-        this.db.schedule = db.schedule;
-
-        //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
-        this.db.trashWindow = db.trashWindow;        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
-        //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
-        this.db.trashTab = db.trashTab;           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
-        //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
-        this.db.trashTabText = db.trashTabText;//삭제일  + 탭 글자들           + 복구 btn
-
+        this.db.width = db.width;
+        this.db.lineThick = db.lineWeight;
         //make basic
         this.button.style.backgroundColor = "transparent";
         this.input.style.backgroundColor = "transparent";
         this.div.style.backgroundColor = "transparent";
         this.select.style.backgroundColor = "transparent";
-        this.details.style.backgroundColor = "transparent";
-        this.summary.style.backgroundColor = "transparent";
         this.option.style.backgroundColor = this.db.backgroundColor;
 
         this.select.style.border = "none";
@@ -1675,8 +1653,8 @@ class tabElement_memo{
         this.button.style.padding = "0";
         this.input.style.padding = "0";
 
-        this.select.style.marginRight = "10px";
-        this.button.style.marginRight = "10px";
+        this.select.style.marginLeft = "10px";
+        this.button.style.marginLeft = "10px";
 
         this.select.style.height = "40px";
         this.button.style.height = "40px";
@@ -1684,7 +1662,7 @@ class tabElement_memo{
 
         this.select.style.fontFamily = this.db.fontFamily;
         this.select.style.fontSize = `${this.db.fontSize}pt`;
-        this.select.style.fontWeight = this.db.fontWeight;
+        this.select.style.fontWeight = this.db.fontThick;
         this.select.style.fontStyle = this.db.fontStyle;
         this.select.style.color = this.db.fontColor;
 
@@ -1696,36 +1674,35 @@ class tabElement_memo{
 
         this.button.style.fontFamily = this.db.fontFamily;
         this.button.style.fontSize = `${this.db.fontSize}pt`;
-        this.button.style.fontWeight = this.db.fontWeight;
+        this.button.style.fontWeight = this.db.fontThick;
         this.button.style.fontStyle = this.db.fontStyle;
         this.button.style.color = this.db.fontColor;
 
         this.input.style.fontFamily = this.db.fontFamily;
         this.input.style.fontSize = `${this.db.fontSize}pt`;
-        this.input.style.fontWeight = this.db.fontWeight;
+        this.input.style.fontWeight = this.db.fontThick;
         this.input.style.fontStyle = this.db.fontStyle;
         this.input.style.color = this.db.fontColor;
 
         this.div.style.fontFamily = this.db.fontFamily;
         this.div.style.fontSize = `${this.db.fontSize}pt`;
-        this.div.style.fontWeight = this.db.fontWeight;
+        this.div.style.fontWeight = this.db.fontThick;
         this.div.style.fontStyle = this.db.fontStyle;
         this.div.style.color = this.db.fontColor;
-
-        this.details.style.fontFamily = this.db.fontFamily;
-        this.details.style.fontSize = `${this.db.fontSize}pt`;
-        this.details.style.fontWeight = this.db.fontWeight;
-        this.details.style.fontStyle = this.db.fontStyle;
-        this.details.style.color = this.db.fontColor;
-
-        this.summary.style.fontFamily = this.db.fontFamily;
-        this.summary.style.fontSize = `${this.db.fontSize}pt`;
-        this.summary.style.fontWeight = this.db.fontWeight;
-        this.summary.style.fontStyle = this.db.fontStyle;
-        this.summary.style.color = this.db.fontColor;
     }
-    //<-- set value
 
+    
+
+    //head - i btn / form(textarea, sub, color-input, select) / select-sort(new, old, color)
+    //body - checkbox / text(text div, edit input, color select, copy btn, del btn)
+    //foot - checkbox(all) / select(all, color1~3) / del btn 
+    setElementAll(){
+        const tab_memo_div = this.div.cloneNode(true);
+        tab_memo_div.className = `t${this.db.index}`;
+        
+
+        return tab_memo_div;
+    }
 }
 //<==========View - element all
 
