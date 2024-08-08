@@ -1954,6 +1954,7 @@ class tabElement_memo{
         const mainAreaDiv = this.div.cloneNode(true);
         mainAreaDiv.appendChild(textDiv);
         mainAreaDiv.appendChild(editDiv);
+        mainAreaDiv.style.paddingTop = "10px";
 
         const btnDiv = this.div.cloneNode(true);
         btnDiv.style.display = "flex";
