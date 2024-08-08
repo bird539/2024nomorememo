@@ -1599,6 +1599,7 @@ class tabElement_memo{
     select = null;
     option = null;
     textarea = null;
+    mark = null;
     db = {
         index:null,
         sort: null,
@@ -1619,6 +1620,7 @@ class tabElement_memo{
         this.select = document.createElement("select");
         this.option = document.createElement("option");
         this.textarea = document.createElement("textarea");
+        this.mark = document.createElement("mark");
     }
     setValue(db) {
         this.db.befoIndex = db.befoIndex;
@@ -1650,16 +1652,19 @@ class tabElement_memo{
         this.select.style.backgroundColor = "transparent";
         this.textarea.style.backgroundColor = "transparent";
         this.option.style.backgroundColor = this.db.backgroundColor;
+        this.mark.style.backgroundColor  = "transparent";
 
         this.select.style.border = "none";
         this.button.style.border = "none";
         this.input.style.border = "none";
         this.textarea.style.border = "none";
+        this.mark.style.border = "none";
 
         this.select.style.padding = "0";
         this.button.style.padding = "0";
         this.input.style.padding = "0";
         this.textarea.style.padding = "0";
+        this.mark.style.padding = "0";
 
         this.select.style.marginLeft = "10px";
         this.button.style.marginLeft = "10px";
@@ -1667,6 +1672,7 @@ class tabElement_memo{
         this.select.style.height = "40px";
         this.button.style.height = "40px";
         this.input.style.height = "40px";
+        this.mark.style.height = "40px";
 
         this.select.style.fontFamily = this.db.fontFamily;
         this.select.style.fontSize = `${this.db.fontSize}pt`;
@@ -1703,6 +1709,19 @@ class tabElement_memo{
         this.textarea.style.fontWeight = this.db.fontThick;
         this.textarea.style.fontStyle = this.db.fontStyle;
         this.textarea.style.color = this.db.fontColor;
+
+        this.mark.style.fontFamily = this.db.fontFamily;
+        this.mark.style.fontSize = `${this.db.fontSize}pt`;
+        this.mark.style.fontWeight = this.db.fontThick;
+        this.mark.style.fontStyle = this.db.fontStyle;
+        this.mark.style.color = this.db.fontColor;
+
+        this.MIN_BTN = this.button.cloneNode(true);
+        this.MIN_BTN.style.display = "flex";
+        this.MIN_BTN.style.alignItems = "center";
+        this.MIN_BTN.style.justifyContent = "center";
+        this.MIN_BTN.style.flexShirink = 0;
+        this.MIN_BTN.style.width = "40px";
     }
 
     tab_memo_div = null;
@@ -1712,6 +1731,7 @@ class tabElement_memo{
     setHead(){
         const tab_headDiv = this.div.cloneNode(true);
         tab_headDiv.className = `t${this.db.index}head`;
+        tab_headDiv.style.borderBottom = `${this.db.lineThick}px solid ${this.db.lineColor}`;
 
         const MIN_BTN = this.button.cloneNode(true);
         MIN_BTN.style.display = "flex";
@@ -1801,11 +1821,168 @@ class tabElement_memo{
 
         this.tab_memo_div.appendChild(tab_headDiv);
     }
+    setBody(){
+        const bodyDiv = this.div.cloneNode(true);
+        let exTxt = [{checked:true,text:"hello"},{checked:false,text:"world"},
+            {checked:true, text:"안녕하세요 잘 지내나요 다시 만나요\n사유라는 것은 생각하는 것으로 아무것도 하지 않을 때 가장 창의적이라고 할 수 있다.\n날자 날자\n탕탕탕"}
+        ];
+        for(let i=0; i<exTxt.length;i++){
+            const tuple = this.makeTuple(exTxt[i].checked, i, exTxt[i].text);
+            bodyDiv.appendChild(tuple);
+        }
+        this.tab_memo_div.appendChild(bodyDiv);
+    }
+    setFoot(check){
+        const footDiv = this.div.cloneNode(true);
+
+        const checkDiv = this.div.cloneNode(true);
+        const checkAll = this.input.cloneNode(true);
+        checkAll.type = "checkbox";
+        checkAll.checked = true;
+        checkDiv.style.width = "40px";
+
+        checkDiv.appendChild(checkAll);
+        
+
+        const select = this.select.cloneNode(true);
+        let text = ["all","color1","color2","color3"];
+        for(let i=0;i<text.length; i++){
+            const op = this.option.cloneNode(true);
+            op.innerText = text[i];
+            select.appendChild(op);
+        }
+
+        const copyBtn = this.button.cloneNode(true);
+        copyBtn.innerText = "c";
+        copyBtn.style.width = "40px";
+        const delBtn = copyBtn.cloneNode(true);
+        delBtn.innerText = "x"
+
+        const rightDiv = this.div.cloneNode(true);
+        rightDiv.appendChild(select);
+        rightDiv.appendChild(copyBtn);
+        rightDiv.appendChild(delBtn);
+
+        footDiv.appendChild(checkDiv);
+        footDiv.appendChild(rightDiv);
+        footDiv.style.display = "flex";
+        
+
+        this.tab_memo_div.appendChild(footDiv);
+    }
+    makeTuple(checked,index,text){
+        const tupleDiv = this.div.cloneNode(true);
+        
+        const chekDiv =  this.div.cloneNode(true);
+        chekDiv.style.display = "flex";
+        chekDiv.style.alignItems = "stretch";
+        const checkBox = this.input.cloneNode(true);
+        checkBox.type = "checkbox";
+        checkBox.width = "40px"
+        checkBox.style.color = `${this.db.fontColor}`;
+        checkBox.style.height = "100%";
+        checkBox.value = index;
+        checkBox.checked = checked;
+        checkBox.style.display = "flex";
+        checkBox.style.alignItems = "stretch";
+
+        chekDiv.style.display = "flex";
+        chekDiv.style.alignItems = "stretch";
+
+        chekDiv.style.width = "40px";
+        chekDiv.appendChild(checkBox);
+
+        const textDiv = this.div.cloneNode(true);
+        const mark    = this.mark.cloneNode(true);
+        mark.style.width = "100%";
+        mark.innerText = text; 
+        //mark.style.backgroundColor = "rgb(234, 37, 37)";
+        mark.style.textDecorationLine = checked ? "line-through" : "none";
+        if(checked){
+            mark.style.color = "gray"
+        } 
+        textDiv.style.textAlign = "start";
+        textDiv.appendChild(mark);
+        
+        const editDiv = this.div.cloneNode(true);
+        const textareaEdit = this.textarea.cloneNode(true);
+        textareaEdit.value = text;
+        textareaEdit.rows = 5;
+        textareaEdit.style.width = "100%" 
+        textareaEdit.style.display = "none";
+        editDiv.appendChild(textareaEdit);
+        
+        const editDiv2 = this.div.cloneNode(true);
+        const goUpBtn = this.button.cloneNode(true);
+        goUpBtn.innerText = "Λ";
+        goUpBtn.style.width = "40px";
+        const goDownBtn = this.button.cloneNode(true);
+        goDownBtn.innerText = "V";
+        goDownBtn.style.width = "40px";
+        const subBtn = this.button.cloneNode(true);
+        subBtn.innerText = "sub";
+        subBtn.style.width = "40px";
+        editDiv2.appendChild(goUpBtn);
+        editDiv2.appendChild(goDownBtn);
+        editDiv2.appendChild(subBtn);
+        editDiv2.style.display = "none";
+
+        const mainBtnDiv = this.div.cloneNode(true);
+        const copyBtn =  this.button.cloneNode(true);
+        copyBtn.innerText = "c"; copyBtn.style.width = "40px";
+        
+        const delBtn  =  this.button.cloneNode(true);
+        delBtn.innerText = "x"; delBtn.style.width = "40px";
+        const editBtn =  this.button.cloneNode(true);
+        editBtn.innerText = "e"; editBtn.style.width = "40px";
+        
+        const colorSelect = this.select.cloneNode(true);
+        let colorText = ["⁙⁙⁙⁙","color1","color2","color3"];
+        for(let i=0;i<colorText.length;i++){
+            const op = this.option.cloneNode(true);
+            op.innerText = `${colorText[i]}`;
+            op.value = i;
+            colorSelect.appendChild(op);
+        }
+        mainBtnDiv.style.display = "flex";
+        mainBtnDiv.style.flexDirection = "row-reverse"
+        mainBtnDiv.appendChild(copyBtn);
+        mainBtnDiv.appendChild(editBtn);
+        mainBtnDiv.appendChild(colorSelect);
+        mainBtnDiv.appendChild(delBtn);
+
+        const mainAreaDiv = this.div.cloneNode(true);
+        mainAreaDiv.appendChild(textDiv);
+        mainAreaDiv.appendChild(editDiv);
+
+        const btnDiv = this.div.cloneNode(true);
+        btnDiv.style.display = "flex";
+        btnDiv.style.flexDirection = "row-reverse";
+        editDiv2.style.width = "150px";
+        mainBtnDiv.style.width = "250px";
+        btnDiv.appendChild(mainBtnDiv);
+        btnDiv.appendChild(editDiv2);
+
+        const rightDiv = this.div.cloneNode(true);
+        rightDiv.style.width = "100%";
+        rightDiv.appendChild(mainAreaDiv);
+        rightDiv.appendChild(btnDiv);
+
+        tupleDiv.style.display = "flex";
+        tupleDiv.appendChild(chekDiv);
+        tupleDiv.appendChild(rightDiv);
+
+        tupleDiv.style.borderBottom = `${this.db.lineThick}px solid ${this.db.lineColor}`;
+
+        return tupleDiv;
+    }
     setElementAll(){
         this.tab_memo_div = this.div.cloneNode(true);
         this.tab_memo_div.className = `t${this.db.index}`;
         
         this.setHead();
+        this.setBody();
+        this.setFoot();
 
         return this.tab_memo_div;
     }
