@@ -8,12 +8,12 @@ const all_fontFamily = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy'
 const all_fontStyle = ['normal', 'italic', 'oblique'];
 const all_tapType_kr = ['메모', '계산', '링크', '시간', '그림', '달력', '확률'];
 const all_backgroundColor = ['#FEF896', '#E4F1E7', '#C9DAEE', '#FAD5E6'];
-const all_langauge = ['kr','en','ch','jp'];
+const all_langauge = ['kr', 'en', 'ch', 'jp'];
 const all_labgaugeText = [
-    ko={},
-    en={},
-    ch={},
-    jp={}
+    ko = {},
+    en = {},
+    ch = {},
+    jp = {}
 ]
 
 const basic_width = 600;
@@ -22,7 +22,7 @@ const basic_fontSize = 14;
 const basic_fontColor = "#000000";
 const basic_htmlBacground = "#ffffff";
 const basic_lineColor = "#B8D993";
-const baseic_regex = /[^0-9]/g;	
+const baseic_regex = /[^0-9]/g;
 
 let new_windwo_colorIndex = 0;
 //해야 할 것 - 언어 선택 가능케 만들기(전역변수)
@@ -114,36 +114,51 @@ function timeSomthing(time) {
     }
     return timeTxt;
 }
+const unsecuredCopyToClipboard = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text; document.body.appendChild(textArea);
+    textArea.focus(); textArea.select();
+    try { document.execCommand('copy') } catch (err) { console.error('Unable to copy to clipboard', err) } document.body.removeChild(textArea)
+};
+const copyToClipboard = (content) => {
+    if (window.isSecureContext && navigator.clipboard) {
+        navigator.clipboard.writeText(content);
+    } else {
+        unsecuredCopyToClipboard(content);
+    }
+    //copyToClipboard(copyText);
+};
+
 //==========================================================
 
 //옵저버 디자인 패턴 ===>
 class Subject_sendGetData {
-    exValue = null; check = null; target = null; 
+    exValue = null; check = null; target = null;
     constructor() { this.observers = []; this.exValue = null; this.check = true; this.target = null; }
     subscribe(observer) { this.observers.push(observer); }
     unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
-    clear(){
-        this.observers = [this.observers[0], ];
+    clear() {
+        this.observers = [this.observers[0],];
     }
     notifyAll() {
-        for(let i = this.observers.length-1; i>-1; i--){
+        for (let i = this.observers.length - 1; i > -1; i--) {
             let subscriber = this.observers[i];
             try {
-                if(subscriber.name == "Controller_observer"){ //컨트롤러는 무조건 실행
-                    subscriber.getValue(this.target, this.exValue); 
+                if (subscriber.name == "Controller_observer") { //컨트롤러는 무조건 실행
+                    subscriber.getValue(this.target, this.exValue);
                 }
                 this.check = subscriber.checkFunction();
-                if(this.check == true){ //보낼 정보가 있느냐 없느냐
+                if (this.check == true) { //보낼 정보가 있느냐 없느냐
                     this.exValue = subscriber.sendValue();
                     this.target = subscriber.sendTarget();
-                }else if(this.check == false){
+                } else if (this.check == false) {
                     let check_target = subscriber.sendName();
-                    if(this.target == check_target){
+                    if (this.target == check_target) {
                         subscriber.target = this.target;
                         subscriber.getValue(this.exValue);
                         this.exValue = null;
                     }
-                }                
+                }
             } catch (err) { console.error("error", err); }
         }
         /*
@@ -175,11 +190,11 @@ class Subject_sendGetData {
 class Observer_sendGetData {
     check = null; value = null; target = null; name = null;
     constructor(check) { this.check = check; this.value = null; this.target = null; this.name = null; }
-    checkFunction(){ return this.check; }
-    sendValue(){ return this.value; }
-    getValue(value){ this.value = value; }
-    sendTarget(){ return this.target; }
-    sendName(){ return this.name; }
+    checkFunction() { return this.check; }
+    sendValue() { return this.value; }
+    getValue(value) { this.value = value; }
+    sendTarget() { return this.target; }
+    sendName() { return this.name; }
 }
 const subj = new Subject_sendGetData();
 //<===
@@ -216,9 +231,9 @@ class htmlRemoteElement {
         //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
         trashTabText: [],      //삭제일  + 탭 글자들           + 복구 btn
 
-        index_fontWeight :  null,
-        index_fontFamily : null,
-        index_fontStyle : null,
+        index_fontWeight: null,
+        index_fontFamily: null,
+        index_fontStyle: null,
     }
     constructor() {
         this.div = document.createElement("div");
@@ -241,7 +256,7 @@ class htmlRemoteElement {
         this.db.index_fontWeight = db.fontWeight;
         this.db.index_fontFamily = db.fontFamily;
         this.db.index_fontStyle = db.fontStyle;
-        
+
         this.db.fontWeight = all_fontWeight[db.fontWeight];
         this.db.fontFamily = all_fontFamily[db.fontFamily];
         this.db.fontStyle = all_fontStyle[db.fontStyle];
@@ -341,7 +356,7 @@ class htmlRemoteElement {
             target.childNodes[i].style.display = "none";
         }
         target.childNodes[select.selectedIndex].style.display = targetClassName[1];
-        
+
         const observer = new Observer_sendGetData(true);
         observer.check = true;
         observer.name = "html update event";
@@ -362,16 +377,16 @@ class htmlRemoteElement {
         select.selectedIndex = index;
         select.dispatchEvent(new Event('change'));
     }
-    function_htmlEdit(event){
+    function_htmlEdit(event) {
         const observer = new Observer_sendGetData(true);
         observer.check = true;
         observer.name = "html update event";
         observer.target = "html_U";
         const key = event.target.className.split("_")[1];
         let value = event.target.value;
-        if(key == "fontFamily" || key == "fontStyle" || key == "language"){
+        if (key == "fontFamily" || key == "fontStyle" || key == "language") {
             value = event.target.selectedIndex;
-        }else if(key=="lightDarkMode"){
+        } else if (key == "lightDarkMode") {
             value = event.target.checked;
         }
         observer.value = `${key}/${value}`;
@@ -447,9 +462,6 @@ class htmlRemoteElement {
 
         return newInfoDiv;
     }
-    trasInfoMake(newInfo) {
-
-    }
     //<--make tuple
 
     //pages
@@ -474,14 +486,14 @@ class htmlRemoteElement {
         pageDiv.style.display = "none";
         return pageDiv;
     }
-    trashPage(){
+    trashPage() {
         const pageDiv = this.div.cloneNode(true);
         pageDiv.style.width = "flex";
 
         pageDiv.innerText = "trash Page..."
         return pageDiv;
     }
-    remoteEditPage(){
+    remoteEditPage() {
         const pageDiv = this.div.cloneNode(true);
         pageDiv.style.width = "flex";
         pageDiv.style.width = "100%";
@@ -521,7 +533,7 @@ class htmlRemoteElement {
         htmlLanguageText.style.width = "50%";
         const htmlLanguageSelect = this.select.cloneNode(true);
         htmlLanguageSelect.style.width = "45%";
-        for(let i=0; i<all_langauge.length; i++){
+        for (let i = 0; i < all_langauge.length; i++) {
             const option = this.option.cloneNode(true);
             option.innerText = `${i}.${all_langauge[i]}`;
             htmlLanguageSelect.appendChild(option);
@@ -622,7 +634,7 @@ class htmlRemoteElement {
         remotfontFamilyText.style.width = "50%";
         const remotfontFamilySelect = this.select.cloneNode(true);
         remotfontFamilySelect.style.width = "45%";
-        for(let i=0; i<all_fontFamily.length; i++){
+        for (let i = 0; i < all_fontFamily.length; i++) {
             const option = this.option.cloneNode(true);
             option.innerText = `${i}.${all_fontFamily[i]}`;
             remotfontFamilySelect.appendChild(option);
@@ -641,7 +653,7 @@ class htmlRemoteElement {
         remotfontTypeText.style.width = "50%";
         const remotfontTypeSelect = this.select.cloneNode(true);
         remotfontTypeSelect.style.width = "45%";
-        for(let i=0; i<all_fontStyle.length; i++){
+        for (let i = 0; i < all_fontStyle.length; i++) {
             const option = this.option.cloneNode(true);
             option.innerText = `${i}.${all_fontStyle[i]}`;
             remotfontTypeSelect.appendChild(option);
@@ -732,19 +744,19 @@ class htmlRemoteElement {
 
         let page;
         page = this.recentPlsPage();
-        if(this.db.lastPageShow != "0"){page.style.display = "none";}
+        if (this.db.lastPageShow != "0") { page.style.display = "none"; }
         pagesDiv.appendChild(page);
-        
+
         page = this.restWorkPage();
-        if(this.db.lastPageShow != "1"){page.style.display = "none";}
+        if (this.db.lastPageShow != "1") { page.style.display = "none"; }
         pagesDiv.appendChild(page);
-        
+
         page = this.trashPage();
-        if(this.db.lastPageShow != "2"){page.style.display = "none";}
+        if (this.db.lastPageShow != "2") { page.style.display = "none"; }
         pagesDiv.appendChild(page);
 
         page = this.remoteEditPage();
-        if(this.db.lastPageShow != "3"){page.style.display = "none";}
+        if (this.db.lastPageShow != "3") { page.style.display = "none"; }
         pagesDiv.appendChild(page);
 
         BookDiv.appendChild(pagesDiv);
@@ -807,9 +819,9 @@ class windowElement {
         fontColor: null, backgroundColor: null, lineColor: null,
         width: null, lineThick: null,
 
-        index_fontFamily:null,
-        index_fontStyle:null,
-        index_fontWeight:null 
+        index_fontFamily: null,
+        index_fontStyle: null,
+        index_fontWeight: null
     }
     constructor() {
         this.div = document.createElement("div");
@@ -841,14 +853,14 @@ class windowElement {
         select.selectedIndex = index;
         select.dispatchEvent(new Event('change'));
     }
-    function_createWindow(event){
+    function_createWindow(event) {
         const observer = new Observer_sendGetData(true);
         observer.name = "make new window event";
         observer.target = "window_C";
         subj.subscribe(observer);
         subj.notifyAll();
     }
-    function_removeWindow(event){
+    function_removeWindow(event) {
         //element.remove();
         const delWin = document.querySelector(`.w${event.target.className}`);
         const observer = new Observer_sendGetData(true);
@@ -860,7 +872,7 @@ class windowElement {
         subj.notifyAll();
         delWin.remove();
     }
-    function_editWindow(event){
+    function_editWindow(event) {
         const observer = new Observer_sendGetData(true);
         observer.check = true;
         observer.name = "window update event";
@@ -868,7 +880,7 @@ class windowElement {
         const index = event.target.className.split("_")[0].replace(baseic_regex, "");
         const key = event.target.className.split("_")[1];
         let value = event.target.value;
-        if(key == "fontFamily" || key == "fontStyle"){
+        if (key == "fontFamily" || key == "fontStyle") {
             value = event.target.selectedIndex;
         }
         observer.value = `${index}/${key}/${value}`;
@@ -876,9 +888,9 @@ class windowElement {
         subj.notifyAll();
     }
 
-    function_newTab(event){
+    function_newTab(event) {
         const winIndex = event.target.className.split("_")[0].replace(baseic_regex, "");
-        const tabType =  event.target.className.split("_")[1];
+        const tabType = event.target.className.split("_")[1];
 
         const observer = new Observer_sendGetData(true);
         observer.check = true;
@@ -978,7 +990,7 @@ class windowElement {
                 const targetName = strArray[i].split(":")[1];
                 const target = document.querySelector(`.${targetName}`);
                 target.style.display = target.style.display != "none" ? "none" : strArray[i].split(":")[2];
-                if(targetName.includes("body")){
+                if (targetName.includes("body")) {
                     const indexStr = strArray[0];
                     const index = indexStr.replace(baseic_regex, "");
                     const show = target.style.display != "none";
@@ -989,20 +1001,20 @@ class windowElement {
         subj.subscribe(observer);
         subj.notifyAll();
     }
-    showHide2(event){
-        const name =  event.target.className;
+    showHide2(event) {
+        const name = event.target.className;
         const win = name.replace(baseic_regex, "");
-        let target_classNames = ["body", "TabSelectDiv", "EditDiv"]; 
-        let click_classNames = [`w${win}titleBtn_showHide:w${win}body:flex`, "TabPlsBtn", "Edit"]; 
-        for(let i = 0; i<click_classNames.length; i++){
-            if(name.includes(click_classNames[i])){
+        let target_classNames = ["body", "TabSelectDiv", "EditDiv"];
+        let click_classNames = [`w${win}titleBtn_showHide:w${win}body:flex`, "TabPlsBtn", "Edit"];
+        for (let i = 0; i < click_classNames.length; i++) {
+            if (name.includes(click_classNames[i])) {
                 let display = document.querySelector(`.w${win}${target_classNames[i]}`).style.display == "none" ? "none" : "flex";
-                if(display != "none"){
-                    for(let j = i; j<target_classNames.length; j++){
+                if (display != "none") {
+                    for (let j = i; j < target_classNames.length; j++) {
                         const target = document.querySelector(`.w${win}${target_classNames[j]}`);
                         target.style.display = "none";
                     }
-                }else{
+                } else {
                     const target = document.querySelector(`.w${win}${target_classNames[i]}`);
                     target.style.display = "flex";
                     break;
@@ -1068,9 +1080,9 @@ class windowElement {
             const plsBtn_new = plsBtnType.cloneNode(true);
             plsBtn_new.innerText = tapTypeName[i];
             plsBtn_new.className = `w${this.db.index}_${i}`;
-            if(i==7){
+            if (i == 7) {
                 plsBtn_new.addEventListener("click", this.function_createWindow);
-            }else{
+            } else {
                 plsBtn_new.addEventListener("click", this.function_newTab);
             }
             tapSelectDiv.appendChild(plsBtn_new);
@@ -1185,7 +1197,7 @@ class windowElement {
         backColorInput.style.flexGrow = 1;
         backColorInput.className = `w${this.db.index}_backgroundColor`;
         backColorInput.addEventListener("change", this.function_editWindow);
-        
+
         backColorDiv.appendChild(backColorTxt);
         backColorDiv.appendChild(backColorInput);
         textAll2.appendChild(backColorDiv);
@@ -1382,7 +1394,7 @@ class windowElement {
         return winDiv;
     }
 }
-class tabElement{
+class tabElement {
     div = null;
     button = null;
     input = null;
@@ -1395,27 +1407,27 @@ class tabElement{
 
     htmlRemoteDiv = null;
     db = {
-        index :null,  indexBefo :null,  indexNext :null, 
-        show : null, 
-        type:null,
-        sort : null, 
-        
+        index: null, indexBefo: null, indexNext: null,
+        show: null,
+        type: null,
+        sort: null,
+
         //수정 가능
-        name:null,
-        fontSize:null,
-        fontColor:null, backgroundColor:null,
-        width:null,
+        name: null,
+        fontSize: null,
+        fontColor: null, backgroundColor: null,
+        width: null,
 
         //window 상속받기
-        fk_windowInex :null,
+        fk_windowInex: null,
 
-        fontFamily :null, fontStyle :null, fontWeight :null, 
-        lineColor :null,  lineWeight :null, 
-        width :null, 
+        fontFamily: null, fontStyle: null, fontWeight: null,
+        lineColor: null, lineWeight: null,
+        width: null,
 
-        index_fontWeight :  null,
-        index_fontFamily : null,
-        index_fontStyle : null,
+        index_fontWeight: null,
+        index_fontFamily: null,
+        index_fontStyle: null,
 
     }
     constructor() {
@@ -1437,9 +1449,9 @@ class tabElement{
         this.db.indexBefo = db.indexBefo;
         this.db.indexNext = db.indexNext;
 
-        this.db.show =db.show; 
-        this.db.type =db.type;
-        this.db.sort =db.sort;
+        this.db.show = db.show;
+        this.db.type = db.type;
+        this.db.sort = db.sort;
 
         this.db.name = db.name;
         this.db.fontSize = db.fontSize;
@@ -1451,7 +1463,7 @@ class tabElement{
         this.db.index_fontStyle = db.fontStyle;
 
         this.db.width = db.width;
-        
+
         this.db.fontWeight = all_fontWeight[db.fontWeight];
         this.db.fontFamily = all_fontFamily[db.fontFamily];
         this.db.fontStyle = all_fontStyle[db.fontStyle];
@@ -1514,28 +1526,364 @@ class tabElement{
         this.div.style.color = this.db.fontColor;
 
     }
+    //click event
+    function_selectEvent(event) {
+        const select = event.target;
+        const targetClassName = select.className.split("_")[1].split(":");
+        const target = document.querySelector(`.${targetClassName[0]}`);
+        for (let i = 0; i < target.childNodes.length; i++) {
+            target.childNodes[i].style.display = "none";
+        }
+        target.childNodes[select.selectedIndex].style.display = targetClassName[1];
+    }
+    function_nextBefoEvent(event) {
+        const btn = event.target;
+        const select = btn.parentNode.parentNode.previousSibling;
+        const newIndex = btn.innerText == ">" ? +1 : -1;
+        let index = select.selectedIndex + newIndex;
+        let lastIndex = select.childNodes.length - 1;
+        if (index < 0) { index = lastIndex } else if (index > lastIndex) { index = 0 }
+        select.selectedIndex = index;
+        select.dispatchEvent(new Event('change'));
+    }
+    function_editShowEvent(event) {
+        const index = event.target.className.split("_")[0].replace(baseic_regex, "");
+        const target = document.querySelector(`.t${index}EditDiv`);
+        target.style.display = target.style.display == "none" ? "flex" : "none";
+    }
 
-    tabEditPage(){
-        const editDiv = this.div.cloneNode(true);
-        editDiv.innerText = "edit somthing...";
+    function_showEvent(event) {
+        const target = event.target.className;
+        const index = target.split("_")[0].replace(baseic_regex, "");
+        if (target.includes("titleBtn")) {
+            const element = document.querySelector(`.t${index}BodyDiv`);
+            element.style.display = element.style.display == "none" ? "flex" : "none";
+            const element2 = document.querySelector(`.t${index}EditDiv`);
+            element2.style.display = "none";
+        } else if (target.includes("EditBtn")) {
+            const element = document.querySelector(`.t${index}EditDiv`);
+            element.style.display = element.style.display == "none" ? "flex" : "none";
+        }
+    }
+    //click event
 
+    tabEditPage() {
+        const MAIN_LINE_DIV = this.div.cloneNode(true);
+        MAIN_LINE_DIV.style.display = "flex";
+        MAIN_LINE_DIV.style.borderBottom = `${this.db.lineWeight}px solid ${this.db.lineColor}`;
+
+        const SUB_DIV = this.div.cloneNode(true);
+        SUB_DIV.style.display = "flex";
+
+        const MIN_BTN = this.button.cloneNode(true);
+        MIN_BTN.style.display = "flex";
+        MIN_BTN.style.alignItems = "center";
+        MIN_BTN.style.justifyContent = "center";
+        MIN_BTN.style.flexShirink = 0;
+        MIN_BTN.style.width = "40px";
+
+        const LEFT_BTN = this.button.cloneNode(true);
+        LEFT_BTN.style.flexGrow = 1;
+        LEFT_BTN.style.textAlign = "left";
+        //basic set element
+
+        const editDiv = MAIN_LINE_DIV.cloneNode(true);
+        editDiv.style.display = "none";
+        editDiv.style.flexWrap = 'wrap';
+        editDiv.style.flexDirection = 'column';
+        editDiv.className = `t${this.db.index}EditDiv`;
+        const editPageSelect = this.select.cloneNode(true);
+        editPageSelect.className = `t${this.db.index}editSelectDiv_t${this.db.index}editBookDiv:flex`;
+        editPageSelect.style.marginRight = "10px";
+        editPageSelect.addEventListener("change", this.function_selectEvent);
+        let editSelect_text = ["제목, 삭제, 순서변경", "색상 수정", "글자 수정", "크기 수정",];
+        for (let i = 0; i < editSelect_text.length; i++) {
+            const editOption = this.option.cloneNode(true);
+            editOption.innerText = `${i}.${editSelect_text[i]}`;
+            editPageSelect.appendChild(editOption);
+        }
+        editDiv.appendChild(editPageSelect);
+
+        const editBookDiv = SUB_DIV.cloneNode(true);
+        editBookDiv.className = `t${this.db.index}editBookDiv`;
+        //-->제목, 삭제
+        const pageDiv = SUB_DIV.cloneNode(true);
+        const textDiv1 = SUB_DIV.cloneNode(true);
+        textDiv1.style.width = "100%";
+        textDiv1.className = "textDiv";
+
+        const textDiv2 = textDiv1.cloneNode(true);
+
+        const goTobefo = LEFT_BTN.cloneNode(true);
+        goTobefo.innerText = "<= move to front";
+        const goTonext = LEFT_BTN.cloneNode(true);
+        goTonext.innerText = "move to back =>";
+        const hideEditPage = LEFT_BTN.cloneNode(true);
+        hideEditPage.innerText = "hideEdit";
+        hideEditPage.className = `t${this.db.index}hideEditPage_showHide:t${this.db.index}editDiv:flex`;
+        hideEditPage.addEventListener("click", showHide);
+        const delWinBtn = LEFT_BTN.cloneNode(true);
+        delWinBtn.className = `${this.db.index}`;
+        delWinBtn.innerText = "del(X)";
+        delWinBtn.style.removeProperty("width");
+        delWinBtn.addEventListener("click", this.function_removeWindow);
+
+        const titleForm = this.form.cloneNode(true);
+        titleForm.style.display = "flex";
+        titleForm.style.width = "100%"
+        titleForm.style.flexDirection = "row";
+        const titleInput = this.input.cloneNode(true);
+        const titleSub = this.input.cloneNode(true);
+        titleInput.value = this.db.name;
+        titleInput.className = `t${this.db.index}_name`;
+        titleInput.style.flexGrow = 1;
+        titleInput.addEventListener("change", this.function_editWindow);
+        titleSub.value = "sub";
+        titleSub.type = "submit";
+        titleSub.style.flexGrow = 0;
+
+        titleForm.appendChild(titleInput);
+        titleForm.appendChild(titleSub);
+
+        textDiv2.appendChild(goTobefo);
+        textDiv2.appendChild(delWinBtn);
+        textDiv2.appendChild(goTonext);
+        textDiv2.appendChild(hideEditPage);
+
+        textDiv1.appendChild(titleForm);
+
+        const befo = MIN_BTN.cloneNode(true);
+        befo.innerText = "<";
+        befo.className = `btn/${editPageSelect.className}`
+        befo.addEventListener("click", this.function_nextBefoEvent);
+        befo.style.height = "100%";
+        const next = MIN_BTN.cloneNode(true);
+        next.innerText = ">";
+        next.className = `btn/${editPageSelect.className}`
+        next.addEventListener("click", this.function_nextBefoEvent);
+        next.style.height = "100%";
+
+        const textAll1 = SUB_DIV.cloneNode(true);
+        textAll1.style.flexWrap = "wrap"
+        textAll1.appendChild(textDiv1);
+        textAll1.appendChild(textDiv2);
+
+        pageDiv.appendChild(befo);
+        pageDiv.appendChild(textAll1);
+        pageDiv.appendChild(next);
+        pageDiv.style.width = "100%"
+        pageDiv.className = `t${this.db.index}pageDiv1`;
+        editBookDiv.appendChild(pageDiv);
+        //<--제목, 삭제, 수정 숨기기
+        //-->컬러 수정
+        const textAll2 = SUB_DIV.cloneNode(true);
+        textAll2.style.flexDirection = "column";
+
+        const backColorDiv = SUB_DIV.cloneNode(true);
+        const backColorTxt = SUB_DIV.cloneNode(true);
+        backColorTxt.innerText = "배경 색";
+        backColorTxt.style.display = "flex";
+        backColorTxt.style.flexGrow = 1;
+        const backColorInput = this.input.cloneNode(true);
+        backColorInput.type = "color";
+        backColorInput.value = this.db.backgroundColor;
+        backColorInput.style.display = "flex";
+        backColorInput.style.flexGrow = 1;
+        backColorInput.className = `t${this.db.index}_backgroundColor`;
+        backColorInput.addEventListener("change", this.function_editWindow);
+
+        backColorDiv.appendChild(backColorTxt);
+        backColorDiv.appendChild(backColorInput);
+        textAll2.appendChild(backColorDiv);
+
+        const fontColorDiv = SUB_DIV.cloneNode(true);
+        const fontColorTxt = backColorTxt.cloneNode(true);
+        fontColorTxt.innerText = "글자 색"
+        const fontColorInput = backColorInput.cloneNode(true);
+        fontColorInput.value = this.db.fontColor;
+        fontColorInput.className = `t${this.db.index}_fontColor`;
+        fontColorInput.addEventListener("change", this.function_editWindow);
+        fontColorDiv.appendChild(fontColorTxt);
+        fontColorDiv.appendChild(fontColorInput);
+        textAll2.appendChild(fontColorDiv);
+
+        const lineColorDiv = SUB_DIV.cloneNode(true);
+        const lineColorTxt = backColorTxt.cloneNode(true);
+        lineColorTxt.innerText = "라인 색"
+        const lineColorInput = backColorInput.cloneNode(true);
+        lineColorInput.value = this.db.lineColor;
+        lineColorInput.className = `t${this.db.index}_lineColor`;
+        lineColorInput.addEventListener("change", this.function_editWindow);
+        lineColorDiv.appendChild(lineColorTxt);
+        lineColorDiv.appendChild(lineColorInput);
+        textAll2.appendChild(lineColorDiv);
+
+        const befo2 = befo.cloneNode(true);
+        befo2.addEventListener("click", this.function_nextBefoEvent);
+        const next2 = next.cloneNode(true);
+        next2.addEventListener("click", this.function_nextBefoEvent);
+
+        textAll2.style.width = "100%";
+        textAll2.style.flexWrap = "wrap"
+
+        const pageDiv2 = SUB_DIV.cloneNode(true);
+        pageDiv2.style.width = "100%"
+        pageDiv2.appendChild(befo2);
+        pageDiv2.appendChild(textAll2);
+        pageDiv2.appendChild(next2);
+        pageDiv2.style.display = "none";//임시
+
+        editBookDiv.appendChild(pageDiv2);
+        //<--컬러 수정
+        //-->글자 수정
+        const textAll3 = SUB_DIV.cloneNode(true);
+        textAll3.style.flexDirection = "column";
+
+        const fontSizeDiv = SUB_DIV.cloneNode(true);
+        const fontSizeTxt = SUB_DIV.cloneNode(true);
+        fontSizeTxt.innerText = "글자 크기";
+        fontSizeTxt.style.width = "50%";
+        const fontSizeInput = this.input.cloneNode(true);
+        fontSizeInput.type = "number";
+        fontSizeInput.value = this.db.fontSize;
+        fontSizeInput.style.width = "50%";
+        fontSizeInput.className = `t${this.db.index}_fontSize`;
+        fontSizeInput.addEventListener("change", this.function_editWindow);
+
+        fontSizeDiv.appendChild(fontSizeTxt);
+        fontSizeDiv.appendChild(fontSizeInput);
+        textAll3.appendChild(fontSizeDiv);
+
+        const fontWeightDiv = SUB_DIV.cloneNode(true);
+        const fontWeightTxt = fontSizeTxt.cloneNode(true);
+        fontWeightTxt.innerText = "글자 두께"
+        const fontWeightInput = fontSizeInput.cloneNode(true);
+        fontWeightInput.min = 0; fontWeightInput.max = 7;
+        fontWeightInput.step = 1;
+        fontWeightInput.value = this.db.index_fontWeight;
+        fontWeightInput.className = `t${this.db.index}_fontWeight`;
+        fontWeightInput.addEventListener("change", this.function_editWindow);
+        fontWeightDiv.appendChild(fontWeightTxt);
+        fontWeightDiv.appendChild(fontWeightInput);
+        textAll3.appendChild(fontWeightDiv);
+
+        const fontFamilyDiv = SUB_DIV.cloneNode(true);
+        const fontFamilyTxt = fontSizeTxt.cloneNode(true);
+        fontFamilyTxt.innerText = "글자 종류"
+        const fontFamilySelect = this.select.cloneNode(true);
+        fontFamilySelect.style.width = "50%";
+        for (let i = 0; i < all_fontFamily.length; i++) {
+            const editOption = this.option.cloneNode(true);
+            editOption.innerText = `${i}.${all_fontFamily[i]}`;
+            fontFamilySelect.appendChild(editOption);
+        }
+        fontFamilySelect.selectedIndex = this.db.index_fontFamily;
+        fontFamilySelect.className = `t${this.db.index}_fontFamily`;
+        fontFamilySelect.addEventListener("change", this.function_editWindow);
+        fontFamilyDiv.appendChild(fontFamilyTxt);
+        fontFamilyDiv.appendChild(fontFamilySelect);
+        textAll3.appendChild(fontFamilyDiv);
+
+        const fontStyleDiv = SUB_DIV.cloneNode(true);
+        const fontStyleTxt = fontSizeTxt.cloneNode(true);
+        fontStyleTxt.innerText = "글자 모양";
+        const fontStyleSelect = this.select.cloneNode(true);
+        fontStyleSelect.style.width = "50%";
+        for (let i = 0; i < all_fontStyle.length; i++) {
+            const editOption = this.option.cloneNode(true);
+            editOption.innerText = `${i}.${all_fontStyle[i]}`;
+            fontStyleSelect.appendChild(editOption);
+        }
+        fontStyleSelect.selectedIndex = this.db.index_fontStyle;
+        fontStyleSelect.className = `t${this.db.index}_fontStyle`;
+        fontStyleSelect.addEventListener("change", this.function_editWindow);
+        fontStyleDiv.appendChild(fontStyleTxt);
+        fontStyleDiv.appendChild(fontStyleSelect);
+        textAll3.appendChild(fontStyleDiv);
+
+        const befo3 = befo.cloneNode(true);
+        befo3.addEventListener("click", this.function_nextBefoEvent);
+        const next3 = next.cloneNode(true);
+        next3.addEventListener("click", this.function_nextBefoEvent);
+
+        textAll3.style.width = "100%";
+        textAll3.style.flexWrap = "wrap"
+
+        const pageDiv3 = SUB_DIV.cloneNode(true);
+        pageDiv3.style.width = "100%"
+        pageDiv3.appendChild(befo3);
+        pageDiv3.appendChild(textAll3);
+        pageDiv3.appendChild(next3);
+        pageDiv3.style.display = "none";//임시
+
+        editBookDiv.appendChild(pageDiv3);
+        //<--글자 수정
+        //-->크기 수정
+        const textAll4 = SUB_DIV.cloneNode(true);
+        textAll4.style.flexDirection = "column";
+        textAll4.style.width = "100%";
+        textAll4.style.flexWrap = "wrap"
+
+        const winWidthDiv = SUB_DIV.cloneNode(true);
+        const winWidthTxt = SUB_DIV.cloneNode(true);
+        winWidthTxt.innerText = "가로 사이즈";
+        winWidthTxt.style.width = "50%";
+        const winWidthInput = this.input.cloneNode(true);
+        winWidthInput.type = "number";
+        winWidthInput.value = this.db.width;
+        winWidthInput.style.width = "50%";
+        winWidthInput.className = `t${this.db.index}_width`;
+        winWidthInput.addEventListener("change", this.function_editWindow);
+        winWidthDiv.appendChild(winWidthTxt);
+        winWidthDiv.appendChild(winWidthInput);
+        textAll4.appendChild(winWidthDiv);
+
+        const lineWeightDiv = SUB_DIV.cloneNode(true);
+        const lineWeightTxt = fontSizeTxt.cloneNode(true);
+        lineWeightTxt.innerText = "라인 두께"
+        const lineWeightInput = fontSizeInput.cloneNode(true);
+        lineWeightInput.min = 0; lineWeightInput.max = 10;
+        lineWeightInput.step = 0.1;
+        lineWeightInput.value = this.db.lineThick;
+        lineWeightInput.className = `t${this.db.index}_lineWeight`;
+        lineWeightInput.addEventListener("change", this.function_editWindow);
+        lineWeightDiv.appendChild(lineWeightTxt);
+        lineWeightDiv.appendChild(lineWeightInput);
+        textAll4.appendChild(lineWeightDiv);
+
+        const befo4 = befo.cloneNode(true);
+        befo4.addEventListener("click", this.function_nextBefoEvent);
+        const next4 = next.cloneNode(true);
+        next4.addEventListener("click", this.function_nextBefoEvent);
+
+        const pageDiv4 = SUB_DIV.cloneNode(true);
+        pageDiv4.style.width = "100%"
+        pageDiv4.appendChild(befo4);
+        pageDiv4.appendChild(textAll4);
+        pageDiv4.appendChild(next4);
+        pageDiv4.style.display = "none";
+        editBookDiv.appendChild(pageDiv4);
+        //<--크기 수정
+
+        editDiv.appendChild(editBookDiv);
         return editDiv;
     }
-    tabMainPage(){
+    tabMainPage() {
         const tabDiv = this.div.cloneNode(true);
+        tabDiv.className = `t${this.db.index}BodyDiv`;
         const memo = new tabElement_memo();
         memo.setValue(this.db);
         tabDiv.appendChild(memo.setElementAll());
 
         return tabDiv;
     }
-    
-    setElementAll(){
+
+    setElementAll() {
         //basic element set
         const MAIN_LINE_DIV = this.div.cloneNode(true);
         MAIN_LINE_DIV.style.display = "flex";
         MAIN_LINE_DIV.style.borderBottom = `${this.db.lineWeight}px solid ${this.db.lineColor}`;
-        
+
         const LEFT_BTN = this.button.cloneNode(true);
         LEFT_BTN.style.flexGrow = 1;
         LEFT_BTN.style.textAlign = "left";
@@ -1551,11 +1899,11 @@ class tabElement{
         const tabDiv = this.div.cloneNode(false);
         tabDiv.style.backgroundColor = this.db.backgroundColor;
         tabDiv.className = `t${this.db.index}_k${this.db.type}`;
-        tabDiv.style.display = "inline-block"; 
+        tabDiv.style.display = "inline-block";
         tabDiv.style.width = `${this.db.width}px`;
         tabDiv.style.marginBottom = "5px";
         tabDiv.style.marginRight = "5px";
-        
+
         //tab head / body
         const tabHeadDiv = this.div.cloneNode(true);
         const tabBodyDiv = this.div.cloneNode(true);
@@ -1569,12 +1917,14 @@ class tabElement{
         titleBtn.innerText = this.db.name;
         titleBtn.style.marginLeft = "10px"
         titleBtn.className = `t${this.db.index}_titleBtn_show:body`;
+        titleBtn.addEventListener("click", this.function_showEvent);
         //titleBtn.addEventListener('click', this.showHide);
         const tapPlsBtn = MIN_BTN.cloneNode(true);
         tapPlsBtn.innerText = "e";
         tapPlsBtn.style.marginRight = 0;
-        tapPlsBtn.style.marginLeft = "10px";        
-        tapPlsBtn.className = `t${this.db.index}EditBtn`
+        tapPlsBtn.style.marginLeft = "10px";
+        tapPlsBtn.className = `t${this.db.index}EditBtn`;
+        tapPlsBtn.addEventListener("click", this.function_editShowEvent);
 
         titleDiv.appendChild(titleBtn);
         titleDiv.appendChild(tapPlsBtn);
@@ -1591,7 +1941,7 @@ class tabElement{
         return tabDiv;
     }
 }
-class tabElement_memo{
+class tabElement_memo {
     div = null;
     button = null;
     input = null;
@@ -1601,16 +1951,16 @@ class tabElement_memo{
     textarea = null;
     mark = null;
     db = {
-        index:null,
+        index: null,
         sort: null,
-        
-        fontSize: null, fontThick: null, fontFamily: null, fontStyle: null,
-        fontColor: null, backgroundColor: null, 
-        lineColor: null,lineThick: null,
 
-        index_fontFamily:null,
-        index_fontStyle:null,
-        index_fontWeight:null 
+        fontSize: null, fontThick: null, fontFamily: null, fontStyle: null,
+        fontColor: null, backgroundColor: null,
+        lineColor: null, lineThick: null,
+
+        index_fontFamily: null,
+        index_fontStyle: null,
+        index_fontWeight: null
     }
     constructor() {
         this.div = document.createElement("div");
@@ -1652,7 +2002,7 @@ class tabElement_memo{
         this.select.style.backgroundColor = "transparent";
         this.textarea.style.backgroundColor = "transparent";
         this.option.style.backgroundColor = this.db.backgroundColor;
-        this.mark.style.backgroundColor  = "transparent";
+        this.mark.style.backgroundColor = "transparent";
 
         this.select.style.border = "none";
         this.button.style.border = "none";
@@ -1728,9 +2078,107 @@ class tabElement_memo{
     //head - i btn / form(textarea, sub, color-input, select) / select-sort(new, old, color)
     //body - checkbox / text(text div, edit input, color select, copy btn, del btn)
     //foot - checkbox(all) / select(all, color1~3) / del btn 
-    setHead(){
+
+    //event --> sort / copy / checkAll(copy)
+    function_showEvent(event) {
+        const target = event.target.className;
+        const split = target.split("_");
+        const index = split[0].replace(baseic_regex, "");
+        if (target.includes("iBtn")) {
+            const element = document.querySelector(`.t${index}inputDiv`);
+            element.style.display = element.style.display == "none" ? "flex" : "none";
+
+            const element2 = document.querySelector(`.t${index}subDiv`);
+            element2.style.display = element2.style.display == "none" ? "flex" : "none";
+        } else if (target.includes("editBtn")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
+            element.style.display = element.style.display == "none" ? "block" : "none";
+
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_editDiv`);
+            element1.style.display = element1.style.display == "none" ? "block" : "none";
+
+            const element2 = document.querySelector(`.${split[0]}_${split[1]}_editBtnsDiv`);
+            element2.style.display = element2.style.display == "none" ? "block" : "none";
+
+            const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
+            element3.style.display = element3.style.display == "none" ? "flex" : "none";
+        } else if (target.includes("subBtn")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
+            element.style.display = element.style.display == "none" ? "block" : "none";
+
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_editDiv`);
+            element1.style.display = element1.style.display == "none" ? "block" : "none";
+
+            const element2 = document.querySelector(`.${split[0]}_${split[1]}_editBtnsDiv`);
+            element2.style.display = element2.style.display == "none" ? "block" : "none";
+
+            const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
+            element3.style.display = element3.style.display == "none" ? "flex" : "none";
+        }
+    }
+    function_checkEvent(event) {
+        const target = event.target.className;
+        const split = target.split("_");
+        if (target.includes("textDiv") || target.includes("emptyDiv") || target.includes("mark")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_checkbox`);
+            element.checked = element.checked == true ? false : true;
+
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            element1.style.textDecorationLine = element.checked ? "line-through" : "none";
+            element1.style.color = element.checked ? "gray" : "black";
+            return
+        } else if (target.includes("checkbox")) {
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            element1.style.textDecorationLine = event.target.checked ? "line-through" : "none";
+            element1.style.color = event.target.checked ? "gray" : "black";
+        } else if (target.includes("allCheckbox")) {
+            const element = document.querySelector(`.${split[0]}_tuplesDiv`);
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
+                if (checkbox.checked != event.target.checked) {
+                    element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].dispatchEvent(new Event('click'));
+                }
+            }
+        }
+    }
+    function_selectEvent(event) {
+        const target = event.target.className;
+        const split = target.split("_");
+        if (target.includes("colorInputSelect")) {
+            const element = document.querySelector(`.${split[0]}_colorInputDiv`);
+            for (let i = 0; i < element.childElementCount; i++) {
+                element.childNodes[i].style.display = "none";
+            }
+            element.childNodes[event.target.selectedIndex].style.display = event.target.selectedIndex != 0 ? "block" : "none";
+        }
+    }
+    function_copyEvent(event){
+        const target = event.target.className;
+        const split = target.split("_");
+        if (target.includes("tupleCopy")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            copyToClipboard(element.innerText);
+        }else if(target.includes("copyAll")){
+            const element = document.querySelector(`.${split[0]}_tuplesDiv`);
+            let text = "";
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
+                if(checkbox.checked){
+                    const mark = element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
+                    text += mark.innerText
+                    text += "\n";
+                }
+            }
+            copyToClipboard(text);
+        }
+
+    }
+    //<-- event
+
+    setHead() {
         const tab_headDiv = this.div.cloneNode(true);
         tab_headDiv.className = `t${this.db.index}head`;
+        tab_headDiv.style.marginTop = "10px";
         tab_headDiv.style.borderBottom = `${this.db.lineThick}px solid ${this.db.lineColor}`;
 
         const MIN_BTN = this.button.cloneNode(true);
@@ -1742,11 +2190,14 @@ class tabElement_memo{
 
         const i_btn_div = this.div.cloneNode(true);
         const i_btn = MIN_BTN.cloneNode(true);
-        
+
         i_btn.innerText = "i";
         i_btn.style.alignItems = "stretch";
         i_btn.style.height = "100%";
+        //i_btn.style.paddingTop = "5px";
         i_btn.style.marginLeft = 0;
+        i_btn.className = `t${this.db.index}iBtn`;
+        i_btn.addEventListener("click", this.function_showEvent);
         i_btn_div.appendChild(i_btn);
 
         const formDiv = this.div.cloneNode(true);
@@ -1757,14 +2208,16 @@ class tabElement_memo{
 
         const sortSelect = this.select.cloneNode(true);
         const sortText = ["new", "old", "color"];
-        for(let i=0;i<sortText.length; i++){
+        for (let i = 0; i < sortText.length; i++) {
             const op = this.option.cloneNode(true);
             op.innerText = sortText[i];
             sortSelect.appendChild(op);
         }
         const colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3", "done", "check"];
         const colorSelect = this.select.cloneNode(true);
-        for(let i=0;i<colorText.length; i++){
+        colorSelect.className = `t${this.db.index}_colorInputSelect`;
+        colorSelect.addEventListener("change", this.function_selectEvent);
+        for (let i = 0; i < colorText.length; i++) {
             const op = this.option.cloneNode(true);
             op.innerText = colorText[i];
             colorSelect.appendChild(op);
@@ -1774,9 +2227,10 @@ class tabElement_memo{
         subBtn.innerText = "sub";
 
 
-        const colorInputDiv = this.div.cloneNode(true); 
-        for(let i=0; i<colorText.length; i++){
-            const colorInput = this.input.cloneNode(true); 
+        const colorInputDiv = this.div.cloneNode(true);
+        colorInputDiv.className = `t${this.db.index}_colorInputDiv`;
+        for (let i = 0; i < colorText.length; i++) {
+            const colorInput = this.input.cloneNode(true);
             colorInput.type = "color";
             //colorInput.value = `${}`;
             colorInput.style.display = "none";
@@ -1790,9 +2244,10 @@ class tabElement_memo{
         tab_headDiv.style.display = "flex";
         tab_headDiv.style.flexDirection = "row";
         tab_headDiv.appendChild(i_btn_div);
-        
-        
+
+
         upDiv.style.display = "flex";
+        upDiv.className = `t${this.db.index}inputDiv`
         upDiv.appendChild(textarea);
 
         downDiv.style.display = "flex";
@@ -1805,9 +2260,10 @@ class tabElement_memo{
         textareaTogather.style.display = "flex";
         textareaTogather.style.flexDirection = "row-reverse";
         textareaTogather.flexWrap = "wrap";
-        textareaTogather.appendChild(colorInputDiv);
         textareaTogather.appendChild(subBtn);
         textareaTogather.appendChild(colorSelect);
+        textareaTogather.appendChild(colorInputDiv);
+        textareaTogather.className = `t${this.db.index}subDiv`;
         textareaTogather.style.flexGrow = 1;
         downDiv.appendChild(textareaTogather);
 
@@ -1821,18 +2277,19 @@ class tabElement_memo{
 
         this.tab_memo_div.appendChild(tab_headDiv);
     }
-    setBody(){
+    setBody() {
         const bodyDiv = this.div.cloneNode(true);
-        let exTxt = [{checked:true,text:"hello"},{checked:false,text:"world"},
-            {checked:true, text:"안녕하세요 잘 지내나요 다시 만나요\n사유라는 것은 생각하는 것으로 아무것도 하지 않을 때 가장 창의적이라고 할 수 있다.\n날자 날자\n탕탕탕"}
+        bodyDiv.className = `t${this.db.index}_tuplesDiv`;
+        let exTxt = [{ checked: true, text: "hello" }, { checked: false, text: "world" },
+        { checked: true, text: "안녕하세요 잘 지내나요 다시 만나요\n사유라는 것은 생각하는 것으로 아무것도 하지 않을 때 가장 창의적이라고 할 수 있다.\n날자 날자\n탕탕탕" }
         ];
-        for(let i=0; i<exTxt.length;i++){
+        for (let i = 0; i < exTxt.length; i++) {
             const tuple = this.makeTuple(exTxt[i].checked, i, exTxt[i].text);
             bodyDiv.appendChild(tuple);
         }
         this.tab_memo_div.appendChild(bodyDiv);
     }
-    setFoot(check){
+    setFoot(check) {
         const footDiv = this.div.cloneNode(true);
 
         const checkDiv = this.div.cloneNode(true);
@@ -1840,13 +2297,13 @@ class tabElement_memo{
         checkAll.type = "checkbox";
         checkAll.checked = true;
         checkDiv.style.width = "40px";
-
+        checkAll.className = `t${this.db.index}_allCheckbox`;
+        checkAll.addEventListener("change", this.function_checkEvent);
         checkDiv.appendChild(checkAll);
-        
 
         const select = this.select.cloneNode(true);
-        let text = ["all","color1","color2","color3"];
-        for(let i=0;i<text.length; i++){
+        let text = ["all", "color1", "color2", "color3"];
+        for (let i = 0; i < text.length; i++) {
             const op = this.option.cloneNode(true);
             op.innerText = text[i];
             select.appendChild(op);
@@ -1855,25 +2312,27 @@ class tabElement_memo{
         const copyBtn = this.button.cloneNode(true);
         copyBtn.innerText = "c";
         copyBtn.style.width = "40px";
+        copyBtn.className = `t${this.db.index}_copyAll`
+        copyBtn.addEventListener("click", this.function_copyEvent);
         const delBtn = copyBtn.cloneNode(true);
         delBtn.innerText = "x"
 
         const rightDiv = this.div.cloneNode(true);
         rightDiv.appendChild(select);
-        rightDiv.appendChild(copyBtn);
         rightDiv.appendChild(delBtn);
+        rightDiv.appendChild(copyBtn);
 
         footDiv.appendChild(checkDiv);
         footDiv.appendChild(rightDiv);
         footDiv.style.display = "flex";
-        
+
 
         this.tab_memo_div.appendChild(footDiv);
     }
-    makeTuple(checked,index,text){
+    makeTuple(checked, index, text) {
         const tupleDiv = this.div.cloneNode(true);
-        
-        const chekDiv =  this.div.cloneNode(true);
+
+        const chekDiv = this.div.cloneNode(true);
         chekDiv.style.display = "flex";
         chekDiv.style.alignItems = "stretch";
         const checkBox = this.input.cloneNode(true);
@@ -1885,6 +2344,8 @@ class tabElement_memo{
         checkBox.checked = checked;
         checkBox.style.display = "flex";
         checkBox.style.alignItems = "stretch";
+        checkBox.className = `t${this.db.index}_i${index}_checkbox`;
+        checkBox.addEventListener("change", this.function_checkEvent);
 
         chekDiv.style.display = "flex";
         chekDiv.style.alignItems = "stretch";
@@ -1893,25 +2354,29 @@ class tabElement_memo{
         chekDiv.appendChild(checkBox);
 
         const textDiv = this.div.cloneNode(true);
-        const mark    = this.mark.cloneNode(true);
+        const mark = this.mark.cloneNode(true);
         mark.style.width = "100%";
-        mark.innerText = text; 
+        mark.innerText = text;
+        mark.className = `t${this.db.index}_i${index}_mark`;
         //mark.style.backgroundColor = "rgb(234, 37, 37)";
         mark.style.textDecorationLine = checked ? "line-through" : "none";
-        if(checked){
-            mark.style.color = "gray"
-        } 
+        mark.style.color = checked ? "gray" : `${this.db.fontColor}`;
+        //mark.addEventListener("click",this.function_checkEvent);
         textDiv.style.textAlign = "start";
+        textDiv.className = `t${this.db.index}_i${index}_textDiv`;
         textDiv.appendChild(mark);
-        
+        textDiv.addEventListener("click", this.function_checkEvent);
+
+
         const editDiv = this.div.cloneNode(true);
         const textareaEdit = this.textarea.cloneNode(true);
         textareaEdit.value = text;
         textareaEdit.rows = 5;
-        textareaEdit.style.width = "100%" 
-        textareaEdit.style.display = "none";
+        textareaEdit.style.width = "100%"
+        editDiv.style.display = "none";
+        editDiv.className = `t${this.db.index}_i${index}_editDiv`;
         editDiv.appendChild(textareaEdit);
-        
+
         const editDiv2 = this.div.cloneNode(true);
         const goUpBtn = this.button.cloneNode(true);
         goUpBtn.innerText = "Λ";
@@ -1922,30 +2387,40 @@ class tabElement_memo{
         const subBtn = this.button.cloneNode(true);
         subBtn.innerText = "sub";
         subBtn.style.width = "40px";
+        subBtn.style.marginRight = "10px";
+        subBtn.className = `t${this.db.index}_i${index}_subBtn`;
+        subBtn.addEventListener("click", this.function_showEvent);
         editDiv2.appendChild(goUpBtn);
         editDiv2.appendChild(goDownBtn);
         editDiv2.appendChild(subBtn);
         editDiv2.style.display = "none";
+        editDiv2.className = `t${this.db.index}_i${index}_editBtnsDiv`;
 
         const mainBtnDiv = this.div.cloneNode(true);
-        const copyBtn =  this.button.cloneNode(true);
+        const copyBtn = this.button.cloneNode(true);
         copyBtn.innerText = "c"; copyBtn.style.width = "40px";
-        
-        const delBtn  =  this.button.cloneNode(true);
+        copyBtn.className = `t${this.db.index}_i${index}_tupleCopy`;
+        copyBtn.addEventListener("click", this.function_copyEvent);
+
+        const delBtn = this.button.cloneNode(true);
         delBtn.innerText = "x"; delBtn.style.width = "40px";
-        const editBtn =  this.button.cloneNode(true);
+        const editBtn = this.button.cloneNode(true);
         editBtn.innerText = "e"; editBtn.style.width = "40px";
-        
+        editBtn.className = `t${this.db.index}_i${index}_editBtn`;
+        editBtn.addEventListener("click", this.function_showEvent);
+
         const colorSelect = this.select.cloneNode(true);
-        let colorText = ["⁙⁙⁙⁙","color1","color2","color3"];
-        for(let i=0;i<colorText.length;i++){
+        let colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3"];
+        for (let i = 0; i < colorText.length; i++) {
             const op = this.option.cloneNode(true);
             op.innerText = `${colorText[i]}`;
             op.value = i;
             colorSelect.appendChild(op);
         }
         mainBtnDiv.style.display = "flex";
-        mainBtnDiv.style.flexDirection = "row-reverse"
+        mainBtnDiv.style.flexDirection = "row-reverse";
+        mainBtnDiv.className = `t${this.db.index}_i${index}_colorECBtn`;
+
         mainBtnDiv.appendChild(copyBtn);
         mainBtnDiv.appendChild(editBtn);
         mainBtnDiv.appendChild(colorSelect);
@@ -1959,10 +2434,19 @@ class tabElement_memo{
         const btnDiv = this.div.cloneNode(true);
         btnDiv.style.display = "flex";
         btnDiv.style.flexDirection = "row-reverse";
-        editDiv2.style.width = "150px";
+        editDiv2.style.width = "160px";
+
+        const emptyDiv = this.div.cloneNode(true);
+        emptyDiv.className = `t${this.db.index}_i${index}_emptyDiv`;
+        emptyDiv.style.display = "flex";
+        emptyDiv.style.flexGrow = "1";
+        emptyDiv.addEventListener("click", this.function_checkEvent);
+        //mainBtnDiv.appendChild(emptyDiv);
+
         mainBtnDiv.style.width = "250px";
         btnDiv.appendChild(mainBtnDiv);
         btnDiv.appendChild(editDiv2);
+        btnDiv.appendChild(emptyDiv);
 
         const rightDiv = this.div.cloneNode(true);
         rightDiv.style.width = "100%";
@@ -1977,10 +2461,10 @@ class tabElement_memo{
 
         return tupleDiv;
     }
-    setElementAll(){
+    setElementAll() {
         this.tab_memo_div = this.div.cloneNode(true);
         this.tab_memo_div.className = `t${this.db.index}`;
-        
+
         this.setHead();
         this.setBody();
         this.setFoot();
@@ -2106,7 +2590,7 @@ class Model {
         }
     }
 
-    tab_C(winIndex, type){
+    tab_C(winIndex, type) {
         const newTab = new TabInfo();
         newTab.type = type;
         newTab.fk_windowInex = winIndex;
@@ -2134,23 +2618,23 @@ class Model {
                     newTab.index = i;
                     check = true;
                 }
-                if (this.tabInfoArr[i]!=null && this.tabInfoArr[i].indexNext == null) {
-                    newTab.indexBefo = i;                    
+                if (this.tabInfoArr[i] != null && this.tabInfoArr[i].indexNext == null) {
+                    newTab.indexBefo = i;
                 }
             }
             //this.windowArr[newWin.indexNext].indexNext = newWin.index;
             if (check == false) {
-                newTab.index = this.tabInfoArr.length ;
+                newTab.index = this.tabInfoArr.length;
                 newTab.name += newTab.index;
                 this.tabInfoArr.push(newTab);
             } else {
                 newTab.name += newTab.index;
                 this.tabInfoArr[newTab.index] = newTab;
             }
-            
+
             //윈도우 한테 정보 내려받기
 
-            
+
             this.tabInfoArr[newTab.indexBefo].indexNext = newTab.index;
         }
         this.value = newTab;
@@ -2170,29 +2654,29 @@ class Model {
                     newWin.index = i;
                     check = true;
                 }
-                if (this.windowArr[i]!=null && this.windowArr[i].indexNext == null) {
-                    newWin.indexBefo = i;                    
+                if (this.windowArr[i] != null && this.windowArr[i].indexNext == null) {
+                    newWin.indexBefo = i;
                 }
             }
             //this.windowArr[newWin.indexNext].indexNext = newWin.index;
             if (check == false) {
-                newWin.index = this.windowArr.length ;
+                newWin.index = this.windowArr.length;
                 newWin.name += newWin.index;
                 this.windowArr.push(newWin);
             } else {
                 newWin.name += newWin.index;
                 this.windowArr[newWin.index] = newWin;
             }
-            
+
             //배경색 지정
             new_windwo_colorIndex += 1;
-            if(newWin.indexBefo != null){
-                for(let i=0;i<all_backgroundColor.length;i++){
-                    if(all_backgroundColor[i] == this.windowArr[newWin.indexBefo].backgroundColor){
-                        newWin.backgroundColor = i < all_backgroundColor.length-1 ? all_backgroundColor[i + 1]:all_backgroundColor[0];
+            if (newWin.indexBefo != null) {
+                for (let i = 0; i < all_backgroundColor.length; i++) {
+                    if (all_backgroundColor[i] == this.windowArr[newWin.indexBefo].backgroundColor) {
+                        newWin.backgroundColor = i < all_backgroundColor.length - 1 ? all_backgroundColor[i + 1] : all_backgroundColor[0];
                     }
                 }
-            }else if(newWin.indexBefo == null){
+            } else if (newWin.indexBefo == null) {
                 newWin.backgroundColor = all_backgroundColor[0];
             }
             this.windowArr[newWin.indexBefo].indexNext = newWin.index;
@@ -2200,47 +2684,47 @@ class Model {
         this.value = newWin;
         this.window_save();
     }
-    window_U(index, key, value){
+    window_U(index, key, value) {
         this.windowArr[index][key] = value;
         this.window_save();
     }
-    window_D(index){
+    window_D(index) {
         const befo = this.windowArr[index].indexBefo;
         const next = this.windowArr[index].indexNext;
-        if(befo != null){this.windowArr[befo].indexNext = next; }
-        if(next != null){this.windowArr[next].indexBefo = befo; }
+        if (befo != null) { this.windowArr[befo].indexNext = next; }
+        if (next != null) { this.windowArr[next].indexBefo = befo; }
         this.windowArr[index] = null;
-        if(index == this.windowArr.length -1){
+        if (index == this.windowArr.length - 1) {
             let newArr = [];
-            for(let i=0; i<this.windowArr.length-2; i++){
-                newArr.push(this.windowArr[i]); 
+            for (let i = 0; i < this.windowArr.length - 2; i++) {
+                newArr.push(this.windowArr[i]);
             }
             this.windowArr = newArr;
         }
         this.window_save();
     }
 
-    html_U(key, value){
+    html_U(key, value) {
         this.htmlInfo[key] = value;
         this.htmlInfo_save();
     }
 
-    checkFunction(){ return this.check; }
-    sendValue(){ 
+    checkFunction() { return this.check; }
+    sendValue() {
         this.window_C();
-        return this.value; 
+        return this.value;
     }
-    sendTarget(){ return this.target }
-    sendName(){ return this.name }
-    getValue(value){ 
+    sendTarget() { return this.target }
+    sendName() { return this.name }
+    getValue(value) {
         this.value = value;
-        this.window_D(value); 
+        this.window_D(value);
     }
 
     htmlInfo_save() { localStorage.setItem(this.DBname.html, JSON.stringify(this.htmlInfo)); }
     window_save() { localStorage.setItem(this.DBname.window, JSON.stringify(this.windowArr)); }
     tab_save() { localStorage.setItem(this.DBname.tabInfo, JSON.stringify(this.tabInfoArr)); }
-    
+
     tab_memo_color_save() { localStorage.setItem(this.DBname.tab_memo_color, JSON.stringify(this.tab_memo_colorArr)); }
     tab_memo_text_save() { localStorage.setItem(this.DBname.tab_memo_text, JSON.stringify(this.tab_memo_textArr)); }
 }
@@ -2255,7 +2739,7 @@ class View {
             const element = new windowElement();
             element.setValue(info);
             this.returnElement = element.setElementCss();
-        }else if(type=="tab"){
+        } else if (type == "tab") {
             const element = new tabElement();
             element.setValue(info);
             this.returnElement = element.setElementAll();
@@ -2264,7 +2748,7 @@ class View {
 }
 class Controller {
     ex = null; value = null; model = null; name = null;
-    constructor() { this.ex = true; this.name="Controller_observer" }
+    constructor() { this.ex = true; this.name = "Controller_observer" }
     firstPageOpen() {
         this.value = null;
         this.model = new Model();
@@ -2276,51 +2760,51 @@ class Controller {
                 this.windowAppend(this.model.windowArr[i]);
             }
         }
-        for(let i=0; i< this.model.tabInfoArr.length; i++){
+        for (let i = 0; i < this.model.tabInfoArr.length; i++) {
             if (this.model.tabInfoArr[i] != null) {
                 this.tabAppend(this.model.tabInfoArr[i]);
             }
         }
     }
-    windowAppend(data){
+    windowAppend(data) {
         const v_element_window = new View("window", data);
         mainDiv.appendChild(v_element_window.returnElement);
     }
-    tabAppend(data){
+    tabAppend(data) {
         const v_element_tab = new View("tab", data);
         const targetWindow = document.querySelector(`.w${data.fk_windowInex}body`);
         targetWindow.appendChild(v_element_tab.returnElement);
     }
-    checkFunction(){    return false; }
-    sendValue() {       return this.value; }
-    getValue(target,value){
-        if(target == "window_C"){
+    checkFunction() { return false; }
+    sendValue() { return this.value; }
+    getValue(target, value) {
+        if (target == "window_C") {
             this.model.window_C();
             this.windowAppend(this.model.value);
-        }else if(target == "window_D"){
+        } else if (target == "window_D") {
             this.model.window_D(value);
-        }else if(target == "window_U"){
+        } else if (target == "window_U") {
             const index = value.split("/")[0];
             const key = value.split("/")[1];
             let value2 = value.split("/")[2];
-            if(value2 == "true" || value2 == "false"){ value2 = value2 == "true" ? true : false; }
-            if(isNaN(value2)==false){ value2 = Number(value2)  }
+            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
+            if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.window_U(index, key, value2)
-        }else if(target == "html_U"){
+        } else if (target == "html_U") {
             const key = value.split("/")[0];
             let value2 = value.split("/")[1];
-            if(value2 == "true" || value2 == "false"){ value2 = value2 == "true" ? true : false; }
-            if(isNaN(value2)==false){ value2 = Number(value2)  }
+            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
+            if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.html_U(key, value2);
-        }else if(target == "tab_C"){
+        } else if (target == "tab_C") {
             const winIndex = Number(value.split("/")[0]);
             const type = Number(value.split("/")[1]);
             this.model.tab_C(winIndex, type);
             this.tabAppend(this.model.value, winIndex);
         }
     }
-    sendTarget(){       return "windowAppend"; }
-    sendName(){         return "Controller_observer"; }
+    sendTarget() { return "windowAppend"; }
+    sendName() { return "Controller_observer"; }
 }
 const start_main = new Controller();
 subj.subscribe(start_main);
