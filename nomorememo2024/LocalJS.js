@@ -2556,7 +2556,6 @@ class Model {
         tab_memo_text: "memo_text",
     }
 
-
     constructor() {
         this.check = true; this.value = null; this.target = null; this.name = null;
         this.htmlInfo = JSON.parse(localStorage.getItem("htmlDB"));
@@ -2590,6 +2589,7 @@ class Model {
         }
     }
 
+    //C
     tab_C(winIndex, type) {
         const newTab = new TabInfo();
         newTab.type = type;
@@ -2640,7 +2640,6 @@ class Model {
         this.value = newTab;
         this.tab_save();
     }
-
     window_C() {
         const newWin = new Window();
         if (this.windowArr.length <= 0) {
@@ -2684,10 +2683,18 @@ class Model {
         this.value = newWin;
         this.window_save();
     }
+
+    //U
     window_U(index, key, value) {
         this.windowArr[index][key] = value;
         this.window_save();
     }
+    html_U(key, value) {
+        this.htmlInfo[key] = value;
+        this.htmlInfo_save();
+    }
+
+    //D
     window_D(index) {
         const befo = this.windowArr[index].indexBefo;
         const next = this.windowArr[index].indexNext;
@@ -2704,9 +2711,23 @@ class Model {
         this.window_save();
     }
 
-    html_U(key, value) {
-        this.htmlInfo[key] = value;
-        this.htmlInfo_save();
+    tab_U(){
+        //tab edit
+    }
+    tab_D(){
+        //tab del / tab type other del
+    }
+
+    tab_memo_C(){
+        //color - create / save
+        //text - create / push / save
+    }
+    tab_memo_U(){
+        //color
+        //text
+    }
+    tab_memo_D(){
+        //text - tuple del 
     }
 
     checkFunction() { return this.check; }
