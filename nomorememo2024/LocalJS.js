@@ -1550,7 +1550,6 @@ class tabElement {
         const target = document.querySelector(`.t${index}EditDiv`);
         target.style.display = target.style.display == "none" ? "flex" : "none";
     }
-
     function_showEvent(event) {
         const target = event.target.className;
         const index = target.split("_")[0].replace(baseic_regex, "");
@@ -1576,6 +1575,33 @@ class tabElement {
             const element = document.querySelector(`.t${index}EditDiv`);
             element.style.display = element.style.display == "none" ? "flex" : "none";
         }
+    }
+    function_editTab(event) {
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "tab update event";
+        observer.target = "tab_U";
+        const index = event.target.className.split("_")[0].replace(baseic_regex, "");
+        const key = event.target.className.split("_")[1];
+        let value = event.target.value;
+        if (key == "fontFamily" || key == "fontStyle") {
+            value = event.target.selectedIndex;
+        }
+        observer.value = `${index}/${key}/${value}`;
+        subj.subscribe(observer);
+        subj.notifyAll();
+    }
+    function_delTab(event) {
+        //element.remove();
+        const delTab = document.querySelector(`.t${event.target.className}`);
+        const observer = new Observer_sendGetData(true);
+        observer.name = "tab delete event";
+        observer.target = "tab_D";
+        observer.value = event.target.className.split("_")[0].replace(baseic_regex, "");
+        observer.check = true;
+        subj.subscribe(observer);
+        subj.notifyAll();
+        delTab.remove();
     }
     //click event
 
@@ -1639,7 +1665,7 @@ class tabElement {
         delWinBtn.className = `${this.db.index}`;
         delWinBtn.innerText = "del(X)";
         delWinBtn.style.removeProperty("width");
-        delWinBtn.addEventListener("click", this.function_removeWindow);
+        delWinBtn.addEventListener("click", this.function_delTab);
 
         const titleForm = this.form.cloneNode(true);
         titleForm.style.display = "flex";
@@ -1650,7 +1676,7 @@ class tabElement {
         titleInput.value = this.db.name;
         titleInput.className = `t${this.db.index}_name`;
         titleInput.style.flexGrow = 1;
-        titleInput.addEventListener("change", this.function_editWindow);
+        titleInput.addEventListener("change", this.function_editTab);
         titleSub.value = "sub";
         titleSub.type = "submit";
         titleSub.style.flexGrow = 0;
@@ -1703,7 +1729,7 @@ class tabElement {
         backColorInput.style.display = "flex";
         backColorInput.style.flexGrow = 1;
         backColorInput.className = `t${this.db.index}_backgroundColor`;
-        backColorInput.addEventListener("change", this.function_editWindow);
+        backColorInput.addEventListener("change", this.function_editTab);
 
         backColorDiv.appendChild(backColorTxt);
         backColorDiv.appendChild(backColorInput);
@@ -1715,7 +1741,7 @@ class tabElement {
         const fontColorInput = backColorInput.cloneNode(true);
         fontColorInput.value = this.db.fontColor;
         fontColorInput.className = `t${this.db.index}_fontColor`;
-        fontColorInput.addEventListener("change", this.function_editWindow);
+        fontColorInput.addEventListener("change", this.function_editTab);
         fontColorDiv.appendChild(fontColorTxt);
         fontColorDiv.appendChild(fontColorInput);
         textAll2.appendChild(fontColorDiv);
@@ -1726,7 +1752,7 @@ class tabElement {
         const lineColorInput = backColorInput.cloneNode(true);
         lineColorInput.value = this.db.lineColor;
         lineColorInput.className = `t${this.db.index}_lineColor`;
-        lineColorInput.addEventListener("change", this.function_editWindow);
+        lineColorInput.addEventListener("change", this.function_editTab);
         lineColorDiv.appendChild(lineColorTxt);
         lineColorDiv.appendChild(lineColorInput);
         textAll2.appendChild(lineColorDiv);
@@ -1761,7 +1787,7 @@ class tabElement {
         fontSizeInput.value = this.db.fontSize;
         fontSizeInput.style.width = "50%";
         fontSizeInput.className = `t${this.db.index}_fontSize`;
-        fontSizeInput.addEventListener("change", this.function_editWindow);
+        fontSizeInput.addEventListener("change", this.function_editTab);
 
         fontSizeDiv.appendChild(fontSizeTxt);
         fontSizeDiv.appendChild(fontSizeInput);
@@ -1775,7 +1801,7 @@ class tabElement {
         fontWeightInput.step = 1;
         fontWeightInput.value = this.db.index_fontWeight;
         fontWeightInput.className = `t${this.db.index}_fontWeight`;
-        fontWeightInput.addEventListener("change", this.function_editWindow);
+        fontWeightInput.addEventListener("change", this.function_editTab);
         fontWeightDiv.appendChild(fontWeightTxt);
         fontWeightDiv.appendChild(fontWeightInput);
         textAll3.appendChild(fontWeightDiv);
@@ -1792,7 +1818,7 @@ class tabElement {
         }
         fontFamilySelect.selectedIndex = this.db.index_fontFamily;
         fontFamilySelect.className = `t${this.db.index}_fontFamily`;
-        fontFamilySelect.addEventListener("change", this.function_editWindow);
+        fontFamilySelect.addEventListener("change", this.function_editTab);
         fontFamilyDiv.appendChild(fontFamilyTxt);
         fontFamilyDiv.appendChild(fontFamilySelect);
         textAll3.appendChild(fontFamilyDiv);
@@ -1809,7 +1835,7 @@ class tabElement {
         }
         fontStyleSelect.selectedIndex = this.db.index_fontStyle;
         fontStyleSelect.className = `t${this.db.index}_fontStyle`;
-        fontStyleSelect.addEventListener("change", this.function_editWindow);
+        fontStyleSelect.addEventListener("change", this.function_editTab);
         fontStyleDiv.appendChild(fontStyleTxt);
         fontStyleDiv.appendChild(fontStyleSelect);
         textAll3.appendChild(fontStyleDiv);
@@ -1846,7 +1872,7 @@ class tabElement {
         winWidthInput.value = this.db.width;
         winWidthInput.style.width = "50%";
         winWidthInput.className = `t${this.db.index}_width`;
-        winWidthInput.addEventListener("change", this.function_editWindow);
+        winWidthInput.addEventListener("change", this.function_editTab);
         winWidthDiv.appendChild(winWidthTxt);
         winWidthDiv.appendChild(winWidthInput);
         textAll4.appendChild(winWidthDiv);
@@ -1859,7 +1885,7 @@ class tabElement {
         lineWeightInput.step = 0.1;
         lineWeightInput.value = this.db.lineThick;
         lineWeightInput.className = `t${this.db.index}_lineWeight`;
-        lineWeightInput.addEventListener("change", this.function_editWindow);
+        lineWeightInput.addEventListener("change", this.function_editTab);
         lineWeightDiv.appendChild(lineWeightTxt);
         lineWeightDiv.appendChild(lineWeightInput);
         textAll4.appendChild(lineWeightDiv);
@@ -1889,7 +1915,6 @@ class tabElement {
             memo.setValue(this.db);
             tabDiv.appendChild(memo.setElementAll());   
         }
-        tabDiv.style.display = this.db.show ? "block" : "none";
         tabDiv.style.borderBottom =`${this.db.lineWeight}px solid ${this.db.lineColor}`; 
         return tabDiv;
     }
@@ -2219,6 +2244,7 @@ class tabElement_memo {
         observer.name = "tap_memo_text update event";
         observer.target = "tab_memo_text_C";
         observer.value = `${tabIndex}/${text}/${colorIndex}`;
+        console.log(observer.value);
         subj.subscribe(observer);
         subj.notifyAll();
 
@@ -2788,7 +2814,7 @@ class Model {
         if (befo != null) { this.tabInfoArr[befo].indexNext = next; }
         if (next != null) { this.tabInfoArr[next].indexBefo = befo; }
         if(this.tabInfoArr[tabIndex].type == 0){
-            this.model.tab_memo_color_D();
+            this.tab_memo_color_D(tabIndex);
         }
         this.tabInfoArr[tabIndex] = null;
         if (tabIndex == this.tabInfoArr.length - 1) {
@@ -2836,10 +2862,10 @@ class Model {
         this.tab_memo_textArr.push(memoText);
         this.tab_memo_text_save();
         this.value = memoText;
+
     }
     tab_memo_text_U(textIndex, key, value){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
-        console.log(textIndex, key, value);
         this.tab_memo_textArr[textIndex][key] = value;
         this.tab_memo_text_save();
     }
@@ -2869,7 +2895,7 @@ class Model {
 }
 class View {
     returnElement = null;
-    constructor(type, info, tabType) {
+    constructor(type, info, tabType, tabInfo) {
         if (type == "html") {
             const element = new htmlRemoteElement();
             element.setValue(info);
@@ -2880,11 +2906,19 @@ class View {
             this.returnElement = element.setElementCss();
         } else if (type == "tab") {
             const element = new tabElement();
-            element.setValue(info);
+            let newI = info;
+            if(tabType == "memo"){
+                newI.tabInfo = tabInfo;
+            }
+            element.setValue(newI);
             this.returnElement = element.setElementAll();
         }else if(type == "tuple"){
             if(tabType == "memo"){
                 const element = new tabElement_memo();
+                const exInfo = { text : [], color : info.color};
+                info.set.tabInfo = exInfo;
+
+                console.log(info.set);
                 element.setValue(info.set);
                 const tabInfo = info.tab; 
                 this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text);
@@ -2916,7 +2950,7 @@ class Controller {
                         }
                     }
                     for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
-                        if(this.model.tab_memo_colorArr[j].fk_tabIndex==i){
+                        if(this.model.tab_memo_colorArr[j] !=null && this.model.tab_memo_colorArr[j].fk_tabIndex==i){
                             tabColor = this.model.tab_memo_colorArr[j];
                         }
                     }
@@ -2924,6 +2958,7 @@ class Controller {
                     this.model.tabInfoArr[i].tabInfo = tabInfo;
                 }
                 this.tabAppend(this.model.tabInfoArr[i]);
+                delete this.model.tabInfoArr[i].tabInfo;
             }
         }
 
@@ -2934,9 +2969,9 @@ class Controller {
         const v_element_window = new View("window", data);
         mainDiv.appendChild(v_element_window.returnElement);
     }
-    tabAppend(data) {
-        const v_element_tab = new View("tab", data);
-        const targetWindow = document.querySelector(`.w${data.fk_windowInex}body`);
+    tabAppend(setInfo, tabType, tabInfo) {
+        const v_element_tab = new View("tab", setInfo, tabType, tabInfo);
+        const targetWindow = document.querySelector(`.w${setInfo.fk_windowInex}body`);
         targetWindow.appendChild(v_element_tab.returnElement);
     }
     tupleAppend(tabIndex, data, tabType){
@@ -2970,19 +3005,17 @@ class Controller {
             const tabIndex = Number(value.split("/")[0]);
             const type = Number(value.split("/")[1]);
             this.model.tab_C(tabIndex, type);
-            let newInfo = this.model.value;
+            let tabInfo = { }; 
             if(this.model.value.type == 0){
-                newInfo.tabInfo = {
-                    color: null,
-                    text : [],
-                } 
+                tabInfo = { color: null, text : [] } 
                 for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
-                    if(this.model.tab_memo_colorArr[j].fk_tabIndex==this.model.value.index){
-                        newInfo.tabInfo.color = this.model.tab_memo_colorArr[j];
+                    if(this.model.tab_memo_colorArr[j] != null && this.model.tab_memo_colorArr[j].fk_tabIndex==this.model.value.index){
+                        tabInfo.color = this.model.tab_memo_colorArr[j];
                     }
                 }
+                
             }
-            this.tabAppend(newInfo, tabIndex);
+            this.tabAppend(this.model.value, "memo", tabInfo);
         }else if(target == "tab_U"){
             const index = value.split("/")[0];
             const key = value.split("/")[1];
@@ -3001,6 +3034,11 @@ class Controller {
             const info = {
                 set:this.model.tabInfoArr[tabIndex],
                 tab:this.model.value,
+            }
+            for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
+                if(this.model.tab_memo_colorArr[j].fk_tabIndex==tabIndex){
+                    info.color = this.model.tab_memo_colorArr[j];
+                }
             }
             this.tupleAppend(tabIndex, info, "memo");
             //this.tabAppend(this.model.value, this.model.tab_memo_textArr.length);
