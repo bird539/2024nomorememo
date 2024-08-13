@@ -114,6 +114,7 @@ function timeSomthing(time) {
     }
     return timeTxt;
 }
+
 const unsecuredCopyToClipboard = (text) => {
     const textArea = document.createElement("textarea");
     textArea.value = text; document.body.appendChild(textArea);
@@ -767,17 +768,14 @@ class htmlRemoteElement {
     }
     setElementAll() {
         mainHtml.style.backgroundColor = this.db.htmlBackgroundColor;
-
         this.htmlRemoteDiv = this.div.cloneNode(true);
         this.htmlRemoteDiv.className = `htmlRemoteDiv`;
         this.htmlRemoteDiv.style.display = "block";
         this.htmlRemoteDiv.style.zIndex = "1";
         this.htmlRemoteDiv.style.width = `${this.db.width}px`;
-        //this.htmlRemoteDiv.style.flexDirection = "column-reverse";//row-reverse column-reverse
-        this.htmlRemoteDiv.style.bottom = "0px";
-        this.htmlRemoteDiv.style.position = "absolute";
-        //this.htmlRemoteDiv.style.marginRight = "20px";
-
+        this.htmlRemoteDiv.style.bottom = "0";
+        this.htmlRemoteDiv.style.right = "-10px";
+        this.htmlRemoteDiv.style.position = "fixed"
         this.htmlRemoteDiv.style.width = "300px";
 
         const headBtn = this.button.cloneNode(true);
@@ -799,7 +797,6 @@ class htmlRemoteElement {
         const makeRightDiv = this.div.cloneNode(true);
         makeRightDiv.style.display = "flex";
         makeRightDiv.style.flexDirection = "row-reverse";
-
 
         makeRightDiv.appendChild(this.htmlRemoteDiv);
         return makeRightDiv;
@@ -1405,8 +1402,9 @@ class tabElement {
     details = null;
     summary = null;
 
-    htmlRemoteDiv = null;
     db = {
+        tabInfo:null,
+
         index: null, indexBefo: null, indexNext: null,
         show: null,
         type: null,
@@ -1440,9 +1438,10 @@ class tabElement {
 
         this.details = document.createElement("details");
         this.summary = document.createElement("summary");
-        this.htmlRemoteDiv = null;
+        this.tabInfo = null;
     }
     setValue(db) {
+        this.db.tabInfo = db.tabInfo;
         this.db.fk_windowInex = db.fk_windowInex;
 
         this.db.index = db.index;
@@ -1556,10 +1555,23 @@ class tabElement {
         const target = event.target.className;
         const index = target.split("_")[0].replace(baseic_regex, "");
         if (target.includes("titleBtn")) {
-            const element = document.querySelector(`.t${index}BodyDiv`);
-            element.style.display = element.style.display == "none" ? "flex" : "none";
-            const element2 = document.querySelector(`.t${index}EditDiv`);
+            //const element = document.querySelector(`.t${index}BodyDiv`);
+            const element = event.target.parentNode.parentNode.nextSibling;
+            const display = element.style.display == "none" ? "block" : "none";
+            element.style.display = display;
+
+            //const element2 = document.querySelector(`.t${index}EditDiv`);
+            const element2 = event.target.parentNode.parentNode.nextSibling.childNodes[0];
             element2.style.display = "none";
+
+            const observer = new Observer_sendGetData(true);
+            observer.check = true;
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_U";
+            observer.value = `${index}/show/${element.style.display == "none" ? false : true}`;
+            subj.subscribe(observer);
+            subj.notifyAll();
+    
         } else if (target.includes("EditBtn")) {
             const element = document.querySelector(`.t${index}EditDiv`);
             element.style.display = element.style.display == "none" ? "flex" : "none";
@@ -1596,6 +1608,7 @@ class tabElement {
         editPageSelect.className = `t${this.db.index}editSelectDiv_t${this.db.index}editBookDiv:flex`;
         editPageSelect.style.marginRight = "10px";
         editPageSelect.addEventListener("change", this.function_selectEvent);
+        editPageSelect.style.marginLeft = "10px";
         let editSelect_text = ["제목, 삭제, 순서변경", "색상 수정", "글자 수정", "크기 수정",];
         for (let i = 0; i < editSelect_text.length; i++) {
             const editOption = this.option.cloneNode(true);
@@ -1871,10 +1884,13 @@ class tabElement {
     tabMainPage() {
         const tabDiv = this.div.cloneNode(true);
         tabDiv.className = `t${this.db.index}BodyDiv`;
-        const memo = new tabElement_memo();
-        memo.setValue(this.db);
-        tabDiv.appendChild(memo.setElementAll());
-
+        if(this.db.type==0){
+            const memo = new tabElement_memo();
+            memo.setValue(this.db);
+            tabDiv.appendChild(memo.setElementAll());   
+        }
+        tabDiv.style.display = this.db.show ? "block" : "none";
+        tabDiv.style.borderBottom =`${this.db.lineWeight}px solid ${this.db.lineColor}`; 
         return tabDiv;
     }
 
@@ -1950,7 +1966,13 @@ class tabElement_memo {
     option = null;
     textarea = null;
     mark = null;
+
+    allCheck = null;
+
     db = {
+        textArr : null,
+        colorArr : null,
+
         index: null,
         sort: null,
 
@@ -1973,6 +1995,11 @@ class tabElement_memo {
         this.mark = document.createElement("mark");
     }
     setValue(db) {
+        this.db.textArr = db.tabInfo.text;
+        this.db.colorArr = db.tabInfo.color;
+
+        this.allCheck = false;
+
         this.db.befoIndex = db.befoIndex;
         this.db.index = db.index;
         this.db.nextIndex = db.nextIndex;
@@ -1986,7 +2013,7 @@ class tabElement_memo {
 
         this.db.fontSize = db.fontSize;
         this.db.fontThick = all_fontWeight[db.fontWeight];
-        this.db.fontFamily = all_fontFamily[db.fontFamily];
+        this.db.fontFamily = isNaN(Number(db.fontFamily)) ? db.fontFamily : all_fontFamily[db.fontFamily];
         this.db.fontStyle = all_fontStyle[db.fontStyle];
 
         this.db.fontColor = db.fontColor;
@@ -2126,6 +2153,15 @@ class tabElement_memo {
             const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
             element1.style.textDecorationLine = element.checked ? "line-through" : "none";
             element1.style.color = element.checked ? "gray" : "black";
+
+            const observer = new Observer_sendGetData(true);
+            observer.check = true;
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = `${split[1]}/checked/${element.checked}`;
+            subj.subscribe(observer);
+            subj.notifyAll();
+
             return
         } else if (target.includes("checkbox")) {
             const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
@@ -2171,10 +2207,24 @@ class tabElement_memo {
             }
             copyToClipboard(text);
         }
+    }
+    function_newTuple(event){
+        const tabIndex = event.target.className.replace(baseic_regex, "");
+        const textarea = document.querySelector(`.t${tabIndex}_textarea`);
+        const text = textarea.value;
+        const colorIndex = document.querySelector(`.t${tabIndex}_colorInputSelect`).selectedIndex;
 
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "tap_memo_text update event";
+        observer.target = "tab_memo_text_C";
+        observer.value = `${tabIndex}/${text}/${colorIndex}`;
+        subj.subscribe(observer);
+        subj.notifyAll();
+
+        textarea.value = null;
     }
     //<-- event
-
     setHead() {
         const tab_headDiv = this.div.cloneNode(true);
         tab_headDiv.className = `t${this.db.index}head`;
@@ -2204,6 +2254,7 @@ class tabElement_memo {
         formDiv.className = `t${this.db.index}Form`;
         const textarea = this.textarea.cloneNode(true);
         textarea.rows = "5"; textarea.placeholder = "input memo...";
+        textarea.className = `t${this.db.index}_textarea`;
         textarea.style.width = "100%";
 
         const sortSelect = this.select.cloneNode(true);
@@ -2224,15 +2275,16 @@ class tabElement_memo {
         }
         const subBtn = MIN_BTN.cloneNode(true);
         subBtn.style.marginRight = "10px";
+        subBtn.className = `t${this.db.index}_subBtn`;
         subBtn.innerText = "sub";
-
+        subBtn.addEventListener("click", this.function_newTuple);
 
         const colorInputDiv = this.div.cloneNode(true);
         colorInputDiv.className = `t${this.db.index}_colorInputDiv`;
         for (let i = 0; i < colorText.length; i++) {
             const colorInput = this.input.cloneNode(true);
             colorInput.type = "color";
-            //colorInput.value = `${}`;
+            colorInput.value = this.db.colorArr[i];
             colorInput.style.display = "none";
             colorInputDiv.appendChild(colorInput);
         }
@@ -2280,11 +2332,10 @@ class tabElement_memo {
     setBody() {
         const bodyDiv = this.div.cloneNode(true);
         bodyDiv.className = `t${this.db.index}_tuplesDiv`;
-        let exTxt = [{ checked: true, text: "hello" }, { checked: false, text: "world" },
-        { checked: true, text: "안녕하세요 잘 지내나요 다시 만나요\n사유라는 것은 생각하는 것으로 아무것도 하지 않을 때 가장 창의적이라고 할 수 있다.\n날자 날자\n탕탕탕" }
-        ];
-        for (let i = 0; i < exTxt.length; i++) {
-            const tuple = this.makeTuple(exTxt[i].checked, i, exTxt[i].text);
+        this.allCheck = true;
+        for (let i = 0; i < this.db.textArr.length; i++) {
+            const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text);
+            if(this.db.textArr[i].checked==false){ this.allCheck = false; }
             bodyDiv.appendChild(tuple);
         }
         this.tab_memo_div.appendChild(bodyDiv);
@@ -2295,7 +2346,7 @@ class tabElement_memo {
         const checkDiv = this.div.cloneNode(true);
         const checkAll = this.input.cloneNode(true);
         checkAll.type = "checkbox";
-        checkAll.checked = true;
+        checkAll.checked = check;
         checkDiv.style.width = "40px";
         checkAll.className = `t${this.db.index}_allCheckbox`;
         checkAll.addEventListener("change", this.function_checkEvent);
@@ -2467,11 +2518,10 @@ class tabElement_memo {
 
         this.setHead();
         this.setBody();
-        this.setFoot();
+        this.setFoot(this.allCheck);
 
         return this.tab_memo_div;
     }
-
 }
 //<==========View - element all
 
@@ -2582,64 +2632,37 @@ class Model {
         if (this.tab_memo_colorArr == null) {
             this.tab_memo_colorArr = [];
             this.tab_memo_color_save();
+        }else{
+            let newArr = []
+            for(let i=0;i<this.tab_memo_colorArr.length;i++){
+                if(this.tab_memo_colorArr != null){
+                    newArr.push(this.tab_memo_colorArr[i]);
+                }
+            }
+            this.tab_memo_colorArr = newArr;
+            this.tab_memo_text_save();
         }
         if (this.tab_memo_textArr == null) {
             this.tab_memo_textArr = [];
             this.tab_memo_text_save();
-        }
-    }
-
-    //C
-    tab_C(winIndex, type) {
-        const newTab = new TabInfo();
-        newTab.type = type;
-        newTab.fk_windowInex = winIndex;
-        newTab.name = `${all_tapType_kr[type]}`;
-
-        newTab.fontColor = this.windowArr[winIndex].fontColor;
-        newTab.backgroundColor = this.windowArr[winIndex].backgroundColor;
-
-        newTab.fontSize = this.windowArr[winIndex].fontSize;
-        newTab.fontFamily = this.windowArr[winIndex].fontFamily;
-        newTab.fontStyle = this.windowArr[winIndex].fontStyle;
-        newTab.fontWeight = this.windowArr[winIndex].fontWeight;
-
-        newTab.lineColor = this.windowArr[winIndex].lineColor;
-        newTab.lineWeight = this.windowArr[winIndex].lineWeight;
-        newTab.width = this.windowArr[winIndex].width;
-        if (this.tabInfoArr.length <= 0) {
-            newTab.index = 0;
-            newTab.name += newTab.index;
-            this.tabInfoArr.push(newTab);
-        } else {
-            let check = false;
-            for (let i = 0; i < this.tabInfoArr.length; i++) {
-                if (this.tabInfoArr[i] == null) {
-                    newTab.index = i;
-                    check = true;
-                }
-                if (this.tabInfoArr[i] != null && this.tabInfoArr[i].indexNext == null) {
-                    newTab.indexBefo = i;
+        }else{
+            let newArr = []
+            for(let i=0;i<this.tab_memo_textArr.length;i++){
+                if(this.tab_memo_textArr != null){
+                    newArr.push(this.tab_memo_textArr[i]);
                 }
             }
-            //this.windowArr[newWin.indexNext].indexNext = newWin.index;
-            if (check == false) {
-                newTab.index = this.tabInfoArr.length;
-                newTab.name += newTab.index;
-                this.tabInfoArr.push(newTab);
-            } else {
-                newTab.name += newTab.index;
-                this.tabInfoArr[newTab.index] = newTab;
-            }
-
-            //윈도우 한테 정보 내려받기
-
-
-            this.tabInfoArr[newTab.indexBefo].indexNext = newTab.index;
+            this.tab_memo_textArr = newArr;
+            this.tab_memo_text_save();
         }
-        this.value = newTab;
-        this.tab_save();
     }
+    //html_remote
+    html_U(key, value) {
+        this.htmlInfo[key] = value;
+        this.htmlInfo_save();
+    }
+
+    //window
     window_C() {
         const newWin = new Window();
         if (this.windowArr.length <= 0) {
@@ -2683,18 +2706,10 @@ class Model {
         this.value = newWin;
         this.window_save();
     }
-
-    //U
     window_U(index, key, value) {
         this.windowArr[index][key] = value;
         this.window_save();
     }
-    html_U(key, value) {
-        this.htmlInfo[key] = value;
-        this.htmlInfo_save();
-    }
-
-    //D
     window_D(index) {
         const befo = this.windowArr[index].indexBefo;
         const next = this.windowArr[index].indexNext;
@@ -2711,23 +2726,126 @@ class Model {
         this.window_save();
     }
 
-    tab_U(){
-        //tab edit
+    //tab info
+    tab_C(winIndex, type) {
+        const newTab = new TabInfo();
+        newTab.type = type;
+        newTab.fk_windowInex = winIndex;
+        newTab.name = `${all_tapType_kr[type]}`;
+
+        newTab.fontColor = this.windowArr[winIndex].fontColor;
+        newTab.backgroundColor = this.windowArr[winIndex].backgroundColor;
+
+        newTab.fontSize = this.windowArr[winIndex].fontSize;
+        newTab.fontFamily = this.windowArr[winIndex].fontFamily;
+        newTab.fontStyle = this.windowArr[winIndex].fontStyle;
+        newTab.fontWeight = this.windowArr[winIndex].fontWeight;
+
+        newTab.lineColor = this.windowArr[winIndex].lineColor;
+        newTab.lineWeight = this.windowArr[winIndex].lineWeight;
+        newTab.width = this.windowArr[winIndex].width;
+        if (this.tabInfoArr.length <= 0) {
+            newTab.index = 0;
+            newTab.name += newTab.index;
+            this.tabInfoArr.push(newTab);
+        } else {
+            let check = false;
+            for (let i = 0; i < this.tabInfoArr.length; i++) {
+                if (this.tabInfoArr[i] == null) {
+                    newTab.index = i;
+                    check = true;
+                }
+                if (this.tabInfoArr[i] != null && this.tabInfoArr[i].indexNext == null) {
+                    newTab.indexBefo = i;
+                }
+            }
+            //this.windowArr[newWin.indexNext].indexNext = newWin.index;
+            if (check == false) {
+                newTab.index = this.tabInfoArr.length;
+                newTab.name += newTab.index;
+                this.tabInfoArr.push(newTab);
+            } else {
+                newTab.name += newTab.index;
+                this.tabInfoArr[newTab.index] = newTab;
+            }
+            //윈도우 한테 정보 내려받기
+            this.tabInfoArr[newTab.indexBefo].indexNext = newTab.index;
+        }
+        this.value = newTab;
+        this.tab_save();
+        if(type == 0){
+            this.tab_memo_color_C(newTab.index);
+        }
     }
-    tab_D(){
-        //tab del / tab type other del
+    tab_U(tabIndex, key, value){
+        //tab edit
+        this.tabInfoArr[tabIndex][key] = value;
+        this.tab_save();
+    }
+    tab_D(tabIndex){
+        const befo = this.tabInfoArr[tabIndex].indexBefo;
+        const next = this.tabInfoArr[tabIndex].indexNext;
+        if (befo != null) { this.tabInfoArr[befo].indexNext = next; }
+        if (next != null) { this.tabInfoArr[next].indexBefo = befo; }
+        if(this.tabInfoArr[tabIndex].type == 0){
+            this.model.tab_memo_color_D();
+        }
+        this.tabInfoArr[tabIndex] = null;
+        if (tabIndex == this.tabInfoArr.length - 1) {
+            let newArr = [];
+            for (let i = 0; i < this.tabInfoArr.length - 2; i++) {
+                newArr.push(this.tabInfoArr[i]);
+            }
+            this.tabInfoArr = newArr;
+        }
+        this.tab_save();
     }
 
-    tab_memo_C(){
-        //color - create / save
-        //text - create / push / save
+    //tab_memo_color
+    tab_memo_color_C(tabIndex){
+        const newColor = new Tab_Memo_color();
+        newColor.fk_tabIndex = tabIndex;
+        this.tab_memo_colorArr.push(newColor);
+        this.tab_memo_color_save();
     }
-    tab_memo_U(){
-        //color
-        //text
+    tab_memo_color_U(tabIndex, key, value){
+        this.tab_memo_colorArr[tabIndex][key] = value;
+        this.tab_memo_color_save();
     }
-    tab_memo_D(){
-        //text - tuple del 
+    tab_memo_color_D(tabIndex){
+        this.tab_memo_colorArr[tabIndex] = null;
+        this.tab_memo_color_save();
+    }
+
+    //tab_memo_text
+    tab_memo_text_C(tabIndex, text, colorIndex){
+        const memoText = new Tab_Memo_text();
+
+        memoText.fk_tabIndex = tabIndex;
+        const time =  new Date();
+        const timeLi = {
+            year:time.getFullYear(), month:time.getMonth(), date:time.getDate(), day:time.getDay(), 
+            hours:time.getHours(), minutes:time.getMinutes(), seconds:time.getSeconds(),
+        };   
+        memoText.key_madeDate = timeLi;
+
+        memoText.checked = false;
+        memoText.fk_colorIndex = colorIndex;
+        memoText.text = text;
+
+        this.tab_memo_textArr.push(memoText);
+        this.tab_memo_text_save();
+        this.value = memoText;
+    }
+    tab_memo_text_U(textIndex, key, value){
+        //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
+        console.log(textIndex, key, value);
+        this.tab_memo_textArr[textIndex][key] = value;
+        this.tab_memo_text_save();
+    }
+    tab_memo_text_D(textIndex){
+        this.tab_memo_textArr[textIndex] = null;
+        this.tab_memo_text_save();
     }
 
     checkFunction() { return this.check; }
@@ -2751,7 +2869,7 @@ class Model {
 }
 class View {
     returnElement = null;
-    constructor(type, info) {
+    constructor(type, info, tabType) {
         if (type == "html") {
             const element = new htmlRemoteElement();
             element.setValue(info);
@@ -2764,6 +2882,13 @@ class View {
             const element = new tabElement();
             element.setValue(info);
             this.returnElement = element.setElementAll();
+        }else if(type == "tuple"){
+            if(tabType == "memo"){
+                const element = new tabElement_memo();
+                element.setValue(info.set);
+                const tabInfo = info.tab; 
+                this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text);
+            }
         }
     }
 }
@@ -2773,8 +2898,6 @@ class Controller {
     firstPageOpen() {
         this.value = null;
         this.model = new Model();
-        const v_element_html = new View("html", this.model.htmlInfo);
-        mainHtml.appendChild(v_element_html.returnElement);
 
         for (let i = 0; i < this.model.windowArr.length; i++) {
             if (this.model.windowArr[i] != null) {
@@ -2783,9 +2906,29 @@ class Controller {
         }
         for (let i = 0; i < this.model.tabInfoArr.length; i++) {
             if (this.model.tabInfoArr[i] != null) {
+                if(this.model.tabInfoArr[i].type == 0){
+                    let tabText = [];
+                    let tabColor = null;
+                    for(let j=0;j<this.model.tab_memo_textArr.length; j++){
+                        if(this.model.tab_memo_textArr[j].fk_tabIndex==i){
+                            this.model.tab_memo_textArr[j].index = j;
+                            tabText.push(this.model.tab_memo_textArr[j]);
+                        }
+                    }
+                    for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
+                        if(this.model.tab_memo_colorArr[j].fk_tabIndex==i){
+                            tabColor = this.model.tab_memo_colorArr[j];
+                        }
+                    }
+                    const tabInfo = { text:tabText, color:tabColor};
+                    this.model.tabInfoArr[i].tabInfo = tabInfo;
+                }
                 this.tabAppend(this.model.tabInfoArr[i]);
             }
         }
+
+        const v_element_html = new View("html", this.model.htmlInfo);
+        mainHtml.appendChild(v_element_html.returnElement);
     }
     windowAppend(data) {
         const v_element_window = new View("window", data);
@@ -2795,6 +2938,12 @@ class Controller {
         const v_element_tab = new View("tab", data);
         const targetWindow = document.querySelector(`.w${data.fk_windowInex}body`);
         targetWindow.appendChild(v_element_tab.returnElement);
+    }
+    tupleAppend(tabIndex, data, tabType){
+        const v_element_tab = new View("tuple", data, tabType);
+        const target = document.querySelector(`.t${tabIndex}_tuplesDiv`);
+        target.appendChild(v_element_tab.returnElement);
+        
     }
     checkFunction() { return false; }
     sendValue() { return this.value; }
@@ -2818,10 +2967,57 @@ class Controller {
             if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.html_U(key, value2);
         } else if (target == "tab_C") {
-            const winIndex = Number(value.split("/")[0]);
+            const tabIndex = Number(value.split("/")[0]);
             const type = Number(value.split("/")[1]);
-            this.model.tab_C(winIndex, type);
-            this.tabAppend(this.model.value, winIndex);
+            this.model.tab_C(tabIndex, type);
+            let newInfo = this.model.value;
+            if(this.model.value.type == 0){
+                newInfo.tabInfo = {
+                    color: null,
+                    text : [],
+                } 
+                for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
+                    if(this.model.tab_memo_colorArr[j].fk_tabIndex==this.model.value.index){
+                        newInfo.tabInfo.color = this.model.tab_memo_colorArr[j];
+                    }
+                }
+            }
+            this.tabAppend(newInfo, tabIndex);
+        }else if(target == "tab_U"){
+            const index = value.split("/")[0];
+            const key = value.split("/")[1];
+            let value2 = value.split("/")[2];
+            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
+            if (isNaN(value2) == false) { value2 = Number(value2) }
+            this.model.tab_U(index, key, value2);
+        }else if(target == "tab_D"){
+            this.model.tab_D(value);
+        }else if (target == "tab_memo_text_C") {
+            const tabIndex = Number(value.split("/")[0]);
+            const text = value.split("/")[1];
+            const colorIndex = Number(value.split("/")[2]);
+            this.model.tab_memo_text_C(tabIndex, text, colorIndex);
+            this.model.value.index = this.model.tab_memo_textArr.length - 1;
+            const info = {
+                set:this.model.tabInfoArr[tabIndex],
+                tab:this.model.value,
+            }
+            this.tupleAppend(tabIndex, info, "memo");
+            //this.tabAppend(this.model.value, this.model.tab_memo_textArr.length);
+        }else if(target == "tab_memo_text_U"){
+            const testIndex = value.split("/")[0].replace(baseic_regex, "");
+            const key = value.split("/")[1];
+            let value2 = value.split("/")[2];
+            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
+            if (isNaN(value2) == false) { value2 = Number(value2) }
+            this.model.tab_memo_text_U(testIndex, key, value2);
+        }else if(target == "tab_memo_text_D"){
+            this.model.tab_memo_text_D(value);
+        }else if(target == "tab_memo_color_U"){
+            const testIndex = value.split("/")[0];
+            const key = value.split("/")[1];
+            let colorValue = value.split("/")[2];
+            this.model.tab_memo_color_U(testIndex, key, colorValue);
         }
     }
     sendTarget() { return "windowAppend"; }
