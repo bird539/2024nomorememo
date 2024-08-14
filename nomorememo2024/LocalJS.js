@@ -1594,6 +1594,7 @@ class tabElement {
     function_delTab(event) {
         //element.remove();
         const delTab = document.querySelector(`.t${event.target.className}`);
+
         const observer = new Observer_sendGetData(true);
         observer.name = "tab delete event";
         observer.target = "tab_D";
@@ -1662,7 +1663,7 @@ class tabElement {
         hideEditPage.className = `t${this.db.index}hideEditPage_showHide:t${this.db.index}editDiv:flex`;
         hideEditPage.addEventListener("click", showHide);
         const delWinBtn = LEFT_BTN.cloneNode(true);
-        delWinBtn.className = `${this.db.index}`;
+        delWinBtn.className = `${this.db.index}_k${this.db.type}`;
         delWinBtn.innerText = "del(X)";
         delWinBtn.style.removeProperty("width");
         delWinBtn.addEventListener("click", this.function_delTab);
@@ -2166,6 +2167,18 @@ class tabElement_memo {
 
             const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
             element3.style.display = element3.style.display == "none" ? "flex" : "none";
+
+            const tupleIndex = split[1].replace(baseic_regex, "");
+            const textarea = document.querySelector(`.${split[0]}_${split[1]}_editDiv`).childNodes[0];    
+            const mark = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            mark.innerText = textarea.value;
+            const observer = new Observer_sendGetData(true);
+            observer.check = true;
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = {index:tupleIndex, key:"text" , value:textarea.value};        
+            subj.subscribe(observer);
+            subj.notifyAll();
         }
     }
     function_checkEvent(event) {
@@ -2175,15 +2188,18 @@ class tabElement_memo {
             const element = document.querySelector(`.${split[0]}_${split[1]}_checkbox`);
             element.checked = element.checked == true ? false : true;
 
+            const colorArr = document.querySelector(`.${split[0]}_colorInputDiv`);
+            const fontColor = document.querySelector(`.${split[0]}_fontColor`);
+
             const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
             element1.style.textDecorationLine = element.checked ? "line-through" : "none";
-            element1.style.color = element.checked ? "gray" : "black";
+            element1.style.color = element.checked ? `${colorArr.childNodes[3].value}` : `${fontColor.value}`;
 
             const observer = new Observer_sendGetData(true);
-            observer.check = true;
             observer.name = "tap_memo_text update event";
             observer.target = "tab_memo_text_U";
-            observer.value = `${split[1]}/checked/${element.checked}`;
+            observer.value = {index:split[1].replace(baseic_regex, ""), 
+                key:"checked", value:element.checked};
             subj.subscribe(observer);
             subj.notifyAll();
 
@@ -2210,7 +2226,26 @@ class tabElement_memo {
             for (let i = 0; i < element.childElementCount; i++) {
                 element.childNodes[i].style.display = "none";
             }
-            element.childNodes[event.target.selectedIndex].style.display = event.target.selectedIndex != 0 ? "block" : "none";
+            if(event.target.selectedIndex-1 != -1){
+                element.childNodes[event.target.selectedIndex -1].style.display = event.target.selectedIndex != 0 ? "block" : "none";
+            }
+        }else if(target.includes("tupleColorSelect")){
+            const colorArr = document.querySelector(`.${split[0]}_colorInputDiv`);
+            const mark = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            const index = event.target.selectedIndex;
+            if(index != 0){
+                mark.style.backgroundColor = colorArr.childNodes[index - 1].value;
+            }else{
+                mark.style.backgroundColor = "transparent";
+            }
+
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = {index:split[1].replace(baseic_regex, ""), 
+                key:"fk_colorIndex", value:index};
+            subj.subscribe(observer);
+            subj.notifyAll();
         }
     }
     function_copyEvent(event){
@@ -2243,12 +2278,40 @@ class tabElement_memo {
         observer.check = true;
         observer.name = "tap_memo_text update event";
         observer.target = "tab_memo_text_C";
-        observer.value = `${tabIndex}/${text}/${colorIndex}`;
-        console.log(observer.value);
+        observer.value = {tabIndex:tabIndex, text:text, colorIndex:colorIndex};        
         subj.subscribe(observer);
         subj.notifyAll();
 
         textarea.value = null;
+    }
+    function_colorSelectEdit(event){
+        const target = event.target.className;
+        const tabIndex = target.split("_")[0].replace(baseic_regex, "");
+        const key = target.split("_")[1];
+
+        const observer = new Observer_sendGetData(true);
+        observer.name = "tab_memo_color update event";
+        observer.target = "tab_memo_color_U";
+        observer.value = {value:event.target.value, tabIndex:tabIndex,
+            key:key,
+        }
+        subj.subscribe(observer);
+        subj.notifyAll();
+    }
+    function_delTuple(event){
+        const split = event.target.className.split("_");
+        const tuple = document.querySelector(`.${split[0]}_${split[1]}_tupleDiv`);
+        const tupleIndex = split[1].replace(baseic_regex, "");
+
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "tap_memo_text update event";
+        observer.target = "tab_memo_text_D";
+        observer.value = tupleIndex;    
+        subj.subscribe(observer);
+        subj.notifyAll();
+
+        tuple.remove();
     }
     //<-- event
     setHead() {
@@ -2290,7 +2353,7 @@ class tabElement_memo {
             op.innerText = sortText[i];
             sortSelect.appendChild(op);
         }
-        const colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3", "done", "check"];
+        const colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3", "done"];
         const colorSelect = this.select.cloneNode(true);
         colorSelect.className = `t${this.db.index}_colorInputSelect`;
         colorSelect.addEventListener("change", this.function_selectEvent);
@@ -2307,13 +2370,31 @@ class tabElement_memo {
 
         const colorInputDiv = this.div.cloneNode(true);
         colorInputDiv.className = `t${this.db.index}_colorInputDiv`;
-        for (let i = 0; i < colorText.length; i++) {
+
             const colorInput = this.input.cloneNode(true);
             colorInput.type = "color";
-            colorInput.value = this.db.colorArr[i];
             colorInput.style.display = "none";
+            colorInput.value = this.db.colorArr.color1;
+            colorInput.className = `t${this.db.index}_color1`;
+            colorInput.addEventListener("change", this.function_colorSelectEdit);
             colorInputDiv.appendChild(colorInput);
-        }
+
+            const colorInput2 = colorInput.cloneNode(true);
+            colorInput2.value = this.db.colorArr.color2;
+            colorInput2.className = `t${this.db.index}_color2`;
+            colorInput2.addEventListener("change", this.function_colorSelectEdit);
+            colorInputDiv.appendChild(colorInput2);
+            const colorInput3 = colorInput.cloneNode(true);
+            colorInput3.value = this.db.colorArr.color3;
+            colorInput3.className = `t${this.db.index}_color3`;
+            colorInput3.addEventListener("change", this.function_colorSelectEdit);
+            colorInputDiv.appendChild(colorInput3);
+            const colorInput4 = colorInput.cloneNode(true);
+            colorInput4.className = `t${this.db.index}_done`;
+            colorInput4.addEventListener("change", this.function_colorSelectEdit);
+            colorInput4.value = this.db.colorArr.done;
+            colorInputDiv.appendChild(colorInput4);
+
 
         const allDiv = this.div.cloneNode(true);
         const upDiv = this.div.cloneNode(true);
@@ -2360,7 +2441,7 @@ class tabElement_memo {
         bodyDiv.className = `t${this.db.index}_tuplesDiv`;
         this.allCheck = true;
         for (let i = 0; i < this.db.textArr.length; i++) {
-            const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text);
+            const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
             if(this.db.textArr[i].checked==false){ this.allCheck = false; }
             bodyDiv.appendChild(tuple);
         }
@@ -2406,8 +2487,9 @@ class tabElement_memo {
 
         this.tab_memo_div.appendChild(footDiv);
     }
-    makeTuple(checked, index, text) {
+    makeTuple(checked, index, text, colorIndex) {
         const tupleDiv = this.div.cloneNode(true);
+        tupleDiv.className = `t${this.db.index}_i${index}_tupleDiv`;
 
         const chekDiv = this.div.cloneNode(true);
         chekDiv.style.display = "flex";
@@ -2435,15 +2517,19 @@ class tabElement_memo {
         mark.style.width = "100%";
         mark.innerText = text;
         mark.className = `t${this.db.index}_i${index}_mark`;
+        if(colorIndex != null){
+            if(colorIndex == 1){mark.style.backgroundColor = this.db.colorArr.color1}
+            else if(colorIndex == 2){mark.style.backgroundColor = this.db.colorArr.color2}
+            else if(colorIndex == 3){mark.style.backgroundColor = this.db.colorArr.color3}
+        }
         //mark.style.backgroundColor = "rgb(234, 37, 37)";
         mark.style.textDecorationLine = checked ? "line-through" : "none";
-        mark.style.color = checked ? "gray" : `${this.db.fontColor}`;
+        mark.style.color = checked ? `${this.db.colorArr.done}` : `${this.db.fontColor}`;
         //mark.addEventListener("click",this.function_checkEvent);
         textDiv.style.textAlign = "start";
         textDiv.className = `t${this.db.index}_i${index}_textDiv`;
         textDiv.appendChild(mark);
         textDiv.addEventListener("click", this.function_checkEvent);
-
 
         const editDiv = this.div.cloneNode(true);
         const textareaEdit = this.textarea.cloneNode(true);
@@ -2480,7 +2566,9 @@ class tabElement_memo {
         copyBtn.addEventListener("click", this.function_copyEvent);
 
         const delBtn = this.button.cloneNode(true);
+        delBtn.className = `t${this.db.index}_i${index}_delBtn`;
         delBtn.innerText = "x"; delBtn.style.width = "40px";
+        delBtn.addEventListener("click", this.function_delTuple);
         const editBtn = this.button.cloneNode(true);
         editBtn.innerText = "e"; editBtn.style.width = "40px";
         editBtn.className = `t${this.db.index}_i${index}_editBtn`;
@@ -2494,6 +2582,8 @@ class tabElement_memo {
             op.value = i;
             colorSelect.appendChild(op);
         }
+        colorSelect.className = `t${this.db.index}_i${index}_tupleColorSelect`;
+        colorSelect.addEventListener("change", this.function_selectEvent);
         mainBtnDiv.style.display = "flex";
         mainBtnDiv.style.flexDirection = "row-reverse";
         mainBtnDiv.className = `t${this.db.index}_i${index}_colorECBtn`;
@@ -2596,9 +2686,9 @@ class TabInfo {
 }
 
 class Tab_Memo_color {
-    fk_tabIndex = null; color1 = null; color2 = null; color3 = null;
+    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; done = null;
     constructor(tabIndex) {
-        this.fk_tabIndex = tabIndex; this.color1 = '#fe0000'; this.color2 = '#1500ff'; this.color3 = '#00ff19';
+        this.fk_tabIndex = tabIndex; this.color1 = '#fe0000'; this.color2 = '#1500ff'; this.color3 = '#00ff19'; this.done = "#A3A3A3";
     }
 }
 class Tab_Memo_text {
@@ -2815,6 +2905,12 @@ class Model {
         if (next != null) { this.tabInfoArr[next].indexBefo = befo; }
         if(this.tabInfoArr[tabIndex].type == 0){
             this.tab_memo_color_D(tabIndex);
+            for(let i=0;i<this.tab_memo_textArr.length;i++){
+                if(this.tab_memo_textArr[i].fk_tabIndex == tabIndex){
+                    this.tab_memo_textArr[i] = null;
+                }
+            }
+            this.tab_memo_text_save();
         }
         this.tabInfoArr[tabIndex] = null;
         if (tabIndex == this.tabInfoArr.length - 1) {
@@ -2835,11 +2931,20 @@ class Model {
         this.tab_memo_color_save();
     }
     tab_memo_color_U(tabIndex, key, value){
-        this.tab_memo_colorArr[tabIndex][key] = value;
+        for(let i=0;i<this.tab_memo_colorArr.length; i++){
+            if(this.tab_memo_colorArr[i].fk_tabIndex ==tabIndex){
+                this.tab_memo_colorArr[i][key] = value;
+            }
+        }
+        
         this.tab_memo_color_save();
     }
     tab_memo_color_D(tabIndex){
-        this.tab_memo_colorArr[tabIndex] = null;
+        for(let i=0;i<this.tab_memo_colorArr.length;i++){
+            this.tab_memo_colorArr[i].fk_tabIndex == tabIndex;
+            this.tab_memo_colorArr[i] = null;
+            break;
+        }
         this.tab_memo_color_save();
     }
 
@@ -2864,9 +2969,9 @@ class Model {
         this.value = memoText;
 
     }
-    tab_memo_text_U(textIndex, key, value){
+    tab_memo_text_U(tupleIndex, key, value){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
-        this.tab_memo_textArr[textIndex][key] = value;
+        this.tab_memo_textArr[tupleIndex][key] = value;
         this.tab_memo_text_save();
     }
     tab_memo_text_D(textIndex){
@@ -2891,7 +2996,27 @@ class Model {
     tab_save() { localStorage.setItem(this.DBname.tabInfo, JSON.stringify(this.tabInfoArr)); }
 
     tab_memo_color_save() { localStorage.setItem(this.DBname.tab_memo_color, JSON.stringify(this.tab_memo_colorArr)); }
+    tab_memo_color_nullClear(){
+        let newArr = [];
+        for(let i=0;i<this.tab_memo_colorArr.length; i++){
+            if(this.tab_memo_colorArr[i]!=null){
+                newArr.push(this.tab_memo_colorArr[i]);
+            }
+        }
+        this.tab_memo_colorArr = newArr;
+        this.tab_memo_color_save();
+    }
     tab_memo_text_save() { localStorage.setItem(this.DBname.tab_memo_text, JSON.stringify(this.tab_memo_textArr)); }
+    tab_memo_text_nullClear(){
+        let newArr = [];
+        for(let i=0;i<this.tab_memo_textArr.length; i++){
+            if(this.tab_memo_textArr[i]!=null){
+                newArr.push(this.tab_memo_textArr[i]);
+            }
+        }
+        this.tab_memo_textArr = newArr;
+        this.tab_memo_text_save();
+    }
 }
 class View {
     returnElement = null;
@@ -2918,10 +3043,9 @@ class View {
                 const exInfo = { text : [], color : info.color};
                 info.set.tabInfo = exInfo;
 
-                console.log(info.set);
                 element.setValue(info.set);
                 const tabInfo = info.tab; 
-                this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text);
+                this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text, tabInfo.fk_colorIndex);
             }
         }
     }
@@ -2933,6 +3057,10 @@ class Controller {
         this.value = null;
         this.model = new Model();
 
+        //db null clear
+        this.model.tab_memo_color_nullClear();
+        this.model.tab_memo_text_nullClear();
+
         for (let i = 0; i < this.model.windowArr.length; i++) {
             if (this.model.windowArr[i] != null) {
                 this.windowAppend(this.model.windowArr[i]);
@@ -2942,9 +3070,9 @@ class Controller {
             if (this.model.tabInfoArr[i] != null) {
                 if(this.model.tabInfoArr[i].type == 0){
                     let tabText = [];
-                    let tabColor = null;
+                    let tabColor = [];
                     for(let j=0;j<this.model.tab_memo_textArr.length; j++){
-                        if(this.model.tab_memo_textArr[j].fk_tabIndex==i){
+                        if(this.model.tab_memo_textArr[j]!=null && this.model.tab_memo_textArr[j].fk_tabIndex==i){
                             this.model.tab_memo_textArr[j].index = j;
                             tabText.push(this.model.tab_memo_textArr[j]);
                         }
@@ -3026,9 +3154,9 @@ class Controller {
         }else if(target == "tab_D"){
             this.model.tab_D(value);
         }else if (target == "tab_memo_text_C") {
-            const tabIndex = Number(value.split("/")[0]);
-            const text = value.split("/")[1];
-            const colorIndex = Number(value.split("/")[2]);
+            const tabIndex = value.tabIndex;
+            const text = value.text;
+            const colorIndex = value.colorIndex;
             this.model.tab_memo_text_C(tabIndex, text, colorIndex);
             this.model.value.index = this.model.tab_memo_textArr.length - 1;
             const info = {
@@ -3043,19 +3171,19 @@ class Controller {
             this.tupleAppend(tabIndex, info, "memo");
             //this.tabAppend(this.model.value, this.model.tab_memo_textArr.length);
         }else if(target == "tab_memo_text_U"){
-            const testIndex = value.split("/")[0].replace(baseic_regex, "");
-            const key = value.split("/")[1];
-            let value2 = value.split("/")[2];
+            const index = value.index;
+            const key = value.key;
+            let value2 = value.value;
             if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
             if (isNaN(value2) == false) { value2 = Number(value2) }
-            this.model.tab_memo_text_U(testIndex, key, value2);
+            this.model.tab_memo_text_U(index, key, value2);
         }else if(target == "tab_memo_text_D"){
             this.model.tab_memo_text_D(value);
         }else if(target == "tab_memo_color_U"){
-            const testIndex = value.split("/")[0];
-            const key = value.split("/")[1];
-            let colorValue = value.split("/")[2];
-            this.model.tab_memo_color_U(testIndex, key, colorValue);
+            const tabIndex = value.index;
+            const key = value.key;
+            const colorValue = value.value;
+            this.model.tab_memo_color_U(tabIndex, key, colorValue);
         }
     }
     sendTarget() { return "windowAppend"; }
@@ -3066,115 +3194,3 @@ subj.subscribe(start_main);
 start_main.firstPageOpen();
 
 //<==========MVC pattern all
-let array10 = new Array(10);
-
-
-
-
-//========================================================================
-
-
-
-//실험실------------------------------------------------------------------------------------------
-class htmlRemote {
-    html_backgroundColor = "";
-    html_ligthDarkMode = "";
-
-    #control_backgroundColor = "";
-
-    #control_fontSize = "";
-    #control_fontFamily = "";
-    #control_fontStyle = "";
-    #control_fontWeight = "";
-
-    #trash_window = {};
-    #trash_tabInfo = {};
-    #trash_tab = {};
-
-    constructor(builder) {
-        this.html_backgroundColor = builder.get_html_backgroundColor();
-        this.html_ligthDarkMode = builder.get_html_ligthDarkMode();
-    }
-    get_html_backgroundColor() { return this.html_backgroundColor; }
-    get_html_ligthDarkMode() { return this.html_ligthDarkMode; }
-
-    static Builder = class {
-        #html_backgroundColor = "";
-        #html_ligthDarkMode = "";
-
-        get_html_backgroundColor() { return this.#html_backgroundColor; }
-        set_html_backgroundColor(color) {
-            this.#html_backgroundColor = color; return this;
-        }
-
-        get_html_ligthDarkMode() { return this.#html_ligthDarkMode; }
-        set_html_ligthDarkMode(color) {
-            this.#html_ligthDarkMode = color; return this;
-        }
-
-        build() { return new htmlRemote(this); }
-    }
-}
-class htmlRemote_Model {
-    #htmlControlOb;
-    constructor() {
-        this.#htmlControlOb = new htmlRemote.Builder()
-            .set_html_backgroundColor("black")
-            .set_html_ligthDarkMode("light")
-            .build();
-    }
-    firstPageOpen() {
-        let getOb = localStorage.getItem("htmlControlDB");
-        if (getOb == null) {
-            this.#htmlControlOb.html_backgroundColor = "white";
-            this.#htmlControlOb.html_ligthDarkMode = "black";
-            localStorage.setItem("htmlControlDB", JSON.stringify(this.#htmlControlOb));
-        } else {
-            let saveDB = JSON.parse(getOb);
-            this.#htmlControlOb.html_backgroundColor = saveDB.html_backgroundColor;
-            this.#htmlControlOb.html_ligthDarkMode = saveDB.html_ligthDarkMode;
-        }
-    }
-}
-/*
-class Subject {
-    constructor() { this.observers = []; }
-    subscribe(observer) { this.observers.push(observer); }
-    unsubscribe(observer) { this.observers = this.observers.filter((obs) => obs !== observer); }
-    notifyAll() {
-        this.observers.forEach((subscriber) => {
-            try {
-                subscriber.update(this.constructor.name);
-            } catch (err) { console.error("error", err); }
-        })
-    }
-}
-
-class Observer {
-    constructor(name) { this.name = name; }
-    update(subj) {
-        console.log(`${this.name}: notified from ${subj} class!`);
-    }
-}
-
-const subj = new Subject();
-const a = new Observer("A");
-const b = new Observer("B");
-class c {
-    constructor() {
-        this.name = "c"
-    }
-    bbb() {
-        console.log("by")
-    }
-    update() {
-        console.log("~~");
-    }
-}
-const cc = new c("c");
-
-subj.subscribe(a);
-subj.subscribe(b);
-subj.subscribe(cc);
-subj.notifyAll();
-*/
