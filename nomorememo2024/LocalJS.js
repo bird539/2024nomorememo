@@ -981,20 +981,19 @@ class windowElement {
         observer.name = "window update event";
         observer.target = "window_U";
         observer.value = null;
-        const strArray = event.target.className.split('_');
-        for (let i = 0; i < strArray.length; i++) {
-            if (strArray[i].includes("showHide")) {
-                const targetName = strArray[i].split(":")[1];
-                const target = document.querySelector(`.${targetName}`);
-                target.style.display = target.style.display != "none" ? "none" : strArray[i].split(":")[2];
-                if (targetName.includes("body")) {
-                    const indexStr = strArray[0];
-                    const index = indexStr.replace(baseic_regex, "");
-                    const show = target.style.display != "none";
-                    observer.value = `${index}/show/${show}`;
-                }
-            }
+
+        const index = event.target.className.replace(baseic_regex, "");
+        const tapPls = document.querySelector(`.w${index}TabSelectDiv`);
+        const winEdit = document.querySelector(`.w${index}EditDiv`);
+        
+        const winBody = document.querySelector(`.w${index}body`);
+        winBody.style.display = winBody.style.display == "none" ? "block":"none";
+        const show = winBody.style.display != "none";
+        if(show == false){
+            tapPls.style.display = "none";
+            winEdit.style.display = "none";
         }
+        observer.value = `${index}/show/${show}`;
         subj.subscribe(observer);
         subj.notifyAll();
     }
@@ -1060,7 +1059,7 @@ class windowElement {
 
         const titleBtn = LEFT_BTN.cloneNode(true);
         titleBtn.innerText = this.db.title;
-        titleBtn.className = `w${this.db.index}titleBtn_showHide:w${this.db.index}body:block`;
+        titleBtn.className = `w${this.db.index}titleBtn`;
         titleBtn.addEventListener('click', this.showHide);
 
         const tapPlsBtn = MIN_BTN.cloneNode(true);
@@ -1998,11 +1997,12 @@ class tabElement_memo {
     db = {
         textArr : null,
         colorArr : null,
+        inputShow:null,
 
         index: null,
         sort: null,
 
-        fontSize: null, fontThick: null, fontFamily: null, fontStyle: null,
+        fontSize: null, fontWeight: null, fontFamily: null, fontStyle: null,
         fontColor: null, backgroundColor: null,
         lineColor: null, lineThick: null,
 
@@ -2023,6 +2023,8 @@ class tabElement_memo {
     setValue(db) {
         this.db.textArr = db.tabInfo.text;
         this.db.colorArr = db.tabInfo.color;
+        this.db.sort = db.sort;
+        this.db.inputShow = db.tabInfo.inputShow;
 
         this.allCheck = false;
 
@@ -2038,7 +2040,7 @@ class tabElement_memo {
         this.db.index_fontWeight = db.fontWeight;
 
         this.db.fontSize = db.fontSize;
-        this.db.fontThick = all_fontWeight[db.fontWeight];
+        this.db.fontWeight = db.fontWeight < 100 ? all_fontWeight[db.fontWeight] : db.fontWeight;
         this.db.fontFamily = isNaN(Number(db.fontFamily)) ? db.fontFamily : all_fontFamily[db.fontFamily];
         this.db.fontStyle = all_fontStyle[db.fontStyle];
 
@@ -2079,7 +2081,7 @@ class tabElement_memo {
 
         this.select.style.fontFamily = this.db.fontFamily;
         this.select.style.fontSize = `${this.db.fontSize}pt`;
-        this.select.style.fontWeight = this.db.fontThick;
+        this.select.style.fontWeight = this.db.fontWeight;
         this.select.style.fontStyle = this.db.fontStyle;
         this.select.style.color = this.db.fontColor;
 
@@ -2091,31 +2093,31 @@ class tabElement_memo {
 
         this.button.style.fontFamily = this.db.fontFamily;
         this.button.style.fontSize = `${this.db.fontSize}pt`;
-        this.button.style.fontWeight = this.db.fontThick;
+        this.button.style.fontWeight = this.db.fontWeight;
         this.button.style.fontStyle = this.db.fontStyle;
         this.button.style.color = this.db.fontColor;
 
         this.input.style.fontFamily = this.db.fontFamily;
         this.input.style.fontSize = `${this.db.fontSize}pt`;
-        this.input.style.fontWeight = this.db.fontThick;
+        this.input.style.fontWeight = this.db.fontWeight;
         this.input.style.fontStyle = this.db.fontStyle;
         this.input.style.color = this.db.fontColor;
 
         this.div.style.fontFamily = this.db.fontFamily;
         this.div.style.fontSize = `${this.db.fontSize}pt`;
-        this.div.style.fontWeight = this.db.fontThick;
+        this.div.style.fontWeight = this.db.fontWeight;
         this.div.style.fontStyle = this.db.fontStyle;
         this.div.style.color = this.db.fontColor;
 
         this.textarea.style.fontFamily = this.db.fontFamily;
         this.textarea.style.fontSize = `${this.db.fontSize}pt`;
-        this.textarea.style.fontWeight = this.db.fontThick;
+        this.textarea.style.fontWeight = this.db.fontWeight;
         this.textarea.style.fontStyle = this.db.fontStyle;
         this.textarea.style.color = this.db.fontColor;
 
         this.mark.style.fontFamily = this.db.fontFamily;
         this.mark.style.fontSize = `${this.db.fontSize}pt`;
-        this.mark.style.fontWeight = this.db.fontThick;
+        this.mark.style.fontWeight = this.db.fontWeight;
         this.mark.style.fontStyle = this.db.fontStyle;
         this.mark.style.color = this.db.fontColor;
 
@@ -2143,6 +2145,17 @@ class tabElement_memo {
 
             const element2 = document.querySelector(`.t${index}subDiv`);
             element2.style.display = element2.style.display == "none" ? "flex" : "none";
+
+            let value = element2.style.display == "none" ? false : true;
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tab_memo_color update event";
+            observer.target = "tab_memo_color_U";
+            observer.value = {value:value, index:index,
+                key:"inputShow",
+            }
+            subj.subscribe(observer);
+            subj.notifyAll();
+
         } else if (target.includes("editBtn")) {
             const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
             element.style.display = element.style.display == "none" ? "block" : "none";
@@ -2246,6 +2259,106 @@ class tabElement_memo {
                 key:"fk_colorIndex", value:index};
             subj.subscribe(observer);
             subj.notifyAll();
+        }else if(target.includes("sortBtn")){
+            const index = split[0].replace(baseic_regex, "");
+            const key = "sort";
+            const value = event.target.selectedIndex;
+
+            const observer = new Observer_sendGetData(true);
+            observer.check = true;
+            observer.name = "tap update event";
+            observer.target = "tab_U";
+            observer.value = `${index}/${key}/${value}`;        
+            subj.subscribe(observer);
+            subj.notifyAll();
+
+            const tuplesDiv = document.querySelector(`.t${index}_tuplesDiv`);
+            const len = tuplesDiv.childNodes.length;
+            if(value == 0){
+                //const div = document.createElement("div"); 
+                let exArr = [];
+                for(let i=0; i<len; i++){
+                    const i_tuple = tuplesDiv.childNodes[i];
+                    const i_index = i_tuple.childNodes[0].childNodes[0].value
+                    exArr.push(i_index);
+                }
+                exArr.sort((a, b) => b - a);
+                for(let i=0; i<exArr.length; i++){
+                    let n = 0; 
+                    while(true){
+                        const j_tuple = tuplesDiv.childNodes[n];
+                        const j_index = j_tuple.childNodes[0].childNodes[0].value
+                        if(exArr[i] == j_index){
+                            tuplesDiv.appendChild(j_tuple);
+                            break;
+                        }
+                        n += 1;
+                    }
+                }
+            }else if(value == 1){
+                let exArr = [];
+                for(let i=0; i<len; i++){
+                    const i_tuple = tuplesDiv.childNodes[i];
+                    const i_index = i_tuple.childNodes[0].childNodes[0].value
+                    exArr.push(i_index);
+                }
+                exArr.sort((a, b) => a - b);
+                for(let i=0; i<exArr.length; i++){
+                    let n = 0; 
+                    while(true){
+                        const j_tuple = tuplesDiv.childNodes[n];
+                        const j_index = j_tuple.childNodes[0].childNodes[0].value
+                        if(exArr[i] == j_index){
+                            tuplesDiv.appendChild(j_tuple);
+                            break;
+                        }
+                        n += 1;
+                    }
+                }
+            }else if(value == 2){
+                let all = [ [], [], [], [] ];
+                for(let j=0; j<all.length; j++){
+                    for(let i=0; i<len; i++){
+                        const i_tuple = tuplesDiv.childNodes[i];
+                        const i_index = i_tuple.childNodes[0].childNodes[0].value
+                        const i_color = i_tuple.childNodes[1].childNodes[1].childNodes[0].childNodes[2].selectedIndex;
+                        if(i_color == j){
+                            all[j].push(i_index);
+                        }
+                    }
+                }
+                for(let i=0; i<all.length;i++){
+                    all[i].sort((a, b) => a - b);
+                }
+                for(let i=1; i<all.length; i++){
+                    for(let j=0; j<all[i].length;j++){
+                        let n = 0; 
+                        while(true){
+                            const j_tuple = tuplesDiv.childNodes[n];
+                            const j_index = j_tuple.childNodes[0].childNodes[0].value
+                            if(all[i][j] == j_index){
+                                tuplesDiv.appendChild(j_tuple);
+                                break;
+                            }
+                            n += 1;
+                        }
+                    }
+                }// for(let j=0; j<all[i].length;j++){
+                    for(let i=0; i<1; i++){
+                        for(let j=0; j<all[i].length;j++){
+                            let n = 0; 
+                            while(true){
+                                const j_tuple = tuplesDiv.childNodes[n];
+                                const j_index = j_tuple.childNodes[0].childNodes[0].value
+                                if(all[i][j] == j_index){
+                                    tuplesDiv.appendChild(j_tuple);
+                                    break;
+                                }
+                                n += 1;
+                            }
+                        }
+                    }
+            }
         }
     }
     function_copyEvent(event){
@@ -2255,14 +2368,21 @@ class tabElement_memo {
             const element = document.querySelector(`.${split[0]}_${split[1]}_mark`);
             copyToClipboard(element.innerText);
         }else if(target.includes("copyAll")){
+            const select = event.target.previousSibling.previousSibling;
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
             let text = "";
             for (let i = 0; i < element.childNodes.length; i++) {
                 const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
                 if(checkbox.checked){
                     const mark = element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
-                    text += mark.innerText
-                    text += "\n";
+                    const color = element.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
+                    if(select.selectedIndex != 0 && select.selectedIndex==color.selectedIndex){
+                        text += mark.innerText
+                        text += "\n";
+                    }else if(select.selectedIndex == 0){
+                        text += mark.innerText
+                        text += "\n";
+                    }
                 }
             }
             copyToClipboard(text);
@@ -2292,7 +2412,7 @@ class tabElement_memo {
         const observer = new Observer_sendGetData(true);
         observer.name = "tab_memo_color update event";
         observer.target = "tab_memo_color_U";
-        observer.value = {value:event.target.value, tabIndex:tabIndex,
+        observer.value = {value:event.target.value, index:tabIndex,
             key:key,
         }
         subj.subscribe(observer);
@@ -2313,6 +2433,28 @@ class tabElement_memo {
 
         tuple.remove();
     }
+    function_allDelTuple(event){
+        const index = event.target.className.split("_")[0].replace(baseic_regex, "");
+        const select = event.target.previousSibling;
+
+        const tuplesDiv = document.querySelector(`.t${index}_tuplesDiv`);
+        for(let i=tuplesDiv.childNodes.length-1;i>=0;i--){
+            const checkbox = tuplesDiv.childNodes[i].childNodes[0].childNodes[0];
+            const color = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
+            const del = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[3];
+            if(checkbox.checked){
+                if(select.selectedIndex != 0 && select.selectedIndex==color.selectedIndex){
+                    del.click();
+                }else if(select.selectedIndex == 0){
+                    del.click();
+                }
+            }
+        }
+        
+    }
+
+    //background-color: transparent; border: none; padding: 0px; margin-left: 10px; height: 40px; font-family: sans-serif; font-size: 14pt; color: rgb(0, 117, 66); width: 40px;
+    //background-color: transparent; border: none; padding: 0px; margin-left: 10px; height: 40px; font-family: sans-serif; font-size: 14pt; font-weight: 100; font-style: normal; color: rgb(0, 117, 66); width: 40px;
     //<-- event
     setHead() {
         const tab_headDiv = this.div.cloneNode(true);
@@ -2353,6 +2495,9 @@ class tabElement_memo {
             op.innerText = sortText[i];
             sortSelect.appendChild(op);
         }
+        sortSelect.className = `t${this.db.index}sortBtn`;
+        sortSelect.selectedIndex = this.db.sort;
+        sortSelect.addEventListener("change",this.function_selectEvent);
         const colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3", "done"];
         const colorSelect = this.select.cloneNode(true);
         colorSelect.className = `t${this.db.index}_colorInputSelect`;
@@ -2405,7 +2550,7 @@ class tabElement_memo {
         tab_headDiv.appendChild(i_btn_div);
 
 
-        upDiv.style.display = "flex";
+        upDiv.style.display = this.db.colorArr.inputShow ? "flex" : "none";
         upDiv.className = `t${this.db.index}inputDiv`
         upDiv.appendChild(textarea);
 
@@ -2416,7 +2561,7 @@ class tabElement_memo {
         downDiv.appendChild(sortSelect);
 
         const textareaTogather = this.div.cloneNode(true);
-        textareaTogather.style.display = "flex";
+        textareaTogather.style.display = this.db.colorArr.inputShow ? "flex" : "none";
         textareaTogather.style.flexDirection = "row-reverse";
         textareaTogather.flexWrap = "wrap";
         textareaTogather.appendChild(subBtn);
@@ -2440,11 +2585,60 @@ class tabElement_memo {
         const bodyDiv = this.div.cloneNode(true);
         bodyDiv.className = `t${this.db.index}_tuplesDiv`;
         this.allCheck = true;
+        /*
         for (let i = 0; i < this.db.textArr.length; i++) {
             const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
             if(this.db.textArr[i].checked==false){ this.allCheck = false; }
             bodyDiv.appendChild(tuple);
         }
+        */
+        if(true){
+            const len = this.db.textArr.length;
+            if(this.db.sort == 0){
+                for (let i = len-1; i >= 0; i--) {
+                    const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
+                    if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+                    bodyDiv.appendChild(tuple);
+                }
+            }else if(this.db.sort == 1){
+                for (let i = 0; i < len; i++) {
+                    const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
+                    if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+                    bodyDiv.appendChild(tuple);
+                }
+            }else if(this.db.sort == 2){
+                let all = [ [], [], [], [] ];
+                for(let j=0; j<all.length; j++){
+                    for(let i=0; i<len; i++){
+                        const i_index = i;
+                        const i_color = this.db.textArr[i].fk_colorIndex;
+                        if(i_color == j){
+                            all[j].push(i_index);
+                        }
+                    }
+                }
+                for(let i=0; i<all.length;i++){
+                    all[i].sort((a, b) => a - b);
+                }
+                for(let i=1; i<all.length; i++){
+                    for(let j=0; j<all[i].length;j++){
+                        const index = all[i][j];
+                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text, this.db.textArr[index].fk_colorIndex);
+                        if(this.db.textArr[index].checked==false){ this.allCheck = false; }
+                        bodyDiv.appendChild(tuple);
+                    }
+                }
+                for(let i=0; i<1; i++){
+                    for(let j=0; j<all[i].length;j++){
+                        const index = all[i][j];
+                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text, this.db.textArr[index].fk_colorIndex);
+                        if(this.db.textArr[index].checked==false){ this.allCheck = false; }
+                        bodyDiv.appendChild(tuple);
+                    }
+                }
+            }
+        }
+        
         this.tab_memo_div.appendChild(bodyDiv);
     }
     setFoot(check) {
@@ -2474,6 +2668,9 @@ class tabElement_memo {
         copyBtn.addEventListener("click", this.function_copyEvent);
         const delBtn = copyBtn.cloneNode(true);
         delBtn.innerText = "x"
+        delBtn.className = `t${this.db.index}_delAll`
+        delBtn.addEventListener("click", this.function_allDelTuple); 
+
 
         const rightDiv = this.div.cloneNode(true);
         rightDiv.appendChild(select);
@@ -2582,6 +2779,7 @@ class tabElement_memo {
             op.value = i;
             colorSelect.appendChild(op);
         }
+        colorSelect.selectedIndex = colorIndex;
         colorSelect.className = `t${this.db.index}_i${index}_tupleColorSelect`;
         colorSelect.addEventListener("change", this.function_selectEvent);
         mainBtnDiv.style.display = "flex";
@@ -2686,9 +2884,10 @@ class TabInfo {
 }
 
 class Tab_Memo_color {
-    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; done = null;
+    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; done = null; inputShow=null;
     constructor(tabIndex) {
         this.fk_tabIndex = tabIndex; this.color1 = '#fe0000'; this.color2 = '#1500ff'; this.color3 = '#00ff19'; this.done = "#A3A3A3";
+        this.inputShow=true;
     }
 }
 class Tab_Memo_text {
