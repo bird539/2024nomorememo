@@ -115,6 +115,7 @@ function timeSomthing(time) {
     return timeTxt;
 }
 
+
 const unsecuredCopyToClipboard = (text) => {
     const textArea = document.createElement("textarea");
     textArea.value = text; document.body.appendChild(textArea);
@@ -129,7 +130,10 @@ const copyToClipboard = (content) => {
     }
     //copyToClipboard(copyText);
 };
-
+function clone(value){
+    const value2 = value;
+    return value2;
+}
 //==========================================================
 
 //옵저버 디자인 패턴 ===>
@@ -884,7 +888,6 @@ class windowElement {
         subj.subscribe(observer);
         subj.notifyAll();
     }
-
     function_newTab(event) {
         const winIndex = event.target.className.split("_")[0].replace(baseic_regex, "");
         const tabType = event.target.className.split("_")[1];
@@ -897,6 +900,22 @@ class windowElement {
         observer.value = `${winIndex}/${tabType}`;
         subj.subscribe(observer);
         subj.notifyAll();
+    }
+    function_editIndex(event){
+        const index = event.target.className.replace(baseic_regex, "");
+        const select = event.target.className.split("_")[1];  
+        console.log(select); 
+        
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "window update event";
+        observer.target = "window_U_indexChange";
+        observer.value = {index:index, select:select}
+        subj.subscribe(observer);
+        subj.notifyAll();
+
+        const winDiv = document.querySelector(`w${index}`);
+        
     }
 
     setValue(db) {
@@ -1117,9 +1136,13 @@ class windowElement {
         const textDiv2 = textDiv1.cloneNode(true);
 
         const goTobefo = LEFT_BTN.cloneNode(true);
-        goTobefo.innerText = "<= move to front";
+        goTobefo.className = `w${this.db.index}_befo`;
+        goTobefo.innerText = "<= move to back";
+        goTobefo.addEventListener("click",this.function_editIndex);
         const goTonext = LEFT_BTN.cloneNode(true);
-        goTonext.innerText = "move to back =>";
+        goTonext.innerText = "move to front =>";
+        goTonext.className = `w${this.db.index}_next`;
+        goTonext.addEventListener("click",this.function_editIndex);
         const hideEditPage = LEFT_BTN.cloneNode(true);
         hideEditPage.innerText = "hideEdit";
         hideEditPage.className = `w${this.db.index}hideEditPage_showHide:w${this.db.index}editDiv:flex`;
@@ -3025,6 +3048,36 @@ class Model {
         this.windowArr[index][key] = value;
         this.window_save();
     }
+    window_U_indexChange(winIndex, select){
+        let index = this.windowArr[winIndex];
+        let befo = this.windowArr[index.indexBefo];
+        let next = this.windowArr[index.indexNext];
+
+        let ex =  clone(next.indexBefo); 
+        next.indexBefo = clone(index.indexBefo);
+        index.indexBefo = clone(next.index);
+
+        ex =  clone(next.indexNext); 
+        next.indexNext = clone(index.index);
+        index.indexNext = clone(ex);
+        this.windowArr[index.index] = index;
+        this.windowArr[next.index] = next;
+        if(select == "befo"){
+            if(next != null){ 
+                next.indexBefo = clone(befo.index);
+                this.windowArr[next.index] = next;
+            }
+        }else if(select == "next"){
+            if(next != null){
+                if(befo != null){ 
+                    befo.indexNext = clone(next.index);
+                    this.windowArr[befo.index] = befo;
+                }
+            }
+        }
+        this.window_save();
+        location.reload(true);
+    }
     window_D(index) {
         const befo = this.windowArr[index].indexBefo;
         const next = this.windowArr[index].indexNext;
@@ -3259,14 +3312,33 @@ class Controller {
         //db null clear
         this.model.tab_memo_color_nullClear();
         this.model.tab_memo_text_nullClear();
-
+/*
         for (let i = 0; i < this.model.windowArr.length; i++) {
-            if (this.model.windowArr[i] != null) {
+            if (this.model.windowArr[i] != null && this.model.windowArr[i].indexBefo == null) {
                 this.windowAppend(this.model.windowArr[i]);
             }
         }
+*/
+        //window start
+
+        let win_i = 0;
+        for (let i = 0; i < this.model.windowArr.length; i++) {
+            if (this.model.windowArr[i] != null && this.model.windowArr[i].indexBefo == null){
+                win_i = this.model.windowArr[i].index;
+                break
+            }
+        }
+        while(true){
+            this.windowAppend(this.model.windowArr[win_i]);
+            const next = this.model.windowArr[win_i].indexNext;
+            if(next != null){ win_i = next }
+            else{ win_i = null; break }
+        }
+        
+        //tab start
         for (let i = 0; i < this.model.tabInfoArr.length; i++) {
             if (this.model.tabInfoArr[i] != null) {
+                //tab_memo start
                 if(this.model.tabInfoArr[i].type == 0){
                     let tabText = [];
                     let tabColor = [];
@@ -3289,6 +3361,7 @@ class Controller {
             }
         }
 
+        //html start
         const v_element_html = new View("html", this.model.htmlInfo);
         mainHtml.appendChild(v_element_html.returnElement);
     }
@@ -3322,6 +3395,8 @@ class Controller {
             if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
             if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.window_U(index, key, value2)
+        }else if(target == "window_U_indexChange"){
+            this.model.window_U_indexChange(value.index, value.select);
         } else if (target == "html_U") {
             const key = value.split("/")[0];
             let value2 = value.split("/")[1];
