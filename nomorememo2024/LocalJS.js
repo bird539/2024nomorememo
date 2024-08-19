@@ -904,7 +904,6 @@ class windowElement {
     function_editIndex(event){
         const index = event.target.className.replace(baseic_regex, "");
         const select = event.target.className.split("_")[1];  
-        console.log(select); 
         
         const observer = new Observer_sendGetData(true);
         observer.check = true;
@@ -914,7 +913,63 @@ class windowElement {
         subj.subscribe(observer);
         subj.notifyAll();
 
-        const winDiv = document.querySelector(`w${index}`);
+        const len = mainDiv.childNodes.length;
+
+        if(select.includes("next")){
+            let firstNodeNot = true;
+            for(let i=0;i<len; i++){
+                if(mainDiv.childNodes[i].className == `w${index}` && i == len -1){
+                    firstNodeNot = false; break
+                }
+            }
+            if(firstNodeNot){
+                for(let i=0;i<len; i++){
+                    if(mainDiv.childNodes[0].className == `w${index}`){
+                        const nextNodeClassName = mainDiv.childNodes[1].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+    
+                        const nowNode = document.querySelector(`.w${index}`);
+                        mainDiv.appendChild(nextNode);
+                        mainDiv.appendChild(nowNode);
+                        i += 1;
+                    }else{
+                        const nextNodeClassName = mainDiv.childNodes[0].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+                        mainDiv.appendChild(nextNode);
+                    }
+                }
+            }
+        }else if(select.includes("befo")){
+            let firstNodeNot = true; let next = null;
+            for(let i=0;i<len; i++){
+                if(mainDiv.childNodes[i].className == `w${index}`){
+                    if(mainDiv.childNodes[i - 1] != null){
+                        next = mainDiv.childNodes[i - 1].className;
+                    }
+                }
+                if(mainDiv.childNodes[i].className == `w${index}` && i == 0){
+                    firstNodeNot = false; break
+                }
+
+            }
+            if(firstNodeNot){
+                for(let i=0;i<len; i++){
+                    if(mainDiv.childNodes[0].className == `${next}`){
+                        const befoNodeClassName = mainDiv.childNodes[0].className;
+                        const befoNode = document.querySelector(`.${befoNodeClassName}`);
+    
+                        const nowNode = document.querySelector(`.w${index}`);
+                        mainDiv.appendChild(nowNode);
+                        mainDiv.appendChild(befoNode);
+                        i += 1;
+                    }else{
+                        const nextNodeClassName = mainDiv.childNodes[0].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+                        mainDiv.appendChild(nextNode);
+                    }
+                }
+            }
+        }
         
     }
 
@@ -1431,6 +1486,7 @@ class tabElement {
         show: null,
         type: null,
         sort: null,
+        inputShow : null,
 
         //수정 가능
         name: null,
@@ -1439,7 +1495,7 @@ class tabElement {
         width: null,
 
         //window 상속받기
-        fk_windowInex: null,
+        fk_windowIndex: null,
 
         fontFamily: null, fontStyle: null, fontWeight: null,
         lineColor: null, lineWeight: null,
@@ -1464,7 +1520,7 @@ class tabElement {
     }
     setValue(db) {
         this.db.tabInfo = db.tabInfo;
-        this.db.fk_windowInex = db.fk_windowInex;
+        this.db.fk_windowIndex = db.fk_windowIndex;
 
         this.db.index = db.index;
         this.db.indexBefo = db.indexBefo;
@@ -1473,7 +1529,8 @@ class tabElement {
         this.db.show = db.show;
         this.db.type = db.type;
         this.db.sort = db.sort;
-
+        this.db.inputShow = db.inputShow;
+        
         this.db.name = db.name;
         this.db.fontSize = db.fontSize;
         this.db.lineWeight = db.lineWeight;
@@ -1603,11 +1660,20 @@ class tabElement {
         observer.check = true;
         observer.name = "tab update event";
         observer.target = "tab_U";
-        const index = event.target.className.split("_")[0].replace(baseic_regex, "");
-        const key = event.target.className.split("_")[1];
+        const split = event.target.className.split("_");
+        const index = split[0].replace(baseic_regex, "");
+        let key = split[1];
         let value = event.target.value;
         if (key == "fontFamily" || key == "fontStyle") {
             value = event.target.selectedIndex;
+        }
+        if(key.includes("fk")){
+            key += `_${split[2]}`;
+            if(split[2].includes("windowIndex")){
+                const winDiv = document.querySelector(`.w${value}`);
+                const tapDiv = document.querySelector(`.t${index}`);
+                winDiv.appendChild(tapDiv);
+            }
         }
         observer.value = `${index}/${key}/${value}`;
         subj.subscribe(observer);
@@ -1626,6 +1692,22 @@ class tabElement {
         subj.notifyAll();
         delTab.remove();
     }
+    function_editIndex(event){
+        const index = event.target.className.replace(baseic_regex, "");
+        const select = event.target.className.split("_")[1];  
+        
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "tab update event";
+        observer.target = "tab_U_indexChange";
+        observer.value = {index:index, select:select}
+        subj.subscribe(observer);
+        subj.notifyAll();
+
+        //const winDiv = document.querySelector(`w${index}`);
+        
+    }
+
     //click event
 
     tabEditPage() {
@@ -1677,15 +1759,37 @@ class tabElement {
         const textDiv2 = textDiv1.cloneNode(true);
 
         const goTobefo = LEFT_BTN.cloneNode(true);
-        goTobefo.innerText = "<= move to front";
+        goTobefo.innerText = "<= move to befo";
+        goTobefo.className = `t${this.db.index}_befo`;
+        goTobefo.addEventListener("click", this.function_editIndex);
         const goTonext = LEFT_BTN.cloneNode(true);
-        goTonext.innerText = "move to back =>";
+        goTonext.innerText = "move to next =>";
+        goTonext.className = `t${this.db.index}_next`;
+        goTonext.addEventListener("click", this.function_editIndex);
+
+        const changeWinSelect = this.select.cloneNode(true);
+        changeWinSelect.className = `t${this.db.index}_fk_windowIndex`;
+        if(this.db.tabInfo != null && this.db.tabInfo.winSelect != null){
+            let index = 0;
+            for(let i=0;i<this.db.tabInfo.winSelect.length;i++){
+                const op = this.option.cloneNode(true);
+                op.value = this.db.tabInfo.winSelect[i].i;
+                op.innerText = this.db.tabInfo.winSelect[i].title;
+                changeWinSelect.appendChild(op);
+                if(op.value == this.db.fk_windowIndex){ index = i; }
+            }
+            changeWinSelect.selectedIndex = index;
+            changeWinSelect.addEventListener("change", this.function_editTab);
+        }
+
         const hideEditPage = LEFT_BTN.cloneNode(true);
         hideEditPage.innerText = "hideEdit";
         hideEditPage.className = `t${this.db.index}hideEditPage_showHide:t${this.db.index}editDiv:flex`;
         hideEditPage.addEventListener("click", showHide);
+
+
         const delWinBtn = LEFT_BTN.cloneNode(true);
-        delWinBtn.className = `${this.db.index}_k${this.db.type}`;
+        delWinBtn.className = `${this.db.index}`;
         delWinBtn.innerText = "del(X)";
         delWinBtn.style.removeProperty("width");
         delWinBtn.addEventListener("click", this.function_delTab);
@@ -1710,7 +1814,7 @@ class tabElement {
         textDiv2.appendChild(goTobefo);
         textDiv2.appendChild(delWinBtn);
         textDiv2.appendChild(goTonext);
-        textDiv2.appendChild(hideEditPage);
+        textDiv2.appendChild(changeWinSelect);
 
         textDiv1.appendChild(titleForm);
 
@@ -1962,7 +2066,7 @@ class tabElement {
         //start ---
         const tabDiv = this.div.cloneNode(false);
         tabDiv.style.backgroundColor = this.db.backgroundColor;
-        tabDiv.className = `t${this.db.index}_k${this.db.type}`;
+        tabDiv.className = `t${this.db.index}`;
         tabDiv.style.display = "inline-block";
         tabDiv.style.width = `${this.db.width}px`;
         tabDiv.style.marginBottom = "5px";
@@ -2047,7 +2151,7 @@ class tabElement_memo {
         this.db.textArr = db.tabInfo.text;
         this.db.colorArr = db.tabInfo.color;
         this.db.sort = db.sort;
-        this.db.inputShow = db.tabInfo.inputShow;
+        this.db.inputShow = db.inputShow;
 
         this.allCheck = false;
 
@@ -2172,13 +2276,10 @@ class tabElement_memo {
             let value = element2.style.display == "none" ? false : true;
             const observer = new Observer_sendGetData(true);
             observer.name = "tab_memo_color update event";
-            observer.target = "tab_memo_color_U";
-            observer.value = {value:value, index:index,
-                key:"inputShow",
-            }
+            observer.target = "tab_U";
+            observer.value = `${index}/"inputShow"/${value}`//value:value, index:, :,
             subj.subscribe(observer);
             subj.notifyAll();
-
         } else if (target.includes("editBtn")) {
             const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
             element.style.display = element.style.display == "none" ? "block" : "none";
@@ -2475,6 +2576,101 @@ class tabElement_memo {
         }
         
     }
+    function_editIndex(event){
+        const target = event.target.className.split("_");
+        const index = target[0].replace(baseic_regex, "");
+        const tupleIndex1 = target[1].replace(baseic_regex, "");
+        const key = target[2];
+        let tupleIndex2 = null;
+        if(key == "befo"){
+            if(event.target.nextSibling != null){
+                tupleIndex2 = event.target.nextSibling;
+            }else{
+                return
+            }
+        }else if(key == "next"){
+            if(event.target.nextSibling != null){
+                tupleIndex2 = event.target.nextSibling;
+            }else{
+                return
+            }
+        }
+
+        const table = document.querySelector(`.t${index}_tuplesDiv`)
+        const len = table.childNodes.length;
+
+
+        if(key.includes("next")){
+            let firstNodeNot = true;
+            for(let i=0;i<len; i++){
+                if(table.childNodes[i].className == `t${index}_i${tupleIndex1}_tupleDiv` && i == len -1){
+                    firstNodeNot = false; break
+                }
+            }
+            if(firstNodeNot){
+                for(let i=0;i<len; i++){
+                    if(table.childNodes[0].className == `t${index}_i${tupleIndex1}_tupleDiv`){
+                        const nextNodeClassName = table.childNodes[1].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+
+                        tupleIndex2 = nextNodeClassName.split("_")[1].replace(baseic_regex, "");
+    
+                        const nowNode = document.querySelector(`.t${index}_i${tupleIndex1}_tupleDiv`);
+                        table.appendChild(nextNode);
+                        table.appendChild(nowNode);
+                        i += 1;
+                    }else{
+                        const nextNodeClassName = table.childNodes[0].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+                        table.appendChild(nextNode);
+                    }
+
+                }
+            }
+        }else if(key.includes("befo")){
+            let firstNodeNot = true; let next = null;
+            for(let i=0;i<len; i++){
+                if(table.childNodes[i].className == `t${index}_i${tupleIndex1}_tupleDiv`){
+                    if(table.childNodes[i - 1] != null){
+                        next = table.childNodes[i - 1].className;
+                    }
+                }
+                if(table.childNodes[i].className == `t${index}_i${tupleIndex1}_tupleDiv` && i == 0){
+                    firstNodeNot = false; break
+                }
+
+            }
+            if(firstNodeNot){
+                for(let i=0;i<len; i++){
+                    if(table.childNodes[0].className == `${next}`){
+                        const befoNodeClassName = table.childNodes[0].className;
+                        const befoNode = document.querySelector(`.${befoNodeClassName}`);
+                        
+                        tupleIndex2 = befoNodeClassName.split("_")[1].replace(baseic_regex, "");
+                        
+                        const nowNode = document.querySelector(`.t${index}_i${tupleIndex1}_tupleDiv`);
+                        table.appendChild(nowNode);
+                        table.appendChild(befoNode);
+                        i += 1;
+                    }else{
+                        const nextNodeClassName = table.childNodes[0].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+                        table.appendChild(nextNode);
+                    }
+                }
+            }
+        }
+
+        if(tupleIndex2 != null){
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tab_memo_text update event";
+            observer.target = "tab_memo_text_U_indexChange";
+            observer.value = {tupleIndex1:tupleIndex1, tupleIndex2:tupleIndex2}
+            console.log(observer.value);
+            subj.subscribe(observer);
+            subj.notifyAll();
+        }
+    }
 
     //background-color: transparent; border: none; padding: 0px; margin-left: 10px; height: 40px; font-family: sans-serif; font-size: 14pt; color: rgb(0, 117, 66); width: 40px;
     //background-color: transparent; border: none; padding: 0px; margin-left: 10px; height: 40px; font-family: sans-serif; font-size: 14pt; font-weight: 100; font-style: normal; color: rgb(0, 117, 66); width: 40px;
@@ -2573,7 +2769,7 @@ class tabElement_memo {
         tab_headDiv.appendChild(i_btn_div);
 
 
-        upDiv.style.display = this.db.colorArr.inputShow ? "flex" : "none";
+        upDiv.style.display = this.db.inputShow ? "flex" : "none";
         upDiv.className = `t${this.db.index}inputDiv`
         upDiv.appendChild(textarea);
 
@@ -2584,7 +2780,7 @@ class tabElement_memo {
         downDiv.appendChild(sortSelect);
 
         const textareaTogather = this.div.cloneNode(true);
-        textareaTogather.style.display = this.db.colorArr.inputShow ? "flex" : "none";
+        textareaTogather.style.display = this.db.inputShow ? "flex" : "none";
         textareaTogather.style.flexDirection = "row-reverse";
         textareaTogather.flexWrap = "wrap";
         textareaTogather.appendChild(subBtn);
@@ -2763,9 +2959,13 @@ class tabElement_memo {
         const editDiv2 = this.div.cloneNode(true);
         const goUpBtn = this.button.cloneNode(true);
         goUpBtn.innerText = "Λ";
+        goUpBtn.className = `t${this.db.index}_i${index}_befo`;
+        goUpBtn.addEventListener("click", this.function_editIndex);
         goUpBtn.style.width = "40px";
         const goDownBtn = this.button.cloneNode(true);
         goDownBtn.innerText = "V";
+        goDownBtn.className = `t${this.db.index}_i${index}_next`;
+        goDownBtn.addEventListener("click", this.function_editIndex);
         goDownBtn.style.width = "40px";
         const subBtn = this.button.cloneNode(true);
         subBtn.innerText = "sub";
@@ -2897,20 +3097,22 @@ class Window {
 }
 
 class TabInfo {
-    index = null; fk_windowInex = null; type = null; name = null; show = null; sort = null; fontSize = null;
-    fontColor = null; backgroundColor = null; width = null;
+    index = null; indexBefo = null; indexNext = null; fk_windowIndex = null; 
+    type = null; name = null; show = null; sort = null; inputShow = null; 
+    fontSize = null; fontColor = null; backgroundColor = null; width = null;
 
     constructor(typeNum) {
-        this.index = 0; this.fk_windowInex = 0; this.type = typeNum; this.name = all_tapType_kr[typeNum]; this.show = true; this.sort = 0; this.fontSize = basic_fontSize;
-        this.fontColor = basic_fontColor; this.backgroundColor = all_backgroundColor[0]; this.width = basic_width;
+        this.index = 0; this.indexBefo = null; this.indexNext = null; this.fk_windowIndex = 0; 
+        this.type = typeNum; this.name = all_tapType_kr[typeNum]; 
+        this.show = true; this.sort = 0; this.inputShow = true;
+        this.fontSize = basic_fontSize; this.fontColor = basic_fontColor; this.backgroundColor = all_backgroundColor[0]; this.width = basic_width;
     }
 }
 
 class Tab_Memo_color {
-    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; done = null; inputShow=null;
+    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; done = null; 
     constructor(tabIndex) {
         this.fk_tabIndex = tabIndex; this.color1 = '#fe0000'; this.color2 = '#1500ff'; this.color3 = '#00ff19'; this.done = "#A3A3A3";
-        this.inputShow=true;
     }
 }
 class Tab_Memo_text {
@@ -3000,7 +3202,7 @@ class Model {
         this.htmlInfo_save();
     }
 
-    //window
+    //window--
     window_C() {
         const newWin = new Window();
         if (this.windowArr.length <= 0) {
@@ -3052,31 +3254,48 @@ class Model {
         let index = this.windowArr[winIndex];
         let befo = this.windowArr[index.indexBefo];
         let next = this.windowArr[index.indexNext];
+        
+        let Nnext = null;
+        if(next != null){
+            Nnext = next.indexNext == null ? null:this.windowArr[next.indexNext];
+        } 
+        let Bbefo = null;
+        if(befo !=null){
+            Bbefo = befo.indexBefo ==null ? null:this.windowArr[befo.indexBefo];
+        }
 
-        let ex =  clone(next.indexBefo); 
-        next.indexBefo = clone(index.indexBefo);
-        index.indexBefo = clone(next.index);
-
-        ex =  clone(next.indexNext); 
-        next.indexNext = clone(index.index);
-        index.indexNext = clone(ex);
-        this.windowArr[index.index] = index;
-        this.windowArr[next.index] = next;
         if(select == "befo"){
-            if(next != null){ 
-                next.indexBefo = clone(befo.index);
-                this.windowArr[next.index] = next;
+            if(befo != null){ 
+                if(next !=null){
+                    next.indexBefo = befo.index;
+                }
+                if(Bbefo != null){
+                    Bbefo.indexNext = winIndex;
+                }
+                index.indexBefo = Bbefo == null ? null : Bbefo.index;
+                index.indexNext = befo.index; 
+
+                befo.indexBefo = index.index;
+                befo.indexNext = next == null ? null : next.index;
             }
         }else if(select == "next"){
-            if(next != null){
-                if(befo != null){ 
-                    befo.indexNext = clone(next.index);
-                    this.windowArr[befo.index] = befo;
+            if(next != null){ 
+                if(befo !=null){
+                    befo.indexNext = next.index;
                 }
+                if(Nnext != null){
+                    Nnext.indexBefo = winIndex;
+                }
+                index.indexBefo = next.index;
+                index.indexNext = Nnext  == null ? null : Nnext.index;
+
+                next.indexBefo = befo == null ? null : befo.index;
+                next.indexNext = index.index;
             }
         }
+        
         this.window_save();
-        location.reload(true);
+        //location.reload(true);
     }
     window_D(index) {
         const befo = this.windowArr[index].indexBefo;
@@ -3098,7 +3317,7 @@ class Model {
     tab_C(winIndex, type) {
         const newTab = new TabInfo();
         newTab.type = type;
-        newTab.fk_windowInex = winIndex;
+        newTab.fk_windowIndex = winIndex;
         newTab.name = `${all_tapType_kr[type]}`;
 
         newTab.fontColor = this.windowArr[winIndex].fontColor;
@@ -3148,6 +3367,9 @@ class Model {
     tab_U(tabIndex, key, value){
         //tab edit
         this.tabInfoArr[tabIndex][key] = value;
+        if(key.includes("inputShow")){
+            this.tabInfoArr[tabIndex].inputShow = value
+        }
         this.tab_save();
     }
     tab_D(tabIndex){
@@ -3173,6 +3395,53 @@ class Model {
             this.tabInfoArr = newArr;
         }
         this.tab_save();
+    }
+    tab_U_indexChange(tabIndex, select){
+        let index = this.tabInfoArr[tabIndex];
+        let befo = this.tabInfoArr[index.indexBefo];
+        let next = this.tabInfoArr[index.indexNext];
+        
+        let Nnext = null;
+        if(next != null){
+            Nnext = next.indexNext ==null ? null:this.tabInfoArr[next.indexNext];
+        } 
+
+        let Bbefo = null;
+        if(befo !=null){
+            Bbefo = befo.indexBefo ==null ? null:this.tabInfoArr[befo.indexBefo];
+        }
+
+        if(select == "befo"){
+            if(befo != null){ 
+                if(next !=null){
+                    next.indexBefo = befo.index;
+                }
+                if(Bbefo != null){
+                    Bbefo.indexNext = tabIndex;
+                }
+                index.indexBefo = Bbefo == null ? null : Bbefo.index;
+                index.indexNext = befo.index; 
+
+                befo.indexBefo = index.index;
+                befo.indexNext = next == null ? null : next.index;
+            }
+        }else if(select == "next"){
+            if(next != null){ 
+                if(befo !=null){
+                    befo.indexNext = next.index;
+                }
+                if(Nnext != null){
+                    Nnext.indexBefo = tabIndex;
+                }
+                index.indexBefo = next.index;
+                index.indexNext = Nnext  == null ? null : Nnext.index;
+
+                next.indexBefo = befo == null ? null : befo.index;
+                next.indexNext = index.index;
+            }
+        }
+        this.tab_save();
+        location.reload(true);
     }
 
     //tab_memo_color
@@ -3224,6 +3493,13 @@ class Model {
     tab_memo_text_U(tupleIndex, key, value){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
         this.tab_memo_textArr[tupleIndex][key] = value;
+        this.tab_memo_text_save();
+    }
+    tab_memo_text_U_indexChange(tupleIndex1, tupleIndex2){
+        //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
+        const ex = this.tab_memo_textArr[tupleIndex1];
+        this.tab_memo_textArr[tupleIndex1] = this.tab_memo_textArr[tupleIndex2];
+        this.tab_memo_textArr[tupleIndex2] = ex;
         this.tab_memo_text_save();
     }
     tab_memo_text_D(textIndex){
@@ -3319,8 +3595,8 @@ class Controller {
             }
         }
 */
+        let winSelectInfo = [];
         //window start
-
         let win_i = 0;
         for (let i = 0; i < this.model.windowArr.length; i++) {
             if (this.model.windowArr[i] != null && this.model.windowArr[i].indexBefo == null){
@@ -3329,6 +3605,7 @@ class Controller {
             }
         }
         while(true){
+            winSelectInfo.push({i:this.model.windowArr[win_i].index, title:this.model.windowArr[win_i].name});
             this.windowAppend(this.model.windowArr[win_i]);
             const next = this.model.windowArr[win_i].indexNext;
             if(next != null){ win_i = next }
@@ -3336,6 +3613,42 @@ class Controller {
         }
         
         //tab start
+        let tab_i = null;
+        for (let i = 0; i < this.model.tabInfoArr.length; i++) {
+            if (this.model.tabInfoArr[i] != null && this.model.tabInfoArr[i].indexBefo == null){
+                tab_i = this.model.tabInfoArr[i].index;
+                break
+            }
+        }
+        while(true){
+            if(tab_i == null){break};
+            if(this.model.tabInfoArr[tab_i].type == 0){
+                let tabText = [];
+                let tabColor = [];
+                for(let j=0;j<this.model.tab_memo_textArr.length; j++){
+                    if(this.model.tab_memo_textArr[j]!=null && this.model.tab_memo_textArr[j].fk_tabIndex==tab_i){
+                        this.model.tab_memo_textArr[j].index = j;
+                        tabText.push(this.model.tab_memo_textArr[j]);
+                    }
+                }
+                for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
+                    if(this.model.tab_memo_colorArr[j] !=null && this.model.tab_memo_colorArr[j].fk_tabIndex==tab_i){
+                        tabColor = this.model.tab_memo_colorArr[j];
+                    }
+                }
+                const tabInfo = { text:tabText, color:tabColor, winSelect:winSelectInfo};
+                this.model.tabInfoArr[tab_i].tabInfo = tabInfo;
+            }
+
+
+            this.tabAppend(this.model.tabInfoArr[tab_i]);
+            delete this.model.tabInfoArr[tab_i].tabInfo;
+
+            const next = this.model.tabInfoArr[tab_i].indexNext;
+            if(next != null){ tab_i = next }
+            else{ tab_i = null; break }
+        }
+/*
         for (let i = 0; i < this.model.tabInfoArr.length; i++) {
             if (this.model.tabInfoArr[i] != null) {
                 //tab_memo start
@@ -3360,6 +3673,7 @@ class Controller {
                 delete this.model.tabInfoArr[i].tabInfo;
             }
         }
+            */
 
         //html start
         const v_element_html = new View("html", this.model.htmlInfo);
@@ -3371,7 +3685,7 @@ class Controller {
     }
     tabAppend(setInfo, tabType, tabInfo) {
         const v_element_tab = new View("tab", setInfo, tabType, tabInfo);
-        const targetWindow = document.querySelector(`.w${setInfo.fk_windowInex}body`);
+        const targetWindow = document.querySelector(`.w${setInfo.fk_windowIndex}body`);
         targetWindow.appendChild(v_element_tab.returnElement);
     }
     tupleAppend(tabIndex, data, tabType){
@@ -3422,9 +3736,11 @@ class Controller {
             const index = value.split("/")[0];
             const key = value.split("/")[1];
             let value2 = value.split("/")[2];
-            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
-            if (isNaN(value2) == false) { value2 = Number(value2) }
+            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false;}
+            if (isNaN(value2) == false) { value2 = Number(value2); }
             this.model.tab_U(index, key, value2);
+        }else if(target == "tab_U_indexChange"){
+            this.model.tab_U_indexChange(value.index, value.select);
         }else if(target == "tab_D"){
             this.model.tab_D(value);
         }else if (target == "tab_memo_text_C") {
@@ -3451,6 +3767,8 @@ class Controller {
             if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
             if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.tab_memo_text_U(index, key, value2);
+        }else if(target == "tab_memo_text_U_indexChange"){
+            this.model.tab_memo_text_U_indexChange(value.tupleIndex1, value.tupleIndex2);
         }else if(target == "tab_memo_text_D"){
             this.model.tab_memo_text_D(value);
         }else if(target == "tab_memo_color_U"){
