@@ -887,6 +887,22 @@ class windowElement {
         observer.value = `${index}/${key}/${value}`;
         subj.subscribe(observer);
         subj.notifyAll();
+
+        if(key == "backgroundColor"){
+            const tabDiv = document.querySelector(`.w${index}`);
+            tabDiv.style.backgroundColor = value;
+        }else if(key == "fontColor"){
+            const tabDiv = document.querySelector(`.w${index}`);
+            tabDiv.childNodes[0].childNodes[0].childNodes[0].style.color = value;
+        }else if(key == "lineColor" ||key == "lineWeight" ){
+            const tabDiv = document.querySelector(`.w${index}`);
+            const lineWeight = document.querySelector(`.w${index}_lineWeight`);
+            const lineColor = document.querySelector(`.w${index}_lineColor`);
+            tabDiv.childNodes[0].childNodes[0].style.borderBottom = `${lineWeight.value}px solid ${lineColor.value}`;
+        }else if(key == "width"){
+            const tabDiv = document.querySelector(`.w${index}`);
+            tabDiv.style.width = `${value}px`;
+        }
     }
     function_newTab(event) {
         const winIndex = event.target.className.split("_")[0].replace(baseic_regex, "");
@@ -1062,6 +1078,8 @@ class windowElement {
         
         const winBody = document.querySelector(`.w${index}body`);
         winBody.style.display = winBody.style.display == "none" ? "block":"none";
+        const plsBtn = event.target.nextSibling;
+        plsBtn.innerText = winBody.style.display == "none" ? "-" : "+";
         const show = winBody.style.display != "none";
         if(show == false){
             tapPls.style.display = "none";
@@ -1137,7 +1155,7 @@ class windowElement {
         titleBtn.addEventListener('click', this.showHide);
 
         const tapPlsBtn = MIN_BTN.cloneNode(true);
-        tapPlsBtn.innerText = "+";
+        tapPlsBtn.innerText = this.db.show ? "+" : "-";
         tapPlsBtn.className = `w${this.db.index}TabPlsBtn`
         tapPlsBtn.addEventListener("click", this.showHide2);
 
@@ -1636,11 +1654,15 @@ class tabElement {
             //const element = document.querySelector(`.t${index}BodyDiv`);
             const element = event.target.parentNode.parentNode.nextSibling;
             const display = element.style.display == "none" ? "block" : "none";
+            const plsBtn = event.target.nextSibling;
+            plsBtn.innerText = element.style.display == "none" ? "e" : "-";
             element.style.display = display;
 
             //const element2 = document.querySelector(`.t${index}EditDiv`);
             const element2 = event.target.parentNode.parentNode.nextSibling.childNodes[0];
             element2.style.display = "none";
+
+            
 
             const observer = new Observer_sendGetData(true);
             observer.check = true;
@@ -1678,6 +1700,22 @@ class tabElement {
         observer.value = `${index}/${key}/${value}`;
         subj.subscribe(observer);
         subj.notifyAll();
+
+        if(key == "backgroundColor"){
+            const tabDiv = document.querySelector(`.t${index}`);
+            tabDiv.style.backgroundColor = value;
+        }else if(key == "fontColor"){
+            const tabDiv = document.querySelector(`.t${index}`);
+            tabDiv.childNodes[0].childNodes[0].childNodes[0].style.color = value;
+        }else if(key == "lineColor" ||key == "lineWeight" ){
+            const tabDiv = document.querySelector(`.t${index}`);
+            const lineWeight = document.querySelector(`.t${index}_lineWeight`);
+            const lineColor = document.querySelector(`.t${index}_lineColor`);
+            tabDiv.childNodes[0].childNodes[0].style.borderBottom = `${lineWeight.value}px solid ${lineColor.value}`;
+        }else if(key == "width"){
+            const tabDiv = document.querySelector(`.t${index}`);
+            tabDiv.style.width = `${value}px`;
+        }
     }
     function_delTab(event) {
         //element.remove();
@@ -2010,7 +2048,7 @@ class tabElement {
         const lineWeightInput = fontSizeInput.cloneNode(true);
         lineWeightInput.min = 0; lineWeightInput.max = 10;
         lineWeightInput.step = 0.1;
-        lineWeightInput.value = this.db.lineThick;
+        lineWeightInput.value = this.db.lineWeight;
         lineWeightInput.className = `t${this.db.index}_lineWeight`;
         lineWeightInput.addEventListener("change", this.function_editTab);
         lineWeightDiv.appendChild(lineWeightTxt);
@@ -2088,7 +2126,7 @@ class tabElement {
         titleBtn.addEventListener("click", this.function_showEvent);
         //titleBtn.addEventListener('click', this.showHide);
         const tapPlsBtn = MIN_BTN.cloneNode(true);
-        tapPlsBtn.innerText = "e";
+        tapPlsBtn.innerText = this.db.show ? "e" : "-";
         tapPlsBtn.style.marginRight = 0;
         tapPlsBtn.style.marginLeft = "10px";
         tapPlsBtn.className = `t${this.db.index}EditBtn`;
@@ -2583,14 +2621,17 @@ class tabElement_memo {
         const key = target[2];
         let tupleIndex2 = null;
         if(key == "befo"){
-            if(event.target.nextSibling != null){
-                tupleIndex2 = event.target.nextSibling;
+            const befoElement = event.target.parentNode.parentNode.parentNode.parentNode.previousSibling;
+            if(befoElement != null){
+                tupleIndex2 = befoElement;
             }else{
+                console.log("?");
                 return
             }
         }else if(key == "next"){
-            if(event.target.nextSibling != null){
-                tupleIndex2 = event.target.nextSibling;
+            const nextElement = event.target.parentNode.parentNode.parentNode.parentNode.nextSibling;
+            if(nextElement != null){
+                tupleIndex2 = nextElement;
             }else{
                 return
             }
@@ -2931,6 +2972,7 @@ class tabElement_memo {
         const textDiv = this.div.cloneNode(true);
         const mark = this.mark.cloneNode(true);
         mark.style.width = "100%";
+        mark.style.wordBreak = "break-word";
         mark.innerText = text;
         mark.className = `t${this.db.index}_i${index}_mark`;
         if(colorIndex != null){
@@ -3493,13 +3535,23 @@ class Model {
     tab_memo_text_U(tupleIndex, key, value){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
         this.tab_memo_textArr[tupleIndex][key] = value;
+
+        /*
+        const time =  new Date();
+        const timeLi = {
+            year:time.getFullYear(), month:time.getMonth(), date:time.getDate(), day:time.getDay(), 
+            hours:time.getHours(), minutes:time.getMinutes(), seconds:time.getSeconds(),
+        };   
+        this.tab_memo_textArr[tupleIndex].key_editDate = timeLi;*/
         this.tab_memo_text_save();
     }
     tab_memo_text_U_indexChange(tupleIndex1, tupleIndex2){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
         const ex = this.tab_memo_textArr[tupleIndex1];
         this.tab_memo_textArr[tupleIndex1] = this.tab_memo_textArr[tupleIndex2];
+        this.tab_memo_textArr[tupleIndex1].index = tupleIndex1;
         this.tab_memo_textArr[tupleIndex2] = ex;
+        this.tab_memo_textArr[tupleIndex2].index = tupleIndex2;
         this.tab_memo_text_save();
     }
     tab_memo_text_D(textIndex){
@@ -3691,8 +3743,7 @@ class Controller {
     tupleAppend(tabIndex, data, tabType){
         const v_element_tab = new View("tuple", data, tabType);
         const target = document.querySelector(`.t${tabIndex}_tuplesDiv`);
-        target.appendChild(v_element_tab.returnElement);
-        
+        target.prepend(v_element_tab.returnElement);
     }
     checkFunction() { return false; }
     sendValue() { return this.value; }
