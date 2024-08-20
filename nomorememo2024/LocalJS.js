@@ -396,40 +396,58 @@ class htmlRemoteElement {
         }
         observer.value = `${key}/${value}`;
 
+        if(key == "htmlBackgroundColor"){
+        mainHtml.style.backgroundColor = value; 
+        }else if(key =="html_backgroundColor"){
+            const body = document.querySelector(`htmlRemoteBody`);
+            body.style.backgroundColor = value;
+            const btn = document.querySelector(`htmlRemoteBtn`);
+            btn.style.backgroundColor = value;
+        }
+
         subj.subscribe(observer);
         subj.notifyAll();
+    }
+    function_showEvent(event){
+        const body = document.querySelector(".htmlRemoteBody");
+        body.style.display =  body.style.display == "none" ? "block" : "none";
+    }
+    function_copyEvent(event){
+        copyToClipboard(event.target.innerText);
     }
     //<-- function event
 
     //make tuple -->
-    newRecentInfoMake(newInfo) {
+    tuple_recentWork(newInfo) {
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
         //newInfoDiv.style.flexGrow = "1";
 
         const dateDiv = newInfoDiv.cloneNode(true);
-        const befoTime = new Date(newInfo.date);
-        const afterTime = `${befoTime.getMonth()}/${befoTime.getDate()}/${befoTime.getHours()}:${befoTime.getMinutes()}`
+        //const befoTime = new Date(newInfo.key_madeDate);
+        const afterTime = `${newInfo.key_madeDate.month}/${newInfo.key_madeDate.date}/${newInfo.key_madeDate.hours}:${newInfo.key_madeDate.minutes}`
         dateDiv.innerText = afterTime;
         //dateDiv.style.wordBreak = "break-all"; 
 
         const windowDiv = newInfoDiv.cloneNode(true);
         windowDiv.style.paddingLeft = "10px";
-        windowDiv.innerText = newInfo.window;
+        //windowDiv.innerText = newInfo.window;
         windowDiv.style.wordBreak = "break-all";
         //windowDiv.style.flexGrow = "1";
 
         const textDiv = windowDiv.cloneNode(true);
         textDiv.innerText = newInfo.text;
+        textDiv.style.textAlign = "left";
+        textDiv.addEventListener("click", this.function_copyEvent);
         //textDiv.style.flexGrow = "2";
 
         newInfoDiv.appendChild(dateDiv);
-        newInfoDiv.appendChild(windowDiv);
+        //newInfoDiv.appendChild(windowDiv);
         newInfoDiv.appendChild(textDiv);
 
         return newInfoDiv;
     }
-    newRestWorkInfoMake(newInfo2) {
+    tuple_restWork(newInfo2) {
         //윈도명도 넣어야 할 지 의문
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
@@ -472,9 +490,14 @@ class htmlRemoteElement {
     //pages
     recentPlsPage() {
         const pageDiv = this.div.cloneNode(true);
-        pageDiv.style.width = "block";
+        pageDiv.style.width = "flex";
+        pageDiv.style.width = "100%";
+        pageDiv.style.height = "300px";
+        pageDiv.style.overflowY = "scroll";
+        pageDiv.style.scrollbarColor = "#28FE0B";
+        console.log(this.db.newInfo);
         for (let i = 0; i < this.db.newInfo.length; i++) {
-            pageDiv.appendChild(this.newRecentInfoMake(this.db.newInfo[i]));
+            pageDiv.appendChild(this.tuple_recentWork(this.db.newInfo[i]));
         }
         pageDiv.className = "recentPlsPage";
         return pageDiv;
@@ -484,7 +507,7 @@ class htmlRemoteElement {
         pageDiv.style.width = "flex";
         for (let i = 0; i < this.db.schedule.length; i++) {
 
-            pageDiv.appendChild(this.newRestWorkInfoMake(this.db.schedule[i]));
+            pageDiv.appendChild(this.tuple_restWork(this.db.schedule[i]));
         }
         //임시 숨기기
         pageDiv.className = "restWorkPage";
@@ -792,8 +815,8 @@ class htmlRemoteElement {
         headBtn.style.flexShirink = 0;
         headBtn.className = "htmlRemoteHeadBtn";
         headBtn.style.padding = "20px";
-        headBtn.className = `htmlRemoteBtn_showHide:htmlRemoteBody:block`;
-        headBtn.addEventListener("click", showHide);
+        headBtn.className = `htmlRemoteBtn`;
+        headBtn.addEventListener("click", this.function_showEvent);
 
         this.setElementEditBook();
         this.htmlRemoteDiv.appendChild(headBtn);
@@ -3728,8 +3751,11 @@ class Controller {
             */
 
         //html start
-        const v_element_html = new View("html", this.model.htmlInfo);
+        const newHtmlInfo = this.model.htmlInfo;
+        newHtmlInfo.newInfo = this.model.tab_memo_textArr;
+        const v_element_html = new View("html", newHtmlInfo);
         mainHtml.appendChild(v_element_html.returnElement);
+        this.model.htmlInfo.newInfo = [];
     }
     windowAppend(data) {
         const v_element_window = new View("window", data);
