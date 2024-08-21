@@ -421,28 +421,23 @@ class htmlRemoteElement {
     tuple_recentWork(newInfo) {
         const newInfoDiv = this.div.cloneNode(true);
         newInfoDiv.style.display = "flex";
-        //newInfoDiv.style.flexGrow = "1";
+        newInfoDiv.style.flexDirection = "row";
 
-        const dateDiv = newInfoDiv.cloneNode(true);
-        //const befoTime = new Date(newInfo.key_madeDate);
-        const afterTime = `${newInfo.key_madeDate.month}/${newInfo.key_madeDate.date}/${newInfo.key_madeDate.hours}:${newInfo.key_madeDate.minutes}`
+        const dateDiv = this.div.cloneNode(true);
+        const split = newInfo.time.split("-");
+        const afterTime = `${split[1]}/${split[2]}`
+        dateDiv.style.width = "30%"
+        dateDiv.style.textAlign = "left";
         dateDiv.innerText = afterTime;
-        //dateDiv.style.wordBreak = "break-all"; 
 
-        const windowDiv = newInfoDiv.cloneNode(true);
-        windowDiv.style.paddingLeft = "10px";
-        //windowDiv.innerText = newInfo.window;
-        windowDiv.style.wordBreak = "break-all";
-        //windowDiv.style.flexGrow = "1";
-
-        const textDiv = windowDiv.cloneNode(true);
+        const textDiv =  this.div.cloneNode(true);
+        textDiv.style.width = "70%"
         textDiv.innerText = newInfo.text;
         textDiv.style.textAlign = "left";
+        textDiv.style.wordBreak = "break-all";
         textDiv.addEventListener("click", this.function_copyEvent);
-        //textDiv.style.flexGrow = "2";
 
         newInfoDiv.appendChild(dateDiv);
-        //newInfoDiv.appendChild(windowDiv);
         newInfoDiv.appendChild(textDiv);
 
         return newInfoDiv;
@@ -495,8 +490,9 @@ class htmlRemoteElement {
         pageDiv.style.height = "300px";
         pageDiv.style.overflowY = "scroll";
         pageDiv.style.scrollbarColor = "#28FE0B";
-        console.log(this.db.newInfo);
-        for (let i = 0; i < this.db.newInfo.length; i++) {
+        pageDiv.style.display = "flex";
+        pageDiv.style.flexDirection = "column"
+        for (let i = this.db.newInfo.length - 1; i >= 0; i --) {
             pageDiv.appendChild(this.tuple_recentWork(this.db.newInfo[i]));
         }
         pageDiv.className = "recentPlsPage";
@@ -3623,9 +3619,23 @@ class Model {
 }
 class View {
     returnElement = null;
+    newTuple = null;
     constructor(type, info, tabType, tabInfo) {
         if (type == "html") {
             const element = new htmlRemoteElement();
+            let newArr = [];
+            for(let i=0; i<info.newInfo.length; i++){
+                for(let j=0; j<info.newInfo[i].length; j++){
+                    newArr.push({text:info.newInfo[i][j].text, 
+                        time:`${info.newInfo[i][j].key_madeDate.year}-${info.newInfo[i][j].key_madeDate.month}-${info.newInfo[i][j].key_madeDate.date} ${info.newInfo[i][j].key_madeDate.hours}:${info.newInfo[i][j].key_madeDate.minutes}`
+                    });
+                }
+            }
+            const sorted_list = newArr.sort(function(a, b) {
+                return new Date(a.time).getTime() - new Date(b.time).getTime();
+            });
+
+            info.newInfo = sorted_list;
             element.setValue(info);
             this.returnElement = element.setElementAll();
         } else if (type == "window") {
@@ -3650,7 +3660,24 @@ class View {
                 const tabInfo = info.tab; 
                 this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text, tabInfo.fk_colorIndex);
             }
+            //this.htmlElement = 
+            /**newArr.push({text:info.newInfo[i][j].text, 
+                        time:`${info.tab.key_madeDate.year}-${info.tab.key_madeDate.month}-${info.tab.key_madeDate.date} ${info.tab.key_madeDate.hours}:${info.tab.key_madeDate.minutes}`
+                    }); 
+             * 
+            */
+            const html_tuple_info = {
+                text : info.tab.text,
+                time : `${info.tab.key_madeDate.year}-${info.tab.key_madeDate.month}-${info.tab.key_madeDate.date} ${info.tab.key_madeDate.hours}:${info.tab.key_madeDate.minutes}`
+            }
+            this.newTuple = html_tuple_info;
         }
+    }
+    htmlRecentNew(htmlInfo){
+        const recentPlsPage = document.querySelector(".recentPlsPage");
+        const element = new htmlRemoteElement();
+        element.setValue(htmlInfo);
+        recentPlsPage.prepend(element.tuple_recentWork(this.newTuple));
     }
 }
 class Controller {
@@ -3752,7 +3779,7 @@ class Controller {
 
         //html start
         const newHtmlInfo = this.model.htmlInfo;
-        newHtmlInfo.newInfo = this.model.tab_memo_textArr;
+        newHtmlInfo.newInfo.push(this.model.tab_memo_textArr);
         const v_element_html = new View("html", newHtmlInfo);
         mainHtml.appendChild(v_element_html.returnElement);
         this.model.htmlInfo.newInfo = [];
@@ -3768,6 +3795,7 @@ class Controller {
     }
     tupleAppend(tabIndex, data, tabType){
         const v_element_tab = new View("tuple", data, tabType);
+        v_element_tab.htmlRecentNew(this.model.htmlInfo);
         const target = document.querySelector(`.t${tabIndex}_tuplesDiv`);
         target.prepend(v_element_tab.returnElement);
     }
@@ -3836,7 +3864,7 @@ class Controller {
                 }
             }
             this.tupleAppend(tabIndex, info, "memo");
-            //this.tabAppend(this.model.value, this.model.tab_memo_textArr.length);
+
         }else if(target == "tab_memo_text_U"){
             const index = value.index;
             const key = value.key;
