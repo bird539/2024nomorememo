@@ -217,6 +217,8 @@ class htmlRemoteElement {
     summary = null;
 
     htmlRemoteDiv = null;
+
+    trash = null;
     db = {
         //최근 연 페이지 인덱스
         lastPageShow: null,
@@ -229,18 +231,12 @@ class htmlRemoteElement {
         //최근 항목(date, text) / 일정모음(마감시간,남은시간,텍스트)
         newInfo: [], schedule: [],
 
-        //쓰레기통 - 윈도우     (삭제일key, 윈도우 제목, 탭 제목들, 탭 정보들 )
-        trashWindow: [],        //삭제일 + 윈도우div(tap디테일(탭 글자들)) + 복구 btn
-        //쓰레기통 - 탭들       (삭제일key, 탭 제목들, 탭 정보들 )
-        trashTab: [],           //삭제일 + tap디테일(탭 글자들))          + 복구 btn
-        //쓰레기통 - 탭 정보들  (삭제일key, 탭 정보들 )               
-        trashTabText: [],      //삭제일  + 탭 글자들           + 복구 btn
-
         index_fontWeight: null,
         index_fontFamily: null,
         index_fontStyle: null,
     }
     constructor() {
+        this.trash = null;
         this.div = document.createElement("div");
         this.button = document.createElement("button");
         this.input = document.createElement("input");
@@ -253,6 +249,8 @@ class htmlRemoteElement {
         this.htmlRemoteDiv = null;
     }
     setValue(db) {
+        this.trash = db.trash;
+
         this.db.lastPageShow = db.lastPageShow;
         this.db.title = db.title;
 
@@ -480,6 +478,39 @@ class htmlRemoteElement {
 
         return newInfoDiv;
     }
+    tuple_trash(indexTime, text) {
+        const newInfoDiv = this.div.cloneNode(true);
+        newInfoDiv.style.display = "flex";
+        newInfoDiv.style.flexDirection = "row";
+        newInfoDiv.style.width = "100%";
+
+        const checkbox = this.input.cloneNode(true);
+        checkbox.type = "checkbox";
+        checkbox.style.accentColor = this.db.htmlBackgroundColor;
+        checkbox.value = indexTime;
+        checkbox.style.height = "100%";
+        checkbox.style.width = "20px";
+
+        const dateDiv = this.div.cloneNode(true);
+        const time = new Date(indexTime);
+        const afterTime = `${time.getMonth()}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}`;
+        dateDiv.style.width = "40%"
+        dateDiv.style.textAlign = "left";
+        dateDiv.innerText = afterTime;
+
+        const textDiv =  this.div.cloneNode(true);
+        textDiv.style.width = "70%"
+        textDiv.innerText = text;
+        textDiv.style.textAlign = "left";
+        textDiv.style.wordBreak = "break-all";
+        textDiv.addEventListener("click", this.function_copyEvent);
+
+        newInfoDiv.appendChild(checkbox);
+        newInfoDiv.appendChild(dateDiv);
+        newInfoDiv.appendChild(textDiv);
+
+        return newInfoDiv;
+    }
     //<--make tuple
 
     //pages
@@ -513,8 +544,18 @@ class htmlRemoteElement {
     trashPage() {
         const pageDiv = this.div.cloneNode(true);
         pageDiv.style.width = "flex";
+        pageDiv.style.width = "100%";
+        pageDiv.style.height = "300px";
+        pageDiv.style.overflowY = "scroll";
+        pageDiv.style.scrollbarColor = "#28FE0B";
+        pageDiv.style.display = "flex";
+        pageDiv.style.flexDirection = "column"
 
-        pageDiv.innerText = "trash Page..."
+        for(let i=0; i<this.trash.tab_text.length; i++){
+            pageDiv.appendChild(this.tuple_trash(this.trash.tab_text[i].index, this.trash.tab_text[i].text ));
+        }
+
+        ///pageDiv.innerText = "trash Page..."
         return pageDiv;
     }
     remoteEditPage() {
@@ -3133,12 +3174,15 @@ class htmlInfo {
 
     newInfo = [];
     schedule = [];
+    trash = {window:[], tab:[], tab_text:[]};
     constructor() {
         this.lastPageShow = 0; this.title = 'hello!';
         this.fontSize = basic_fontSize; this.fontWeight = 0; this.fontFamily = 1; this.fontStyle = 0;
         this.fontColor = basic_fontColor; this.backgroundColor = all_backgroundColor[3]; this.lineColor = basic_lineColor;
         this.htmlBackgroundColor = basic_htmlBacground; this.lightDarkMode = true;
         this.language = 'kr';
+
+        this.trash = {window:[], tab:[], tab_text:[]};
     }
 }
 
@@ -3363,6 +3407,24 @@ class Model {
         const next = this.windowArr[index].indexNext;
         if (befo != null) { this.windowArr[befo].indexNext = next; }
         if (next != null) { this.windowArr[next].indexBefo = befo; }
+
+        //del save---
+        const timeIndex =new Date();
+        this.windowArr[index].index = timeIndex;  
+        this.htmlInfo.trash.window.push(this.windowArr[index]);
+        if(this.htmlInfo.trash.window.length > 5){
+            this.htmlInfo.window.trash.shift();
+        }
+        this.htmlInfo_save();
+
+        for(let i=0; i<this.tabInfoArr.length; i++){
+            if(this.tabInfoArr[i] != null && this.tabInfoArr[i].fk_windowIndex == index){
+                console.log(i);
+                this.tab_D(i);
+            }
+        }
+        //---del save
+
         this.windowArr[index] = null;
         if (index == this.windowArr.length - 1) {
             let newArr = [];
@@ -3434,6 +3496,8 @@ class Model {
         this.tab_save();
     }
     tab_D(tabIndex){
+        const timeIndex =new Date();
+
         const befo = this.tabInfoArr[tabIndex].indexBefo;
         const next = this.tabInfoArr[tabIndex].indexNext;
         if (befo != null) { this.tabInfoArr[befo].indexNext = next; }
@@ -3441,12 +3505,31 @@ class Model {
         if(this.tabInfoArr[tabIndex].type == 0){
             this.tab_memo_color_D(tabIndex);
             for(let i=0;i<this.tab_memo_textArr.length;i++){
-                if(this.tab_memo_textArr[i].fk_tabIndex == tabIndex){
+                if(this.tab_memo_textArr[i] != null && this.tab_memo_textArr[i].fk_tabIndex == tabIndex){
+                    //trash tab_text---
+                    const newTrashTuple = {index : timeIndex, 
+                        text : this.tab_memo_textArr[i].text
+                    }
+                    this.htmlInfo.trash.tab_text.push(newTrashTuple);
+                    if(this.htmlInfo.trash.tab.length > 40){
+                        this.htmlInfo.trash.tab_text.shift();
+                    }
+                    this.htmlInfo_save();
+                    //---trash tab_text
                     this.tab_memo_textArr[i] = null;
                 }
             }
             this.tab_memo_text_save();
         }
+        //trash tab---
+        this.tabInfoArr[tabIndex].index = timeIndex;  
+        this.htmlInfo.trash.tab.push(this.tabInfoArr[tabIndex]);
+        if(this.htmlInfo.trash.tab.length > 10){
+            this.htmlInfo.trash.tab.shift();
+        }
+        this.htmlInfo_save();
+        //---trash tab 
+
         this.tabInfoArr[tabIndex] = null;
         if (tabIndex == this.tabInfoArr.length - 1) {
             let newArr = [];
@@ -3574,6 +3657,18 @@ class Model {
         this.tab_memo_text_save();
     }
     tab_memo_text_D(textIndex){
+        //trash tab_text---
+        const timeIndex =new Date();
+        const newTrashTuple = {index : timeIndex, 
+            text : this.tab_memo_textArr[textIndex].text
+        }
+        this.htmlInfo.trash.tab_text.push(newTrashTuple);
+        if(this.htmlInfo.trash.tab_text.length > 40){
+            this.htmlInfo.trash.tab_text.shift();
+        }
+        this.htmlInfo_save();
+        //---trash tab_text
+
         this.tab_memo_textArr[textIndex] = null;
         this.tab_memo_text_save();
     }
@@ -3660,12 +3755,6 @@ class View {
                 const tabInfo = info.tab; 
                 this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text, tabInfo.fk_colorIndex);
             }
-            //this.htmlElement = 
-            /**newArr.push({text:info.newInfo[i][j].text, 
-                        time:`${info.tab.key_madeDate.year}-${info.tab.key_madeDate.month}-${info.tab.key_madeDate.date} ${info.tab.key_madeDate.hours}:${info.tab.key_madeDate.minutes}`
-                    }); 
-             * 
-            */
             const html_tuple_info = {
                 text : info.tab.text,
                 time : `${info.tab.key_madeDate.year}-${info.tab.key_madeDate.month}-${info.tab.key_madeDate.date} ${info.tab.key_madeDate.hours}:${info.tab.key_madeDate.minutes}`
@@ -3859,7 +3948,7 @@ class Controller {
                 tab:this.model.value,
             }
             for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
-                if(this.model.tab_memo_colorArr[j].fk_tabIndex==tabIndex){
+                if(this.model.tab_memo_colorArr[j] !=null && this.model.tab_memo_colorArr[j].fk_tabIndex==tabIndex){
                     info.color = this.model.tab_memo_colorArr[j];
                 }
             }
