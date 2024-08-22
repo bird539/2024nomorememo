@@ -410,6 +410,10 @@ class htmlRemoteElement {
         const body = document.querySelector(".htmlRemoteBody");
         body.style.display =  body.style.display == "none" ? "block" : "none";
     }
+    function_showEvent2(event){
+        const body = event.target.parentNode.nextSibling;
+        body.style.display =  body.style.display == "none" ? "block" : "none";
+    }
     function_copyEvent(event){
         copyToClipboard(event.target.innerText);
     }
@@ -484,12 +488,21 @@ class htmlRemoteElement {
         newInfoDiv.style.flexDirection = "row";
         newInfoDiv.style.width = "100%";
 
+
+        const chekDiv = this.div.cloneNode(true);
+        chekDiv.style.display = "flex";
+        chekDiv.style.height = "40px";
+        chekDiv.style.alignItems = "stretch";
+
         const checkbox = this.input.cloneNode(true);
         checkbox.type = "checkbox";
         checkbox.style.accentColor = this.db.htmlBackgroundColor;
         checkbox.value = indexTime;
         checkbox.style.height = "100%";
         checkbox.style.width = "20px";
+        checkbox.style.display = "flex";
+        checkbox.style.alignItems = "stretch";
+        chekDiv.appendChild(checkbox);
 
         const dateDiv = this.div.cloneNode(true);
         const time = new Date(indexTime);
@@ -497,7 +510,11 @@ class htmlRemoteElement {
         dateDiv.style.width = "40%"
         dateDiv.style.textAlign = "left";
         dateDiv.innerText = afterTime;
-
+        //background-color: transparent; font-family: sans-serif; font-size: 14pt; font-weight: 100; color: rgb(0, 0, 0); display: flex; align-items: stretch; width: 40px;
+        //background-color: transparent; border: none; padding: 0px; height: 100%; font-family: sans-serif; font-size: 14pt; font-weight: 100; color: rgb(0, 0, 0); display: flex; align-items: stretch;
+        
+        //background-color: transparent; font-family: sans-serif; font-size: 14pt; font-weight: 100; font-style: normal; color: rgb(0, 0, 0); display: flex; align-items: stretch;
+        //background-color: transparent; border: none; padding: 0px; height: 110%; font-family: sans-serif; font-size: 14pt; font-weight: 100; font-style: normal; color: rgb(0, 0, 0); accent-color: rgb(255, 255, 255); width: 20px; display: flex; align-items: stretch;
         const textDiv =  this.div.cloneNode(true);
         textDiv.style.width = "70%"
         textDiv.innerText = text;
@@ -505,11 +522,92 @@ class htmlRemoteElement {
         textDiv.style.wordBreak = "break-all";
         textDiv.addEventListener("click", this.function_copyEvent);
 
-        newInfoDiv.appendChild(checkbox);
+        newInfoDiv.appendChild(chekDiv);
         newInfoDiv.appendChild(dateDiv);
         newInfoDiv.appendChild(textDiv);
 
         return newInfoDiv;
+    }
+    tuple_trash_tab(index,title){
+        const allDiv = this.div.cloneNode(true);
+        const headDiv = this.div.cloneNode(true);
+        headDiv.style.display = "flex";
+        
+        const checkbox = this.input.cloneNode(true);
+        checkbox.type = "checkbox";
+        checkbox.style.accentColor = this.db.htmlBackgroundColor;
+        checkbox.value = index;
+        checkbox.style.height = "20px";
+        checkbox.style.width = "10%";
+        headDiv.appendChild(checkbox);
+
+        const remakeBtn = this.button.cloneNode(true);
+        remakeBtn.innerText = "r"
+        remakeBtn.style.width = "10%";
+        remakeBtn.style.marginRight = "0";
+        headDiv.appendChild(remakeBtn);
+
+        const titleDiv = this.button.cloneNode(true);
+        titleDiv.innerText = title;
+        titleDiv.style.textAlign = "start";
+        titleDiv.style.width = "60%";
+        titleDiv.addEventListener("click", this.function_showEvent2);
+
+        headDiv.style.width = "100%";
+        headDiv.appendChild(titleDiv);
+
+        const bodyDiv = this.div.cloneNode(true);
+        for(let j=0; j<this.trash.tab_text.length; j++){
+            if(this.trash.tab_text[j].index == index){
+                bodyDiv.appendChild(this.tuple_trash(this.trash.tab_text[j].index, this.trash.tab_text[j].text ))
+            }
+        }
+        bodyDiv.style.display = "none";
+        
+        allDiv.appendChild(headDiv);
+        allDiv.appendChild(bodyDiv);
+        return allDiv;
+    }
+    tuple_trash_window(index,title){
+        const allDiv = this.div.cloneNode(true);
+        const headDiv = this.div.cloneNode(true);
+        headDiv.style.display = "flex";
+        
+        const checkbox = this.input.cloneNode(true);
+        checkbox.type = "checkbox";
+        checkbox.style.accentColor = this.db.htmlBackgroundColor;
+        checkbox.value = index;
+        checkbox.style.height = "20px";
+        checkbox.style.width = "10%";
+        headDiv.appendChild(checkbox);
+
+        const remakeBtn = this.button.cloneNode(true);
+        remakeBtn.innerText = "r"
+        remakeBtn.style.width = "10%";
+        remakeBtn.style.marginRight = "0";
+        headDiv.appendChild(remakeBtn);
+
+        const titleDiv = this.button.cloneNode(true);
+        titleDiv.innerText = title;
+        titleDiv.style.textAlign = "start";
+        titleDiv.style.width = "60%";
+        titleDiv.addEventListener("click", this.function_showEvent2);
+
+        headDiv.style.width = "100%";
+        headDiv.appendChild(titleDiv);
+
+        const bodyDiv = this.div.cloneNode(true);
+        for(let j=0; j<this.trash.tab.length; j++){
+            if(this.trash.tab[j].index == index){
+                bodyDiv.appendChild(this.tuple_trash_tab(this.trash.tab[j].index, this.trash.tab[j].name ))
+            }
+        }
+        bodyDiv.style.display = "none";
+
+        allDiv.appendChild(headDiv);
+        allDiv.appendChild(bodyDiv);
+
+        return allDiv;
     }
     //<--make tuple
 
@@ -543,18 +641,38 @@ class htmlRemoteElement {
     }
     trashPage() {
         const pageDiv = this.div.cloneNode(true);
-        pageDiv.style.width = "flex";
         pageDiv.style.width = "100%";
         pageDiv.style.height = "300px";
         pageDiv.style.overflowY = "scroll";
         pageDiv.style.scrollbarColor = "#28FE0B";
-        pageDiv.style.display = "flex";
-        pageDiv.style.flexDirection = "column"
 
+        //tab_text
+        const tabTupleTextDiv = this.div.cloneNode(true);
+        tabTupleTextDiv.innerText = "tab info (max 40)";
+        tabTupleTextDiv.style.textAlign = "start";
+        pageDiv.appendChild(tabTupleTextDiv);
+        tabTupleTextDiv.style.borderBottom = `1.5px solid ${this.db.fontColor}`;
         for(let i=0; i<this.trash.tab_text.length; i++){
             pageDiv.appendChild(this.tuple_trash(this.trash.tab_text[i].index, this.trash.tab_text[i].text ));
         }
 
+        //tab
+        const tabTextDiv = tabTupleTextDiv.cloneNode(true);
+        tabTextDiv.innerText = "tab(max 10)";
+        pageDiv.appendChild(tabTextDiv);
+        for(let i=0; i<this.trash.tab.length; i++){
+            const allDiv = this.tuple_trash_tab(this.trash.tab[i].index, this.trash.tab[i].name);
+            pageDiv.appendChild(allDiv);
+        }
+
+        //window
+        const windowTextDiv = tabTupleTextDiv.cloneNode(true);
+        windowTextDiv.innerText = "tab(max 5)";
+        pageDiv.appendChild(windowTextDiv);
+        for(let i=0; i<this.trash.window.length; i++){
+            const allDiv = this.tuple_trash_window(this.trash.window[i].index, this.trash.window[i].name);
+            pageDiv.appendChild(allDiv);
+        }
         ///pageDiv.innerText = "trash Page..."
         return pageDiv;
     }
