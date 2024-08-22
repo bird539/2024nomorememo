@@ -417,6 +417,9 @@ class htmlRemoteElement {
     function_copyEvent(event){
         copyToClipboard(event.target.innerText);
     }
+    function_delTuple(event){
+
+    }
     //<-- function event
 
     //make tuple -->
@@ -497,9 +500,9 @@ class htmlRemoteElement {
         const checkbox = this.input.cloneNode(true);
         checkbox.type = "checkbox";
         checkbox.style.accentColor = this.db.htmlBackgroundColor;
-        checkbox.value = indexTime;
+        checkbox.value = `tuple_${indexTime}`;
         checkbox.style.height = "100%";
-        checkbox.style.width = "20px";
+        checkbox.style.width = "60px";
         checkbox.style.display = "flex";
         checkbox.style.alignItems = "stretch";
         chekDiv.appendChild(checkbox);
@@ -507,7 +510,7 @@ class htmlRemoteElement {
         const dateDiv = this.div.cloneNode(true);
         const time = new Date(indexTime);
         const afterTime = `${time.getMonth()}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}`;
-        dateDiv.style.width = "40%"
+        dateDiv.style.width = "35%"
         dateDiv.style.textAlign = "left";
         dateDiv.innerText = afterTime;
         //background-color: transparent; font-family: sans-serif; font-size: 14pt; font-weight: 100; color: rgb(0, 0, 0); display: flex; align-items: stretch; width: 40px;
@@ -528,7 +531,7 @@ class htmlRemoteElement {
 
         return newInfoDiv;
     }
-    tuple_trash_tab(index,title){
+    tuple_trash_tab(index,title, db){
         const allDiv = this.div.cloneNode(true);
         const headDiv = this.div.cloneNode(true);
         headDiv.style.display = "flex";
@@ -536,17 +539,18 @@ class htmlRemoteElement {
         const checkbox = this.input.cloneNode(true);
         checkbox.type = "checkbox";
         checkbox.style.accentColor = this.db.htmlBackgroundColor;
-        checkbox.value = index;
+        checkbox.value = `tab_${index}`;
         checkbox.style.height = "20px";
-        checkbox.style.width = "10%";
+        checkbox.style.width = "50px";
         headDiv.appendChild(checkbox);
 
+        /*
         const remakeBtn = this.button.cloneNode(true);
         remakeBtn.innerText = "r"
         remakeBtn.style.width = "10%";
         remakeBtn.style.marginRight = "0";
         headDiv.appendChild(remakeBtn);
-
+        */
         const titleDiv = this.button.cloneNode(true);
         titleDiv.innerText = title;
         titleDiv.style.textAlign = "start";
@@ -555,8 +559,30 @@ class htmlRemoteElement {
 
         headDiv.style.width = "100%";
         headDiv.appendChild(titleDiv);
-
+        
         const bodyDiv = this.div.cloneNode(true);
+
+        const infoDiv = this.div.cloneNode(true);
+        const infoHead = this.div.cloneNode(true);
+        const infoHead2 = this.div.cloneNode(true);
+        const time = new Date(index);
+        infoHead.innerText = `===info : ${time.getMonth()}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}`;
+        infoHead.style.textAlign = "start";
+        const infoBody = this.div.cloneNode(true);
+        for(let key in db){
+            const infoDivn = this.div.cloneNode(true);
+            infoDivn.innerText += `${key} : ${db[key]}`;
+            infoDivn.style.textAlign = "left";
+            infoDivn.style.wordBreak = "break-all";
+            infoBody.appendChild(infoDivn);
+        }
+        infoBody.style.display = "none";
+        infoHead.addEventListener("click", this.function_showEvent2);
+        infoHead2.appendChild(infoHead);
+        infoDiv.appendChild(infoHead2);
+        infoDiv.appendChild(infoBody);
+        bodyDiv.appendChild(infoDiv);
+
         for(let j=0; j<this.trash.tab_text.length; j++){
             if(this.trash.tab_text[j].index == index){
                 bodyDiv.appendChild(this.tuple_trash(this.trash.tab_text[j].index, this.trash.tab_text[j].text ))
@@ -568,7 +594,7 @@ class htmlRemoteElement {
         allDiv.appendChild(bodyDiv);
         return allDiv;
     }
-    tuple_trash_window(index,title){
+    tuple_trash_window(index,title,db){
         const allDiv = this.div.cloneNode(true);
         const headDiv = this.div.cloneNode(true);
         headDiv.style.display = "flex";
@@ -576,37 +602,57 @@ class htmlRemoteElement {
         const checkbox = this.input.cloneNode(true);
         checkbox.type = "checkbox";
         checkbox.style.accentColor = this.db.htmlBackgroundColor;
-        checkbox.value = index;
+        checkbox.value = `window_${index}`;
         checkbox.style.height = "20px";
-        checkbox.style.width = "10%";
+        checkbox.style.width = "40px";
         headDiv.appendChild(checkbox);
 
+        /*
         const remakeBtn = this.button.cloneNode(true);
         remakeBtn.innerText = "r"
         remakeBtn.style.width = "10%";
         remakeBtn.style.marginRight = "0";
         headDiv.appendChild(remakeBtn);
-
+        */
         const titleDiv = this.button.cloneNode(true);
         titleDiv.innerText = title;
         titleDiv.style.textAlign = "start";
         titleDiv.style.width = "60%";
         titleDiv.addEventListener("click", this.function_showEvent2);
-
         headDiv.style.width = "100%";
         headDiv.appendChild(titleDiv);
-
         const bodyDiv = this.div.cloneNode(true);
+
+        const infoDiv = this.div.cloneNode(true);
+        const infoHead = this.div.cloneNode(true);
+        const infoHead2 = this.div.cloneNode(true);
+        const time = new Date(index);
+        infoHead.innerText = `===info : ${time.getMonth()}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}`;
+        infoHead.style.textAlign = "start";
+        const infoBody = this.div.cloneNode(true);
+        for(let key in db){
+            const infoDivn = this.div.cloneNode(true);
+            infoDivn.innerText += `${key} : ${db[key]}`;
+            infoDivn.style.textAlign = "left";
+            infoDivn.style.wordBreak = "break-all";
+            infoBody.appendChild(infoDivn);
+        }
+        infoBody.style.display = "none";
+        infoHead.addEventListener("click", this.function_showEvent2);
+        infoHead2.appendChild(infoHead);
+        infoDiv.appendChild(infoHead2);
+        infoDiv.appendChild(infoBody);
+        bodyDiv.appendChild(infoDiv);
+
         for(let j=0; j<this.trash.tab.length; j++){
             if(this.trash.tab[j].index == index){
-                bodyDiv.appendChild(this.tuple_trash_tab(this.trash.tab[j].index, this.trash.tab[j].name ))
+                bodyDiv.appendChild(this.tuple_trash_tab(this.trash.tab[j].index, this.trash.tab[j].name, this.trash.tab[j] ))
             }
         }
         bodyDiv.style.display = "none";
 
         allDiv.appendChild(headDiv);
         allDiv.appendChild(bodyDiv);
-
         return allDiv;
     }
     //<--make tuple
@@ -648,31 +694,57 @@ class htmlRemoteElement {
 
         //tab_text
         const tabTupleTextDiv = this.div.cloneNode(true);
-        tabTupleTextDiv.innerText = "tab info (max 40)";
         tabTupleTextDiv.style.textAlign = "start";
+        let count = this.trash.tab_text.length;
+        tabTupleTextDiv.innerText = `tuple (max 40/${count})`;
         pageDiv.appendChild(tabTupleTextDiv);
         tabTupleTextDiv.style.borderBottom = `1.5px solid ${this.db.fontColor}`;
         for(let i=0; i<this.trash.tab_text.length; i++){
             pageDiv.appendChild(this.tuple_trash(this.trash.tab_text[i].index, this.trash.tab_text[i].text ));
         }
 
+
         //tab
         const tabTextDiv = tabTupleTextDiv.cloneNode(true);
-        tabTextDiv.innerText = "tab(max 10)";
+        count = this.trash.tab.length;
+        tabTextDiv.innerText = `tab (max 10/${count})`;
         pageDiv.appendChild(tabTextDiv);
         for(let i=0; i<this.trash.tab.length; i++){
-            const allDiv = this.tuple_trash_tab(this.trash.tab[i].index, this.trash.tab[i].name);
+            const allDiv = this.tuple_trash_tab(this.trash.tab[i].index, this.trash.tab[i].name, this.trash.tab[i]);
             pageDiv.appendChild(allDiv);
         }
 
+
         //window
         const windowTextDiv = tabTupleTextDiv.cloneNode(true);
-        windowTextDiv.innerText = "tab(max 5)";
+        count = this.trash.window.length;
+        windowTextDiv.innerText = `window(max 5/${count})`;
         pageDiv.appendChild(windowTextDiv);
         for(let i=0; i<this.trash.window.length; i++){
-            const allDiv = this.tuple_trash_window(this.trash.window[i].index, this.trash.window[i].name);
+            const allDiv = this.tuple_trash_window(this.trash.window[i].index, this.trash.window[i].name, this.trash.window[i]);
             pageDiv.appendChild(allDiv);
         }
+
+
+        const allDelChek =  this.div.cloneNode(true);
+        allDelChek.style.width = "100%";
+        allDelChek.style.display = "flex";
+        allDelChek.style.alignItems = "start"
+        allDelChek.style.borderTop = `1.5px solid ${this.db.fontColor}`;
+        const checkbox = this.input.cloneNode(true);
+        checkbox.type = "checkbox";
+        checkbox.style.border = this.db.fontColor;
+        checkbox.value = `all`;
+        checkbox.style.height = "20px";
+        checkbox.style.width = "15%";
+
+        const delBtn = this.button.cloneNode(true);
+        delBtn.innerText = "checked all delete";
+
+        allDelChek.appendChild(checkbox);
+        allDelChek.appendChild(delBtn);
+        pageDiv.appendChild(allDelChek);
+
         ///pageDiv.innerText = "trash Page..."
         return pageDiv;
     }
@@ -3424,6 +3496,49 @@ class Model {
         this.htmlInfo[key] = value;
         this.htmlInfo_save();
     }
+    html_trash_D(key, value, type) {
+        let tab_text = []; 
+        let tab = []; 
+        let window = []; 
+        if(type == "tuple"){
+            for(let i=0; i<this.htmlInfo.trash.tab_text.length; i++){
+                if(this.htmlInfo.trash.tab_text[i].index != key && this.htmlInfo.trash.tab_text[i].text != value){
+                    tab_text.push(this.htmlInfo.trash.tab_text[i]);
+                }
+            }
+        }else if(type == "tab"){
+            for(let i=0; i<this.htmlInfo.trash.tab.length; i++){
+                if(this.htmlInfo.trash.tab[i].index != key){
+                    tab.push(this.htmlInfo.trash.tab[i]);
+                }
+            }
+            for(let i=0; i<this.htmlInfo.trash.tab_text.length; i++){
+                if(this.htmlInfo.trash.tab_text[i].index != key){
+                    tab_text.push(this.htmlInfo.trash.tab_text[i]);
+                }
+            }
+        }else if(type == "window"){
+            for(let i=0; i<this.htmlInfo.trash.window.length; i++){
+                if(this.htmlInfo.trash.window[i].index != key){
+                    tab_text.push(this.htmlInfo.trash.tab_text[i]);
+                }
+            }
+            for(let i=0; i<this.htmlInfo.trash.tab.length; i++){
+                if(this.htmlInfo.trash.tab[i].index != key){
+                    tab.push(this.htmlInfo.trash.tab[i]);
+                }
+            }
+            for(let i=0; i<this.htmlInfo.trash.tab_text.length; i++){
+                if(this.htmlInfo.trash.tab_text[i].index != key){
+                    window.push(this.htmlInfo.trash.window[i]);
+                }
+            }
+        }
+        this.htmlInfo.trash.tab_text = tab_text;
+        this.htmlInfo.trash.tab = tab;
+        this.htmlInfo.trash.window = window;
+        this.htmlInfo_save();
+    }
 
     //window--
     window_C() {
@@ -4088,6 +4203,8 @@ class Controller {
             const key = value.key;
             const colorValue = value.value;
             this.model.tab_memo_color_U(tabIndex, key, colorValue);
+        }else if(target == "html_trash_D"){
+            this.model.html_trash_D(value.key, value.value, value.type);
         }
     }
     sendTarget() { return "windowAppend"; }
