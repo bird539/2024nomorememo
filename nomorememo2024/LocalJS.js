@@ -418,7 +418,45 @@ class htmlRemoteElement {
         copyToClipboard(event.target.innerText);
     }
     function_delTuple(event){
+        const trashPage = event.target.parentNode.parentNode;
+        for(let i=0; i<trashPage.childNodes.length; i++){
+            if(trashPage.childNodes[i].childNodes.length == 3){
+                const check = trashPage.childNodes[i].childNodes[0].childNodes[0];
+                if(check.checked){
+                    const split = check.value.split("_");
+                    const key = split[1];
+                    const type = split[0]
+                    const value = trashPage.childNodes[i].childNodes[2].innerText;    
+                    const observer = new Observer_sendGetData(true);
+                    observer.check = true;
+                    observer.name = "html delete event";
+                    observer.target = "html_trash_D";
+                    observer.value = {key:key, value:value, type:type};
+                    subj.subscribe(observer);
+                    subj.notifyAll();
 
+                    trashPage.childNodes[i].remove();
+                }
+            }else if(trashPage.childNodes[i].childNodes.length == 2){
+                const check = trashPage.childNodes[i].childNodes[0].childNodes[0];
+                if(check.checked){
+                    const split = check.value.split("_");
+                    const key = split[1];
+                    const type = split[0]
+                    const value = key;
+                    const observer = new Observer_sendGetData(true);
+                    observer.check = true;
+                    observer.name = "html delete event";
+                    observer.target = "html_trash_D";
+                    observer.value = {key:key, value:value, type:type};
+                    subj.subscribe(observer);
+                    subj.notifyAll();
+                    
+                    trashPage.childNodes[i].remove();
+                }
+            }
+        }
+        // /html_trash_D(value.key, value.value, value.type);
     }
     //<-- function event
 
@@ -739,9 +777,10 @@ class htmlRemoteElement {
         checkbox.style.width = "15%";
 
         const delBtn = this.button.cloneNode(true);
+        delBtn.addEventListener("click", this.function_delTuple);
         delBtn.innerText = "checked all delete";
 
-        allDelChek.appendChild(checkbox);
+        //allDelChek.appendChild(checkbox);
         allDelChek.appendChild(delBtn);
         pageDiv.appendChild(allDelChek);
 
@@ -3500,6 +3539,7 @@ class Model {
         let tab_text = []; 
         let tab = []; 
         let window = []; 
+        console.log(key, value, type);
         if(type == "tuple"){
             for(let i=0; i<this.htmlInfo.trash.tab_text.length; i++){
                 if(this.htmlInfo.trash.tab_text[i].index != key && this.htmlInfo.trash.tab_text[i].text != value){
@@ -3652,7 +3692,6 @@ class Model {
 
         for(let i=0; i<this.tabInfoArr.length; i++){
             if(this.tabInfoArr[i] != null && this.tabInfoArr[i].fk_windowIndex == index){
-                console.log(i);
                 this.tab_D(i);
             }
         }
@@ -3660,11 +3699,7 @@ class Model {
 
         this.windowArr[index] = null;
         if (index == this.windowArr.length - 1) {
-            let newArr = [];
-            for (let i = 0; i < this.windowArr.length - 2; i++) {
-                newArr.push(this.windowArr[i]);
-            }
-            this.windowArr = newArr;
+            this.windowArr.pop();
         }
         this.window_save();
     }
@@ -3713,8 +3748,11 @@ class Model {
             }
             //윈도우 한테 정보 내려받기
             this.tabInfoArr[newTab.indexBefo].indexNext = newTab.index;
+            delete this.tabInfoArr[newTab.indexBefo].tabInfo;
+            console.log(this.tabInfoArr[newTab.indexBefo]);
         }
         this.value = newTab;
+
         this.tab_save();
         if(type == 0){
             this.tab_memo_color_C(newTab.index);
@@ -3735,12 +3773,14 @@ class Model {
         const next = this.tabInfoArr[tabIndex].indexNext;
         if (befo != null) { this.tabInfoArr[befo].indexNext = next; }
         if (next != null) { this.tabInfoArr[next].indexBefo = befo; }
+
         if(this.tabInfoArr[tabIndex].type == 0){
             this.tab_memo_color_D(tabIndex);
             for(let i=0;i<this.tab_memo_textArr.length;i++){
                 if(this.tab_memo_textArr[i] != null && this.tab_memo_textArr[i].fk_tabIndex == tabIndex){
                     //trash tab_text---
-                    const newTrashTuple = {index : timeIndex, 
+                    const newTrashTuple = {
+                        index : timeIndex, 
                         text : this.tab_memo_textArr[i].text
                     }
                     this.htmlInfo.trash.tab_text.push(newTrashTuple);
@@ -3762,14 +3802,10 @@ class Model {
         }
         this.htmlInfo_save();
         //---trash tab 
-
+        
         this.tabInfoArr[tabIndex] = null;
         if (tabIndex == this.tabInfoArr.length - 1) {
-            let newArr = [];
-            for (let i = 0; i < this.tabInfoArr.length - 2; i++) {
-                newArr.push(this.tabInfoArr[i]);
-            }
-            this.tabInfoArr = newArr;
+            this.tabInfoArr.pop();
         }
         this.tab_save();
     }
@@ -3838,11 +3874,13 @@ class Model {
         this.tab_memo_color_save();
     }
     tab_memo_color_D(tabIndex){
+        let newArr = [];
         for(let i=0;i<this.tab_memo_colorArr.length;i++){
-            this.tab_memo_colorArr[i].fk_tabIndex == tabIndex;
-            this.tab_memo_colorArr[i] = null;
-            break;
+            if(this.tab_memo_colorArr[i].fk_tabIndex != tabIndex){
+                newArr.push(this.tab_memo_colorArr[i]);
+            }
         }
+        this.tab_memo_colorArr = newArr;
         this.tab_memo_color_save();
     }
 
@@ -3865,7 +3903,6 @@ class Model {
         this.tab_memo_textArr.push(memoText);
         this.tab_memo_text_save();
         this.value = memoText;
-
     }
     tab_memo_text_U(tupleIndex, key, value){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
@@ -4022,6 +4059,9 @@ class Controller {
         let winSelectInfo = [];
         //window start
         let win_i = 0;
+        if(this.model.windowArr.length < 1 ){
+            this.model.window_C();
+        }
         for (let i = 0; i < this.model.windowArr.length; i++) {
             if (this.model.windowArr[i] != null && this.model.windowArr[i].indexBefo == null){
                 win_i = this.model.windowArr[i].index;
