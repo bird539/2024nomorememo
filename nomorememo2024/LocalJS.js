@@ -2368,6 +2368,10 @@ class tabElement {
             const memo = new tabElement_memo();
             memo.setValue(this.db);
             tabDiv.appendChild(memo.setElementAll());   
+        }else if(this.db.type == 1){
+            const calcul = new tabElement_calcul();
+            calcul.setValue(this.db);
+            tabDiv.appendChild(calcul.setElementAll());
         }
         tabDiv.style.borderBottom =`${this.db.lineWeight}px solid ${this.db.lineColor}`; 
         return tabDiv;
@@ -3386,6 +3390,974 @@ class tabElement_memo {
 
         this.setHead();
         this.setBody();
+        this.setFoot(this.allCheck);
+
+        return this.tab_memo_div;
+    }
+}
+
+class tabElement_calcul {
+    div = null;
+    button = null;
+    input = null;
+    form = null;
+    select = null;
+    option = null;
+    textarea = null;
+    mark = null;
+
+    allCheck = null;
+
+    db = {
+        textArr : null,
+        colorArr : null,
+        inputShow:null,
+
+        index: null,
+        sort: null,
+
+        fontSize: null, fontWeight: null, fontFamily: null, fontStyle: null,
+        fontColor: null, backgroundColor: null,
+        lineColor: null, lineThick: null,
+
+        index_fontFamily: null,
+        index_fontStyle: null,
+        index_fontWeight: null
+    }
+    constructor() {
+        this.div = document.createElement("div");
+        this.button = document.createElement("button");
+        this.input = document.createElement("input");
+        this.form = document.createElement("form");
+        this.select = document.createElement("select");
+        this.option = document.createElement("option");
+        this.textarea = document.createElement("textarea");
+        this.mark = document.createElement("mark");
+    }
+    setValue(db) {
+        //this.db.textArr = db.tabInfo.text;
+
+        this.db.sort = db.sort;
+        this.db.inputShow = db.inputShow;
+
+        this.allCheck = false;
+
+        this.db.befoIndex = db.befoIndex;
+        this.db.index = db.index;
+        this.db.nextIndex = db.nextIndex;
+
+        this.db.title = db.name;
+        this.db.show = db.show;
+
+        this.db.index_fontFamily = db.fontFamily;
+        this.db.index_fontStyle = db.fontStyle;
+        this.db.index_fontWeight = db.fontWeight;
+
+        this.db.fontSize = db.fontSize;
+        this.db.fontWeight = db.fontWeight < 100 ? all_fontWeight[db.fontWeight] : db.fontWeight;
+        this.db.fontFamily = isNaN(Number(db.fontFamily)) ? db.fontFamily : all_fontFamily[db.fontFamily];
+        this.db.fontStyle = all_fontStyle[db.fontStyle];
+
+        this.db.fontColor = db.fontColor;
+        this.db.backgroundColor = db.backgroundColor;
+        this.db.lineColor = db.lineColor;
+
+        this.db.width = db.width;
+        this.db.lineThick = db.lineWeight;
+        //make basic
+        this.button.style.backgroundColor = "transparent";
+        this.input.style.backgroundColor = "transparent";
+        this.div.style.backgroundColor = "transparent";
+        this.select.style.backgroundColor = "transparent";
+        this.textarea.style.backgroundColor = "transparent";
+        this.option.style.backgroundColor = this.db.backgroundColor;
+        this.mark.style.backgroundColor = "transparent";
+
+        this.select.style.border = "none";
+        this.button.style.border = "none";
+        this.input.style.border = "none";
+        this.textarea.style.border = "none";
+        this.mark.style.border = "none";
+
+        this.select.style.padding = "0";
+        this.button.style.padding = "0";
+        this.input.style.padding = "0";
+        this.textarea.style.padding = "0";
+        this.mark.style.padding = "0";
+
+        this.select.style.marginLeft = "10px";
+        this.button.style.marginLeft = "10px";
+
+        this.select.style.height = "40px";
+        this.button.style.height = "40px";
+        this.input.style.height = "40px";
+        this.mark.style.height = "40px";
+
+        this.select.style.fontFamily = this.db.fontFamily;
+        this.select.style.fontSize = `${this.db.fontSize}pt`;
+        this.select.style.fontWeight = this.db.fontWeight;
+        this.select.style.fontStyle = this.db.fontStyle;
+        this.select.style.color = this.db.fontColor;
+
+        this.option.style.fontFamily = this.db.fontFamily;
+        this.option.style.fontSize = `${this.db.fontSize}pt`;
+        this.option.style.fontWeight = this.db.fontWeight;
+        this.option.style.fontStyle = this.db.fontStyle;
+        this.option.style.color = this.db.fontColor;
+
+        this.button.style.fontFamily = this.db.fontFamily;
+        this.button.style.fontSize = `${this.db.fontSize}pt`;
+        this.button.style.fontWeight = this.db.fontWeight;
+        this.button.style.fontStyle = this.db.fontStyle;
+        this.button.style.color = this.db.fontColor;
+
+        this.input.style.fontFamily = this.db.fontFamily;
+        this.input.style.fontSize = `${this.db.fontSize}pt`;
+        this.input.style.fontWeight = this.db.fontWeight;
+        this.input.style.fontStyle = this.db.fontStyle;
+        this.input.style.color = this.db.fontColor;
+
+        this.div.style.fontFamily = this.db.fontFamily;
+        this.div.style.fontSize = `${this.db.fontSize}pt`;
+        this.div.style.fontWeight = this.db.fontWeight;
+        this.div.style.fontStyle = this.db.fontStyle;
+        this.div.style.color = this.db.fontColor;
+
+        this.textarea.style.fontFamily = this.db.fontFamily;
+        this.textarea.style.fontSize = `${this.db.fontSize}pt`;
+        this.textarea.style.fontWeight = this.db.fontWeight;
+        this.textarea.style.fontStyle = this.db.fontStyle;
+        this.textarea.style.color = this.db.fontColor;
+
+        this.mark.style.fontFamily = this.db.fontFamily;
+        this.mark.style.fontSize = `${this.db.fontSize}pt`;
+        this.mark.style.fontWeight = this.db.fontWeight;
+        this.mark.style.fontStyle = this.db.fontStyle;
+        this.mark.style.color = this.db.fontColor;
+
+        this.MIN_BTN = this.button.cloneNode(true);
+        this.MIN_BTN.style.display = "flex";
+        this.MIN_BTN.style.alignItems = "center";
+        this.MIN_BTN.style.justifyContent = "center";
+        this.MIN_BTN.style.flexShirink = 0;
+        this.MIN_BTN.style.width = "40px";
+    }
+
+    tab_memo_div = null;
+    //head - i btn / form(textarea, sub, color-input, select) / select-sort(new, old, color)
+    //body - checkbox / text(text div, edit input, color select, copy btn, del btn)
+    //foot - checkbox(all) / select(all, color1~3) / del btn 
+
+    //event --> sort / copy / checkAll(copy)
+    function_showEvent(event) {
+        const target = event.target.className;
+        const split = target.split("_");
+        const index = split[0].replace(baseic_regex, "");
+        if (target.includes("iBtn")) {
+            const element2 = document.querySelector(`.t${index}_keybordDiv`);
+            const check = element2.style.display == "none" ? true : false;
+            element2.style.display = check ? "block" : "none";
+
+            const element = document.querySelector(`.t${index}_textarea`);
+            element.rows = check ? 5 : 1;
+
+            const observer = new Observer_sendGetData(true);
+            observer.target = "tab_U";
+            observer.value = `${index}/"inputShow"/${check}`//value:value, index:, :,
+            subj.subscribe(observer);
+            subj.notifyAll();
+        } else if (target.includes("editBtn")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
+            element.style.display = element.style.display == "none" ? "block" : "none";
+
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_editDiv`);
+            element1.style.display = element1.style.display == "none" ? "block" : "none";
+
+            const element2 = document.querySelector(`.${split[0]}_${split[1]}_editBtnsDiv`);
+            element2.style.display = element2.style.display == "none" ? "block" : "none";
+
+            const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
+            element3.style.display = element3.style.display == "none" ? "flex" : "none";
+        } else if (target.includes("subBtn")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
+            element.style.display = element.style.display == "none" ? "block" : "none";
+
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_editDiv`);
+            element1.style.display = element1.style.display == "none" ? "block" : "none";
+
+            const element2 = document.querySelector(`.${split[0]}_${split[1]}_editBtnsDiv`);
+            element2.style.display = element2.style.display == "none" ? "block" : "none";
+
+            const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
+            element3.style.display = element3.style.display == "none" ? "flex" : "none";
+
+            const tupleIndex = split[1].replace(baseic_regex, "");
+            const textarea = document.querySelector(`.${split[0]}_${split[1]}_editDiv`).childNodes[0];    
+            const mark = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            mark.innerText = textarea.value;
+            const observer = new Observer_sendGetData(true);
+            observer.check = true;
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = {index:tupleIndex, key:"text" , value:textarea.value};        
+            subj.subscribe(observer);
+            subj.notifyAll();
+        }
+    }
+    function_checkEvent(event) {
+        const target = event.target.className;
+        const split = target.split("_");
+        if (target.includes("textDiv") || target.includes("emptyDiv") || target.includes("mark")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_checkbox`);
+            element.checked = element.checked == true ? false : true;
+
+            const colorArr = document.querySelector(`.${split[0]}_colorInputDiv`);
+            const fontColor = document.querySelector(`.${split[0]}_fontColor`);
+
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            element1.style.textDecorationLine = element.checked ? "line-through" : "none";
+            element1.style.color = element.checked ? `${colorArr.childNodes[3].value}` : `${fontColor.value}`;
+
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = {index:split[1].replace(baseic_regex, ""), 
+                key:"checked", value:element.checked};
+            subj.subscribe(observer);
+            subj.notifyAll();
+
+            return
+        } else if (target.includes("checkbox")) {
+            const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            element1.style.textDecorationLine = event.target.checked ? "line-through" : "none";
+            element1.style.color = event.target.checked ? "gray" : "black";
+        } else if (target.includes("allCheckbox")) {
+            const element = document.querySelector(`.${split[0]}_tuplesDiv`);
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
+                if (checkbox.checked != event.target.checked) {
+                    element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].dispatchEvent(new Event('click'));
+                }
+            }
+        }
+    }
+    function_selectEvent(event) {
+        const target = event.target.className;
+        const split = target.split("_");
+        if (target.includes("colorInputSelect")) {
+            const element = document.querySelector(`.${split[0]}_colorInputDiv`);
+            for (let i = 0; i < element.childElementCount; i++) {
+                element.childNodes[i].style.display = "none";
+            }
+            if(event.target.selectedIndex-1 != -1){
+                element.childNodes[event.target.selectedIndex -1].style.display = event.target.selectedIndex != 0 ? "block" : "none";
+            }
+        }else if(target.includes("tupleColorSelect")){
+            const colorArr = document.querySelector(`.${split[0]}_colorInputDiv`);
+            const mark = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            const index = event.target.selectedIndex;
+            if(index != 0){
+                mark.style.backgroundColor = colorArr.childNodes[index - 1].value;
+            }else{
+                mark.style.backgroundColor = "transparent";
+            }
+
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = {index:split[1].replace(baseic_regex, ""), 
+                key:"fk_colorIndex", value:index};
+            subj.subscribe(observer);
+            subj.notifyAll();
+        }else if(target.includes("sortBtn")){
+            const index = split[0].replace(baseic_regex, "");
+            const key = "sort";
+            const value = event.target.selectedIndex;
+
+            const observer = new Observer_sendGetData(true);
+            observer.check = true;
+            observer.name = "tap update event";
+            observer.target = "tab_U";
+            observer.value = `${index}/${key}/${value}`;        
+            subj.subscribe(observer);
+            subj.notifyAll();
+
+            const tuplesDiv = document.querySelector(`.t${index}_tuplesDiv`);
+            const len = tuplesDiv.childNodes.length;
+            if(value == 0){
+                //const div = document.createElement("div"); 
+                let exArr = [];
+                for(let i=0; i<len; i++){
+                    const i_tuple = tuplesDiv.childNodes[i];
+                    const i_index = i_tuple.childNodes[0].childNodes[0].value
+                    exArr.push(i_index);
+                }
+                exArr.sort((a, b) => b - a);
+                for(let i=0; i<exArr.length; i++){
+                    let n = 0; 
+                    while(true){
+                        const j_tuple = tuplesDiv.childNodes[n];
+                        const j_index = j_tuple.childNodes[0].childNodes[0].value
+                        if(exArr[i] == j_index){
+                            tuplesDiv.appendChild(j_tuple);
+                            break;
+                        }
+                        n += 1;
+                    }
+                }
+            }else if(value == 1){
+                let exArr = [];
+                for(let i=0; i<len; i++){
+                    const i_tuple = tuplesDiv.childNodes[i];
+                    const i_index = i_tuple.childNodes[0].childNodes[0].value
+                    exArr.push(i_index);
+                }
+                exArr.sort((a, b) => a - b);
+                for(let i=0; i<exArr.length; i++){
+                    let n = 0; 
+                    while(true){
+                        const j_tuple = tuplesDiv.childNodes[n];
+                        const j_index = j_tuple.childNodes[0].childNodes[0].value
+                        if(exArr[i] == j_index){
+                            tuplesDiv.appendChild(j_tuple);
+                            break;
+                        }
+                        n += 1;
+                    }
+                }
+            }else if(value == 2){
+                let all = [ [], [], [], [] ];
+                for(let j=0; j<all.length; j++){
+                    for(let i=0; i<len; i++){
+                        const i_tuple = tuplesDiv.childNodes[i];
+                        const i_index = i_tuple.childNodes[0].childNodes[0].value
+                        const i_color = i_tuple.childNodes[1].childNodes[1].childNodes[0].childNodes[2].selectedIndex;
+                        if(i_color == j){
+                            all[j].push(i_index);
+                        }
+                    }
+                }
+                for(let i=0; i<all.length;i++){
+                    all[i].sort((a, b) => a - b);
+                }
+                for(let i=1; i<all.length; i++){
+                    for(let j=0; j<all[i].length;j++){
+                        let n = 0; 
+                        while(true){
+                            const j_tuple = tuplesDiv.childNodes[n];
+                            const j_index = j_tuple.childNodes[0].childNodes[0].value
+                            if(all[i][j] == j_index){
+                                tuplesDiv.appendChild(j_tuple);
+                                break;
+                            }
+                            n += 1;
+                        }
+                    }
+                }// for(let j=0; j<all[i].length;j++){
+                    for(let i=0; i<1; i++){
+                        for(let j=0; j<all[i].length;j++){
+                            let n = 0; 
+                            while(true){
+                                const j_tuple = tuplesDiv.childNodes[n];
+                                const j_index = j_tuple.childNodes[0].childNodes[0].value
+                                if(all[i][j] == j_index){
+                                    tuplesDiv.appendChild(j_tuple);
+                                    break;
+                                }
+                                n += 1;
+                            }
+                        }
+                    }
+            }
+        }
+    }
+    function_copyEvent(event){
+        const target = event.target.className;
+        const split = target.split("_");
+        if (target.includes("tupleCopy")) {
+            const element = document.querySelector(`.${split[0]}_${split[1]}_mark`);
+            copyToClipboard(element.innerText);
+        }else if(target.includes("copyAll")){
+            const select = event.target.previousSibling.previousSibling;
+            const element = document.querySelector(`.${split[0]}_tuplesDiv`);
+            let text = "";
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
+                if(checkbox.checked){
+                    const mark = element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
+                    const color = element.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
+                    if(select.selectedIndex != 0 && select.selectedIndex==color.selectedIndex){
+                        text += mark.innerText
+                        text += "\n";
+                    }else if(select.selectedIndex == 0){
+                        text += mark.innerText
+                        text += "\n";
+                    }
+                }
+            }
+            copyToClipboard(text);
+        }
+    }
+    function_newTuple(event){
+        const tabIndex = event.target.className.replace(baseic_regex, "");
+        const textarea = document.querySelector(`.t${tabIndex}_textarea`);
+        const text = textarea.value;
+        const colorIndex = document.querySelector(`.t${tabIndex}_colorInputSelect`).selectedIndex;
+
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "tap_memo_text update event";
+        observer.target = "tab_memo_text_C";
+        observer.value = {tabIndex:tabIndex, text:text, colorIndex:colorIndex};        
+        subj.subscribe(observer);
+        subj.notifyAll();
+
+        textarea.value = null;
+    }
+    function_colorSelectEdit(event){
+        const target = event.target.className;
+        const tabIndex = target.split("_")[0].replace(baseic_regex, "");
+        const key = target.split("_")[1];
+
+        const observer = new Observer_sendGetData(true);
+        observer.name = "tab_memo_color update event";
+        observer.target = "tab_memo_color_U";
+        observer.value = {value:event.target.value, index:tabIndex,
+            key:key,
+        }
+        subj.subscribe(observer);
+        subj.notifyAll();
+    }
+    function_delTuple(event){
+        const split = event.target.className.split("_");
+        const tuple = document.querySelector(`.${split[0]}_${split[1]}_tupleDiv`);
+        const tupleIndex = split[1].replace(baseic_regex, "");
+
+        const observer = new Observer_sendGetData(true);
+        observer.check = true;
+        observer.name = "tap_memo_text update event";
+        observer.target = "tab_memo_text_D";
+        observer.value = tupleIndex;    
+        subj.subscribe(observer);
+        subj.notifyAll();
+
+        tuple.remove();
+    }
+    function_allDelTuple(event){
+        const index = event.target.className.split("_")[0].replace(baseic_regex, "");
+        const select = event.target.previousSibling;
+
+        const tuplesDiv = document.querySelector(`.t${index}_tuplesDiv`);
+        for(let i=tuplesDiv.childNodes.length-1;i>=0;i--){
+            const checkbox = tuplesDiv.childNodes[i].childNodes[0].childNodes[0];
+            const color = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
+            const del = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[3];
+            if(checkbox.checked){
+                if(select.selectedIndex != 0 && select.selectedIndex==color.selectedIndex){
+                    del.click();
+                }else if(select.selectedIndex == 0){
+                    del.click();
+                }
+            }
+        }
+        
+    }
+    function_editIndex(event){
+        const target = event.target.className.split("_");
+        const index = target[0].replace(baseic_regex, "");
+        const tupleIndex1 = target[1].replace(baseic_regex, "");
+        const key = target[2];
+        let tupleIndex2 = null;
+        if(key == "befo"){
+            const befoElement = event.target.parentNode.parentNode.parentNode.parentNode.previousSibling;
+            if(befoElement != null){
+                tupleIndex2 = befoElement;
+            }else{
+                console.log("?");
+                return
+            }
+        }else if(key == "next"){
+            const nextElement = event.target.parentNode.parentNode.parentNode.parentNode.nextSibling;
+            if(nextElement != null){
+                tupleIndex2 = nextElement;
+            }else{
+                return
+            }
+        }
+
+        const table = document.querySelector(`.t${index}_tuplesDiv`)
+        const len = table.childNodes.length;
+
+
+        if(key.includes("next")){
+            let firstNodeNot = true;
+            for(let i=0;i<len; i++){
+                if(table.childNodes[i].className == `t${index}_i${tupleIndex1}_tupleDiv` && i == len -1){
+                    firstNodeNot = false; break
+                }
+            }
+            if(firstNodeNot){
+                for(let i=0;i<len; i++){
+                    if(table.childNodes[0].className == `t${index}_i${tupleIndex1}_tupleDiv`){
+                        const nextNodeClassName = table.childNodes[1].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+
+                        tupleIndex2 = nextNodeClassName.split("_")[1].replace(baseic_regex, "");
+    
+                        const nowNode = document.querySelector(`.t${index}_i${tupleIndex1}_tupleDiv`);
+                        table.appendChild(nextNode);
+                        table.appendChild(nowNode);
+                        i += 1;
+                    }else{
+                        const nextNodeClassName = table.childNodes[0].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+                        table.appendChild(nextNode);
+                    }
+
+                }
+            }
+        }else if(key.includes("befo")){
+            let firstNodeNot = true; let next = null;
+            for(let i=0;i<len; i++){
+                if(table.childNodes[i].className == `t${index}_i${tupleIndex1}_tupleDiv`){
+                    if(table.childNodes[i - 1] != null){
+                        next = table.childNodes[i - 1].className;
+                    }
+                }
+                if(table.childNodes[i].className == `t${index}_i${tupleIndex1}_tupleDiv` && i == 0){
+                    firstNodeNot = false; break
+                }
+
+            }
+            if(firstNodeNot){
+                for(let i=0;i<len; i++){
+                    if(table.childNodes[0].className == `${next}`){
+                        const befoNodeClassName = table.childNodes[0].className;
+                        const befoNode = document.querySelector(`.${befoNodeClassName}`);
+                        
+                        tupleIndex2 = befoNodeClassName.split("_")[1].replace(baseic_regex, "");
+                        
+                        const nowNode = document.querySelector(`.t${index}_i${tupleIndex1}_tupleDiv`);
+                        table.appendChild(nowNode);
+                        table.appendChild(befoNode);
+                        i += 1;
+                    }else{
+                        const nextNodeClassName = table.childNodes[0].className;
+                        const nextNode = document.querySelector(`.${nextNodeClassName}`);
+                        table.appendChild(nextNode);
+                    }
+                }
+            }
+        }
+
+        if(tupleIndex2 != null){
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tab_memo_text update event";
+            observer.target = "tab_memo_text_U_indexChange";
+            observer.value = {tupleIndex1:tupleIndex1, tupleIndex2:tupleIndex2}
+            console.log(observer.value);
+            subj.subscribe(observer);
+            subj.notifyAll();
+        }
+    }
+    function_keybordClic(event){
+        const key = event.target.innerText;
+        const index = event.target.className.split("_")[0].replace(baseic_regex,"");
+        const textarea = document.querySelector(`.t${index}_textarea`);
+        let text = textarea.value;
+
+        if(key == "del"){
+            text = text.slice(0, text.length - 1);
+            textarea.value = text;
+        }else if(key == "back"){
+            
+            textarea.value = text;
+        }else{
+            textarea.value += key;
+        }
+
+        //textarea.valueOf 
+    }
+
+    //<-- event
+    setHead() {
+        const tab_headDiv = this.div.cloneNode(true);
+        tab_headDiv.className = `t${this.db.index}head`;
+        tab_headDiv.style.marginTop = "10px";
+        tab_headDiv.style.borderBottom = `${this.db.lineThick}px solid ${this.db.lineColor}`;
+
+        const MIN_BTN = this.button.cloneNode(true);
+        MIN_BTN.style.display = "flex";
+        MIN_BTN.style.alignItems = "center";
+        MIN_BTN.style.justifyContent = "center";
+        MIN_BTN.style.flexShirink = 0;
+        MIN_BTN.style.width = "40px";
+
+        const i_btn_div = this.div.cloneNode(true);
+        const i_btn = MIN_BTN.cloneNode(true);
+
+        i_btn.innerText = "i";
+        i_btn.style.alignItems = "stretch";
+        i_btn.style.height = "100%";
+        //i_btn.style.paddingTop = "5px";
+        i_btn.style.marginLeft = 0;
+        i_btn.className = `t${this.db.index}iBtn`;
+        i_btn.addEventListener("click", this.function_showEvent);
+        i_btn_div.appendChild(i_btn);
+
+        //textarea--->
+
+        const formDiv = this.div.cloneNode(true);
+        formDiv.className = `t${this.db.index}Form`;
+        formDiv.style.width = "100%";
+
+        const textarea = this.textarea.cloneNode(true);
+        textarea.rows = "5"; textarea.placeholder = "input memo...";
+        textarea.className = `t${this.db.index}_textarea`;
+        textarea.style.width = "100%";
+
+        const keybordDiv = this.div.cloneNode(true);
+        keybordDiv.className = `t${this.db.index}_keybordDiv`;
+        keybordDiv.style.width = "100%";
+        const keyArr = [ 
+            [".", "/", "%", "(", "del"],
+            ["*", "-", "+", ")", "back"],
+            ["1", "2", "3", "4", "5",],
+            ["6", "7", "8", "9", "0"], 
+            ["<", ">", "&", "|", "?",],
+        ];
+        for(let i=0; i<keyArr.length; i++){
+            const keyRowDiv = this.div.cloneNode(true);
+            let width = 0;
+            for(let j=0; j<keyArr[i].length; j++){
+                const btn = this.button.cloneNode(true);
+                btn.style.width = "50px";
+                width += 60;
+                btn.className = `t${this.db.index}_key[${i}][${j}]`;
+                btn.innerText = keyArr[i][j];
+                btn.value = keyArr[i][j];
+                btn.addEventListener("click", this.function_keybordClic);
+                keyRowDiv.appendChild(btn);
+            }
+            keyRowDiv.style.display = "block";
+            keyRowDiv.style.width = `${width}px`;
+            keybordDiv.appendChild(keyRowDiv);
+        }
+        formDiv.appendChild(textarea);
+        formDiv.appendChild(keybordDiv);
+        //-->textarea
+
+        const sortSelect = this.select.cloneNode(true);
+        const sortText = ["new", "old", "color"];
+        for (let i = 0; i < sortText.length; i++) {
+            const op = this.option.cloneNode(true);
+            op.innerText = sortText[i];
+            sortSelect.appendChild(op);
+        }
+        sortSelect.className = `t${this.db.index}sortBtn`;
+        sortSelect.selectedIndex = this.db.sort;
+        sortSelect.addEventListener("change",this.function_selectEvent);
+
+        const subBtn = MIN_BTN.cloneNode(true);
+        subBtn.style.marginRight = "10px";
+        subBtn.className = `t${this.db.index}_subBtn`;
+        subBtn.innerText = "sub";
+        subBtn.addEventListener("click", this.function_newTuple);
+
+        const allDiv = this.div.cloneNode(true);
+        const upDiv = this.div.cloneNode(true);
+        const downDiv = this.div.cloneNode(true);
+
+        tab_headDiv.style.display = "flex";
+        tab_headDiv.style.flexDirection = "row";
+        tab_headDiv.appendChild(i_btn_div);
+
+        upDiv.style.display = this.db.inputShow ? "flex" : "none";
+        upDiv.className = `t${this.db.index}inputDiv`
+        upDiv.appendChild(formDiv);
+
+        downDiv.style.display = "flex";
+        downDiv.style.flexDirection = "row";
+        downDiv.style.flexWrap = "wrap";
+        downDiv.style.flexGrow = "1";
+        downDiv.appendChild(sortSelect);
+
+        const textareaTogather = this.div.cloneNode(true);
+        textareaTogather.style.display = this.db.inputShow ? "flex" : "none";
+        textareaTogather.style.flexDirection = "row-reverse";
+        textareaTogather.flexWrap = "wrap";
+        textareaTogather.appendChild(subBtn);
+
+        textareaTogather.className = `t${this.db.index}subDiv`;
+        textareaTogather.style.flexGrow = 1;
+        downDiv.appendChild(textareaTogather);
+
+        allDiv.style.display = "flex";
+        allDiv.style.flexDirection = "column";
+        allDiv.appendChild(upDiv);
+        allDiv.appendChild(downDiv);
+
+        allDiv.style.flexGrow = 1;
+        tab_headDiv.appendChild(allDiv);
+
+        this.tab_memo_div.appendChild(tab_headDiv);
+    }
+    setBody() {
+        const bodyDiv = this.div.cloneNode(true);
+        bodyDiv.className = `t${this.db.index}_tuplesDiv`;
+        this.allCheck = true;
+        /*
+        for (let i = 0; i < this.db.textArr.length; i++) {
+            const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
+            if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+            bodyDiv.appendChild(tuple);
+        }
+        */
+        if(true){
+            const len = this.db.textArr.length;
+            if(this.db.sort == 0){
+                for (let i = len-1; i >= 0; i--) {
+                    const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
+                    if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+                    bodyDiv.appendChild(tuple);
+                }
+            }else if(this.db.sort == 1){
+                for (let i = 0; i < len; i++) {
+                    const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
+                    if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+                    bodyDiv.appendChild(tuple);
+                }
+            }else if(this.db.sort == 2){
+                let all = [ [], [], [], [] ];
+                for(let j=0; j<all.length; j++){
+                    for(let i=0; i<len; i++){
+                        const i_index = i;
+                        const i_color = this.db.textArr[i].fk_colorIndex;
+                        if(i_color == j){
+                            all[j].push(i_index);
+                        }
+                    }
+                }
+                for(let i=0; i<all.length;i++){
+                    all[i].sort((a, b) => a - b);
+                }
+                for(let i=1; i<all.length; i++){
+                    for(let j=0; j<all[i].length;j++){
+                        const index = all[i][j];
+                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text, this.db.textArr[index].fk_colorIndex);
+                        if(this.db.textArr[index].checked==false){ this.allCheck = false; }
+                        bodyDiv.appendChild(tuple);
+                    }
+                }
+                for(let i=0; i<1; i++){
+                    for(let j=0; j<all[i].length;j++){
+                        const index = all[i][j];
+                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text, this.db.textArr[index].fk_colorIndex);
+                        if(this.db.textArr[index].checked==false){ this.allCheck = false; }
+                        bodyDiv.appendChild(tuple);
+                    }
+                }
+            }
+        }
+        
+        this.tab_memo_div.appendChild(bodyDiv);
+    }
+    setFoot(check) {
+        const footDiv = this.div.cloneNode(true);
+
+        const checkDiv = this.div.cloneNode(true);
+        const checkAll = this.input.cloneNode(true);
+        checkAll.type = "checkbox";
+        checkAll.checked = check;
+        checkDiv.style.width = "40px";
+        checkAll.className = `t${this.db.index}_allCheckbox`;
+        checkAll.addEventListener("change", this.function_checkEvent);
+        checkDiv.appendChild(checkAll);
+
+        const select = this.select.cloneNode(true);
+        let text = ["all", "color1", "color2", "color3"];
+        for (let i = 0; i < text.length; i++) {
+            const op = this.option.cloneNode(true);
+            op.innerText = text[i];
+            select.appendChild(op);
+        }
+
+        const copyBtn = this.button.cloneNode(true);
+        copyBtn.innerText = "c";
+        copyBtn.style.width = "40px";
+        copyBtn.className = `t${this.db.index}_copyAll`
+        copyBtn.addEventListener("click", this.function_copyEvent);
+        const delBtn = copyBtn.cloneNode(true);
+        delBtn.innerText = "x"
+        delBtn.className = `t${this.db.index}_delAll`
+        delBtn.addEventListener("click", this.function_allDelTuple); 
+
+
+        const rightDiv = this.div.cloneNode(true);
+        rightDiv.appendChild(select);
+        rightDiv.appendChild(delBtn);
+        rightDiv.appendChild(copyBtn);
+
+        footDiv.appendChild(checkDiv);
+        footDiv.appendChild(rightDiv);
+        footDiv.style.display = "flex";
+
+
+        this.tab_memo_div.appendChild(footDiv);
+    }
+    makeTuple(checked, index, text, colorIndex) {
+        const tupleDiv = this.div.cloneNode(true);
+        tupleDiv.className = `t${this.db.index}_i${index}_tupleDiv`;
+
+        const chekDiv = this.div.cloneNode(true);
+        chekDiv.style.display = "flex";
+        chekDiv.style.alignItems = "stretch";
+        const checkBox = this.input.cloneNode(true);
+        checkBox.type = "checkbox";
+        checkBox.width = "40px"
+        checkBox.style.color = `${this.db.fontColor}`;
+        checkBox.style.height = "100%";
+        checkBox.value = index;
+        checkBox.checked = checked;
+        checkBox.style.display = "flex";
+        checkBox.style.alignItems = "stretch";
+        checkBox.className = `t${this.db.index}_i${index}_checkbox`;
+        checkBox.addEventListener("change", this.function_checkEvent);
+
+        chekDiv.style.display = "flex";
+        chekDiv.style.alignItems = "stretch";
+
+        chekDiv.style.width = "40px";
+        chekDiv.appendChild(checkBox);
+
+        const textDiv = this.div.cloneNode(true);
+        const mark = this.mark.cloneNode(true);
+        mark.style.width = "100%";
+        mark.style.wordBreak = "break-word";
+        mark.innerText = text;
+        mark.className = `t${this.db.index}_i${index}_mark`;
+        if(colorIndex != null){
+            if(colorIndex == 1){mark.style.backgroundColor = this.db.colorArr.color1}
+            else if(colorIndex == 2){mark.style.backgroundColor = this.db.colorArr.color2}
+            else if(colorIndex == 3){mark.style.backgroundColor = this.db.colorArr.color3}
+        }
+        //mark.style.backgroundColor = "rgb(234, 37, 37)";
+        mark.style.textDecorationLine = checked ? "line-through" : "none";
+        mark.style.color = checked ? `${this.db.colorArr.done}` : `${this.db.fontColor}`;
+        //mark.addEventListener("click",this.function_checkEvent);
+        textDiv.style.textAlign = "start";
+        textDiv.className = `t${this.db.index}_i${index}_textDiv`;
+        textDiv.appendChild(mark);
+        textDiv.addEventListener("click", this.function_checkEvent);
+
+        const editDiv = this.div.cloneNode(true);
+        const textareaEdit = this.textarea.cloneNode(true);
+        textareaEdit.value = text;
+        textareaEdit.rows = 5;
+        textareaEdit.style.width = "100%"
+        editDiv.style.display = "none";
+        editDiv.className = `t${this.db.index}_i${index}_editDiv`;
+        editDiv.appendChild(textareaEdit);
+
+        const editDiv2 = this.div.cloneNode(true);
+        const goUpBtn = this.button.cloneNode(true);
+        goUpBtn.innerText = "Λ";
+        goUpBtn.className = `t${this.db.index}_i${index}_befo`;
+        goUpBtn.addEventListener("click", this.function_editIndex);
+        goUpBtn.style.width = "40px";
+        const goDownBtn = this.button.cloneNode(true);
+        goDownBtn.innerText = "V";
+        goDownBtn.className = `t${this.db.index}_i${index}_next`;
+        goDownBtn.addEventListener("click", this.function_editIndex);
+        goDownBtn.style.width = "40px";
+        const subBtn = this.button.cloneNode(true);
+        subBtn.innerText = "sub";
+        subBtn.style.width = "40px";
+        subBtn.style.marginRight = "10px";
+        subBtn.className = `t${this.db.index}_i${index}_subBtn`;
+        subBtn.addEventListener("click", this.function_showEvent);
+        editDiv2.appendChild(goUpBtn);
+        editDiv2.appendChild(goDownBtn);
+        editDiv2.appendChild(subBtn);
+        editDiv2.style.display = "none";
+        editDiv2.className = `t${this.db.index}_i${index}_editBtnsDiv`;
+
+        const mainBtnDiv = this.div.cloneNode(true);
+        const copyBtn = this.button.cloneNode(true);
+        copyBtn.innerText = "c"; copyBtn.style.width = "40px";
+        copyBtn.className = `t${this.db.index}_i${index}_tupleCopy`;
+        copyBtn.addEventListener("click", this.function_copyEvent);
+
+        const delBtn = this.button.cloneNode(true);
+        delBtn.className = `t${this.db.index}_i${index}_delBtn`;
+        delBtn.innerText = "x"; delBtn.style.width = "40px";
+        delBtn.addEventListener("click", this.function_delTuple);
+        const editBtn = this.button.cloneNode(true);
+        editBtn.innerText = "e"; editBtn.style.width = "40px";
+        editBtn.className = `t${this.db.index}_i${index}_editBtn`;
+        editBtn.addEventListener("click", this.function_showEvent);
+
+        const colorSelect = this.select.cloneNode(true);
+        let colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3"];
+        for (let i = 0; i < colorText.length; i++) {
+            const op = this.option.cloneNode(true);
+            op.innerText = `${colorText[i]}`;
+            op.value = i;
+            colorSelect.appendChild(op);
+        }
+        colorSelect.selectedIndex = colorIndex;
+        colorSelect.className = `t${this.db.index}_i${index}_tupleColorSelect`;
+        colorSelect.addEventListener("change", this.function_selectEvent);
+        mainBtnDiv.style.display = "flex";
+        mainBtnDiv.style.flexDirection = "row-reverse";
+        mainBtnDiv.className = `t${this.db.index}_i${index}_colorECBtn`;
+
+        mainBtnDiv.appendChild(copyBtn);
+        mainBtnDiv.appendChild(editBtn);
+        mainBtnDiv.appendChild(colorSelect);
+        mainBtnDiv.appendChild(delBtn);
+
+        const mainAreaDiv = this.div.cloneNode(true);
+        mainAreaDiv.appendChild(textDiv);
+        mainAreaDiv.appendChild(editDiv);
+        mainAreaDiv.style.paddingTop = "10px";
+
+        const btnDiv = this.div.cloneNode(true);
+        btnDiv.style.display = "flex";
+        btnDiv.style.flexDirection = "row-reverse";
+        editDiv2.style.width = "160px";
+
+        const emptyDiv = this.div.cloneNode(true);
+        emptyDiv.className = `t${this.db.index}_i${index}_emptyDiv`;
+        emptyDiv.style.display = "flex";
+        emptyDiv.style.flexGrow = "1";
+        emptyDiv.addEventListener("click", this.function_checkEvent);
+        //mainBtnDiv.appendChild(emptyDiv);
+
+        mainBtnDiv.style.width = "250px";
+        btnDiv.appendChild(mainBtnDiv);
+        btnDiv.appendChild(editDiv2);
+        btnDiv.appendChild(emptyDiv);
+
+        const rightDiv = this.div.cloneNode(true);
+        rightDiv.style.width = "100%";
+        rightDiv.appendChild(mainAreaDiv);
+        rightDiv.appendChild(btnDiv);
+
+        tupleDiv.style.display = "flex";
+        tupleDiv.appendChild(chekDiv);
+        tupleDiv.appendChild(rightDiv);
+
+        tupleDiv.style.borderBottom = `${this.db.lineThick}px solid ${this.db.lineColor}`;
+
+        return tupleDiv;
+    }
+    setElementAll() {
+        this.tab_memo_div = this.div.cloneNode(true);
+        this.tab_memo_div.className = `t${this.db.index}`;
+
+        this.setHead();
+        //this.setBody();
         this.setFoot(this.allCheck);
 
         return this.tab_memo_div;
