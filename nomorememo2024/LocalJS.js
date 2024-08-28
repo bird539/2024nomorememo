@@ -3407,6 +3407,7 @@ class tabElement_calcul {
     mark = null;
 
     allCheck = null;
+    sum = null;
 
     db = {
         textArr : null,
@@ -3435,7 +3436,7 @@ class tabElement_calcul {
         this.mark = document.createElement("mark");
     }
     setValue(db) {
-        //this.db.textArr = db.tabInfo.text;
+        this.db.textArr = db.tabInfo.text;
 
         this.db.sort = db.sort;
         this.db.inputShow = db.inputShow;
@@ -3566,18 +3567,16 @@ class tabElement_calcul {
             observer.value = `${index}/"inputShow"/${check}`//value:value, index:, :,
             subj.subscribe(observer);
             subj.notifyAll();
-        } else if (target.includes("editBtn")) {
+        } else if (target.includes("textDiv") || target.includes("mark")) {
             const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
-            element.style.display = element.style.display == "none" ? "block" : "none";
+            const check = element.style.display == "none" ? true : false;
+            element.style.display = check ? "block" : "none";
 
             const element1 = document.querySelector(`.${split[0]}_${split[1]}_editDiv`);
-            element1.style.display = element1.style.display == "none" ? "block" : "none";
+            element1.style.display = check ? "none" : "block";
 
             const element2 = document.querySelector(`.${split[0]}_${split[1]}_editBtnsDiv`);
-            element2.style.display = element2.style.display == "none" ? "block" : "none";
-
-            const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
-            element3.style.display = element3.style.display == "none" ? "flex" : "none";
+            element2.style.display = check ? "none" : "block";
         } else if (target.includes("subBtn")) {
             const element = document.querySelector(`.${split[0]}_${split[1]}_textDiv`);
             element.style.display = element.style.display == "none" ? "block" : "none";
@@ -3588,18 +3587,25 @@ class tabElement_calcul {
             const element2 = document.querySelector(`.${split[0]}_${split[1]}_editBtnsDiv`);
             element2.style.display = element2.style.display == "none" ? "block" : "none";
 
-            const element3 = document.querySelector(`.${split[0]}_${split[1]}_colorECBtn`);
-            element3.style.display = element3.style.display == "none" ? "flex" : "none";
-
             const tupleIndex = split[1].replace(baseic_regex, "");
-            const textarea = document.querySelector(`.${split[0]}_${split[1]}_editDiv`).childNodes[0];    
+            const textarea = document.querySelector(`.${split[0]}_${split[1]}_editDiv`).childNodes[0];
+            
+            let text = textarea.value;
+            const regex = /[^0-9\{\}\[\]\/?.|\)*~`!^\-+<>\%&\\\(]/g; //정규표현식 t4_i0_emptyDiv
+            const calcul = text.replace(regex, "");
+            const newValue = new Function(`return ${calcul}`)();
+            text += "=" + newValue;
+            
             const mark = document.querySelector(`.${split[0]}_${split[1]}_mark`);
             mark.innerText = textarea.value;
+            const emptyDiv = document.querySelector(`.${split[0]}_${split[1]}_emptyDiv`);
+            emptyDiv.innerText = " = " + newValue;
+
             const observer = new Observer_sendGetData(true);
             observer.check = true;
-            observer.name = "tap_memo_text update event";
-            observer.target = "tab_memo_text_U";
-            observer.value = {index:tupleIndex, key:"text" , value:textarea.value};        
+            observer.name = "tap_calcul_text update event";
+            observer.target = "tab_calcul_text_U";
+            observer.value = {index:tupleIndex, key:"text" , value:text};        
             subj.subscribe(observer);
             subj.notifyAll();
         }
@@ -3611,26 +3617,32 @@ class tabElement_calcul {
             const element = document.querySelector(`.${split[0]}_${split[1]}_checkbox`);
             element.checked = element.checked == true ? false : true;
 
-            const colorArr = document.querySelector(`.${split[0]}_colorInputDiv`);
-            const fontColor = document.querySelector(`.${split[0]}_fontColor`);
-
-            const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
-            element1.style.textDecorationLine = element.checked ? "line-through" : "none";
-            element1.style.color = element.checked ? `${colorArr.childNodes[3].value}` : `${fontColor.value}`;
-
             const observer = new Observer_sendGetData(true);
-            observer.name = "tap_memo_text update event";
-            observer.target = "tab_memo_text_U";
+            observer.name = "tap_calcul_text update event";
+            observer.target = "tab_calcul_text_U";
             observer.value = {index:split[1].replace(baseic_regex, ""), 
                 key:"checked", value:element.checked};
             subj.subscribe(observer);
             subj.notifyAll();
 
+            const sumDiv = document.querySelector(`.${split[0]}_sum`);
+            const value = document.querySelector(`.${split[0]}_${split[1]}_emptyDiv`).innerText.replace(baseic_regex, "");
+            const value2 = sumDiv.innerText.replace(baseic_regex, "");
+
+            if(value != null && element.checked){sumDiv.innerText = Number(value2) + Number(value);
+            }else if(value != null && element.checked == false){
+                sumDiv.innerText = Number(value2) - Number(value);
+            }
             return
         } else if (target.includes("checkbox")) {
-            const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
-            element1.style.textDecorationLine = event.target.checked ? "line-through" : "none";
-            element1.style.color = event.target.checked ? "gray" : "black";
+            const target = event.target;
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tap_calcul_text update event";
+            observer.target = "tab_calcul_text_U";
+            observer.value = {index:target.className.split("_")[1].replace(baseic_regex, ""), 
+                key:"checked", value:event.target.checked};
+            subj.subscribe(observer);
+            subj.notifyAll();
         } else if (target.includes("allCheckbox")) {
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
             for (let i = 0; i < element.childNodes.length; i++) {
@@ -3774,9 +3786,9 @@ class tabElement_calcul {
     function_copyEvent(event){
         const target = event.target.className;
         const split = target.split("_");
-        if (target.includes("tupleCopy")) {
+        if (target.includes("emptyDiv")) {
             const element = document.querySelector(`.${split[0]}_${split[1]}_mark`);
-            copyToClipboard(element.innerText);
+            copyToClipboard(element.innerText + event.target.innerText);
         }else if(target.includes("copyAll")){
             const select = event.target.previousSibling.previousSibling;
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
@@ -3801,14 +3813,19 @@ class tabElement_calcul {
     function_newTuple(event){
         const tabIndex = event.target.className.replace(baseic_regex, "");
         const textarea = document.querySelector(`.t${tabIndex}_textarea`);
-        const text = textarea.value;
-        const colorIndex = document.querySelector(`.t${tabIndex}_colorInputSelect`).selectedIndex;
+        let text = textarea.value;
+
+        const regex = /[^0-9\{\}\[\]\/?.|\)*~`!^\-+<>\%&\\\(]/g; //정규표현식
+        const calcul = text.replace(regex, "");
+        const newValue = new Function(`return ${calcul}`)();
+        
+        text += "=" + newValue;
 
         const observer = new Observer_sendGetData(true);
         observer.check = true;
-        observer.name = "tap_memo_text update event";
-        observer.target = "tab_memo_text_C";
-        observer.value = {tabIndex:tabIndex, text:text, colorIndex:colorIndex};        
+        observer.name = "tap_calcul_text new event";
+        observer.target = "tab_calcul_text_C";
+        observer.value = {tabIndex:tabIndex, text:text};        
         subj.subscribe(observer);
         subj.notifyAll();
 
@@ -3835,8 +3852,8 @@ class tabElement_calcul {
 
         const observer = new Observer_sendGetData(true);
         observer.check = true;
-        observer.name = "tap_memo_text update event";
-        observer.target = "tab_memo_text_D";
+        observer.name = "tap_calcul_text del event";
+        observer.target = "tab_calcul_text_D";
         observer.value = tupleIndex;    
         subj.subscribe(observer);
         subj.notifyAll();
@@ -3967,18 +3984,19 @@ class tabElement_calcul {
         let text = textarea.value;
 
         if(key == "del"){
+            const backBtn = document.querySelector(`.t${index}_key_back`);
+            backBtn.value += text[text.length - 1];
             text = text.slice(0, text.length - 1);
             textarea.value = text;
         }else if(key == "back"){
-            
+            let value = event.target.value;
+            text += value[value.length - 1];
             textarea.value = text;
+            event.target.value = value.slice(0, value.length - 1);
         }else{
             textarea.value += key;
         }
-
-        //textarea.valueOf 
     }
-
     //<-- event
     setHead() {
         const tab_headDiv = this.div.cloneNode(true);
@@ -4012,12 +4030,14 @@ class tabElement_calcul {
         formDiv.style.width = "100%";
 
         const textarea = this.textarea.cloneNode(true);
-        textarea.rows = "5"; textarea.placeholder = "input memo...";
+        textarea.rows = this.db.inputShow ? "5" : "1"; 
+        textarea.placeholder = "input memo...";
         textarea.className = `t${this.db.index}_textarea`;
         textarea.style.width = "100%";
 
         const keybordDiv = this.div.cloneNode(true);
         keybordDiv.className = `t${this.db.index}_keybordDiv`;
+        keybordDiv.style.display = this.db.inputShow ? "block" : "none"; 
         keybordDiv.style.width = "100%";
         const keyArr = [ 
             [".", "/", "%", "(", "del"],
@@ -4033,7 +4053,7 @@ class tabElement_calcul {
                 const btn = this.button.cloneNode(true);
                 btn.style.width = "50px";
                 width += 60;
-                btn.className = `t${this.db.index}_key[${i}][${j}]`;
+                btn.className = `t${this.db.index}_key_${keyArr[i][j]}`;
                 btn.innerText = keyArr[i][j];
                 btn.value = keyArr[i][j];
                 btn.addEventListener("click", this.function_keybordClic);
@@ -4072,7 +4092,7 @@ class tabElement_calcul {
         tab_headDiv.style.flexDirection = "row";
         tab_headDiv.appendChild(i_btn_div);
 
-        upDiv.style.display = this.db.inputShow ? "flex" : "none";
+        upDiv.style.display = "flex";
         upDiv.className = `t${this.db.index}inputDiv`
         upDiv.appendChild(formDiv);
 
@@ -4083,7 +4103,8 @@ class tabElement_calcul {
         downDiv.appendChild(sortSelect);
 
         const textareaTogather = this.div.cloneNode(true);
-        textareaTogather.style.display = this.db.inputShow ? "flex" : "none";
+        textareaTogather.style.display = "flex";
+        //textareaTogather.style.display = this.db.inputShow ? "flex" : "none";
         textareaTogather.style.flexDirection = "row-reverse";
         textareaTogather.flexWrap = "wrap";
         textareaTogather.appendChild(subBtn);
@@ -4106,19 +4127,20 @@ class tabElement_calcul {
         const bodyDiv = this.div.cloneNode(true);
         bodyDiv.className = `t${this.db.index}_tuplesDiv`;
         this.allCheck = true;
-        /*
-        for (let i = 0; i < this.db.textArr.length; i++) {
-            const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
-            if(this.db.textArr[i].checked==false){ this.allCheck = false; }
-            bodyDiv.appendChild(tuple);
-        }
-        */
         if(true){
             const len = this.db.textArr.length;
             if(this.db.sort == 0){
                 for (let i = len-1; i >= 0; i--) {
                     const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
-                    if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+                    if(this.db.textArr[i].checked==false){ 
+                        this.allCheck = false; 
+                    }else{
+                        const text = this.db.textArr[i].text.split("=");
+                        if(text[1] != null){
+                            this.sum += Number(text[1]);
+                        }
+                    }
+
                     bodyDiv.appendChild(tuple);
                 }
             }else if(this.db.sort == 1){
@@ -4162,7 +4184,7 @@ class tabElement_calcul {
         
         this.tab_memo_div.appendChild(bodyDiv);
     }
-    setFoot(check) {
+    setFoot(check, sum) {
         const footDiv = this.div.cloneNode(true);
 
         const checkDiv = this.div.cloneNode(true);
@@ -4174,14 +4196,6 @@ class tabElement_calcul {
         checkAll.addEventListener("change", this.function_checkEvent);
         checkDiv.appendChild(checkAll);
 
-        const select = this.select.cloneNode(true);
-        let text = ["all", "color1", "color2", "color3"];
-        for (let i = 0; i < text.length; i++) {
-            const op = this.option.cloneNode(true);
-            op.innerText = text[i];
-            select.appendChild(op);
-        }
-
         const copyBtn = this.button.cloneNode(true);
         copyBtn.innerText = "c";
         copyBtn.style.width = "40px";
@@ -4192,31 +4206,52 @@ class tabElement_calcul {
         delBtn.className = `t${this.db.index}_delAll`
         delBtn.addEventListener("click", this.function_allDelTuple); 
 
-
+        const subBtn = this.button.cloneNode(true);
+        subBtn.innerText = "sub";
+        subBtn.style.width = "60px"
+        const sumDiv = this.button.cloneNode(true);
+        sumDiv.innerText = sum;
+        sumDiv.style.display = "flex";
+        sumDiv.style.marginRight = "14px";
+        sumDiv.style.flexGrow = 1;
+        sumDiv.style.flexDirection = "row-reverse";
+        sumDiv.style.alignItems = "center";
+        sumDiv.style.width = "60px"
+        sumDiv.className = `t${this.db.index}_sum`;
+        
         const rightDiv = this.div.cloneNode(true);
-        rightDiv.appendChild(select);
         rightDiv.appendChild(delBtn);
         rightDiv.appendChild(copyBtn);
+        
+        const leftDiv = this.div.cloneNode(true);
+        leftDiv.appendChild(sumDiv);
+        leftDiv.appendChild(subBtn);
+        leftDiv.style.display = "flex";
+        leftDiv.style.flexDirection = "row-reverse";
+        leftDiv.style.flexGrow = 1;
+
 
         footDiv.appendChild(checkDiv);
         footDiv.appendChild(rightDiv);
+        footDiv.appendChild(leftDiv);
         footDiv.style.display = "flex";
-
 
         this.tab_memo_div.appendChild(footDiv);
     }
-    makeTuple(checked, index, text, colorIndex) {
+    makeTuple(checked, index, text) {
         const tupleDiv = this.div.cloneNode(true);
         tupleDiv.className = `t${this.db.index}_i${index}_tupleDiv`;
 
         const chekDiv = this.div.cloneNode(true);
         chekDiv.style.display = "flex";
+        chekDiv.style.flexDirection = "column";
         chekDiv.style.alignItems = "stretch";
+        
         const checkBox = this.input.cloneNode(true);
         checkBox.type = "checkbox";
-        checkBox.width = "40px"
+        checkBox.style.width = "40px"
         checkBox.style.color = `${this.db.fontColor}`;
-        checkBox.style.height = "100%";
+        checkBox.style.height = "40px";
         checkBox.value = index;
         checkBox.checked = checked;
         checkBox.style.display = "flex";
@@ -4224,36 +4259,35 @@ class tabElement_calcul {
         checkBox.className = `t${this.db.index}_i${index}_checkbox`;
         checkBox.addEventListener("change", this.function_checkEvent);
 
-        chekDiv.style.display = "flex";
-        chekDiv.style.alignItems = "stretch";
+        const delBtn = this.button.cloneNode(true);
+        delBtn.className = `t${this.db.index}_i${index}_delBtn`;
+        delBtn.style.margin = "0";
+        delBtn.innerText = "x"; delBtn.style.width = "40px";
+        delBtn.style.height = "40px";
+        delBtn.style.width= "40px";
+        delBtn.addEventListener("click", this.function_delTuple);
 
         chekDiv.style.width = "40px";
         chekDiv.appendChild(checkBox);
+        chekDiv.appendChild(delBtn);
 
         const textDiv = this.div.cloneNode(true);
         const mark = this.mark.cloneNode(true);
         mark.style.width = "100%";
         mark.style.wordBreak = "break-word";
-        mark.innerText = text;
+        mark.innerText = text.split("=")[0];
         mark.className = `t${this.db.index}_i${index}_mark`;
-        if(colorIndex != null){
-            if(colorIndex == 1){mark.style.backgroundColor = this.db.colorArr.color1}
-            else if(colorIndex == 2){mark.style.backgroundColor = this.db.colorArr.color2}
-            else if(colorIndex == 3){mark.style.backgroundColor = this.db.colorArr.color3}
-        }
-        //mark.style.backgroundColor = "rgb(234, 37, 37)";
-        mark.style.textDecorationLine = checked ? "line-through" : "none";
-        mark.style.color = checked ? `${this.db.colorArr.done}` : `${this.db.fontColor}`;
-        //mark.addEventListener("click",this.function_checkEvent);
+        mark.addEventListener("click", this.function_showEvent);
+
         textDiv.style.textAlign = "start";
         textDiv.className = `t${this.db.index}_i${index}_textDiv`;
         textDiv.appendChild(mark);
-        textDiv.addEventListener("click", this.function_checkEvent);
+        textDiv.addEventListener("dblclick", this.function_showEvent);
 
         const editDiv = this.div.cloneNode(true);
         const textareaEdit = this.textarea.cloneNode(true);
-        textareaEdit.value = text;
-        textareaEdit.rows = 5;
+        textareaEdit.value = text.split("=")[0];
+        textareaEdit.rows = 2;
         textareaEdit.style.width = "100%"
         editDiv.style.display = "none";
         editDiv.className = `t${this.db.index}_i${index}_editDiv`;
@@ -4282,41 +4316,6 @@ class tabElement_calcul {
         editDiv2.style.display = "none";
         editDiv2.className = `t${this.db.index}_i${index}_editBtnsDiv`;
 
-        const mainBtnDiv = this.div.cloneNode(true);
-        const copyBtn = this.button.cloneNode(true);
-        copyBtn.innerText = "c"; copyBtn.style.width = "40px";
-        copyBtn.className = `t${this.db.index}_i${index}_tupleCopy`;
-        copyBtn.addEventListener("click", this.function_copyEvent);
-
-        const delBtn = this.button.cloneNode(true);
-        delBtn.className = `t${this.db.index}_i${index}_delBtn`;
-        delBtn.innerText = "x"; delBtn.style.width = "40px";
-        delBtn.addEventListener("click", this.function_delTuple);
-        const editBtn = this.button.cloneNode(true);
-        editBtn.innerText = "e"; editBtn.style.width = "40px";
-        editBtn.className = `t${this.db.index}_i${index}_editBtn`;
-        editBtn.addEventListener("click", this.function_showEvent);
-
-        const colorSelect = this.select.cloneNode(true);
-        let colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3"];
-        for (let i = 0; i < colorText.length; i++) {
-            const op = this.option.cloneNode(true);
-            op.innerText = `${colorText[i]}`;
-            op.value = i;
-            colorSelect.appendChild(op);
-        }
-        colorSelect.selectedIndex = colorIndex;
-        colorSelect.className = `t${this.db.index}_i${index}_tupleColorSelect`;
-        colorSelect.addEventListener("change", this.function_selectEvent);
-        mainBtnDiv.style.display = "flex";
-        mainBtnDiv.style.flexDirection = "row-reverse";
-        mainBtnDiv.className = `t${this.db.index}_i${index}_colorECBtn`;
-
-        mainBtnDiv.appendChild(copyBtn);
-        mainBtnDiv.appendChild(editBtn);
-        mainBtnDiv.appendChild(colorSelect);
-        mainBtnDiv.appendChild(delBtn);
-
         const mainAreaDiv = this.div.cloneNode(true);
         mainAreaDiv.appendChild(textDiv);
         mainAreaDiv.appendChild(editDiv);
@@ -4325,17 +4324,20 @@ class tabElement_calcul {
         const btnDiv = this.div.cloneNode(true);
         btnDiv.style.display = "flex";
         btnDiv.style.flexDirection = "row-reverse";
-        editDiv2.style.width = "160px";
+        editDiv2.style.width = "100%";
 
         const emptyDiv = this.div.cloneNode(true);
+        emptyDiv.innerText = "= "+text.split("=")[1];
+        emptyDiv.addEventListener("click", this.function_copyEvent);
         emptyDiv.className = `t${this.db.index}_i${index}_emptyDiv`;
+        emptyDiv.style.flexDirection = "row-reverse";
+        emptyDiv.style.marginRight = "14px";
+
         emptyDiv.style.display = "flex";
         emptyDiv.style.flexGrow = "1";
+        emptyDiv.style.width = "100%";
         emptyDiv.addEventListener("click", this.function_checkEvent);
-        //mainBtnDiv.appendChild(emptyDiv);
 
-        mainBtnDiv.style.width = "250px";
-        btnDiv.appendChild(mainBtnDiv);
         btnDiv.appendChild(editDiv2);
         btnDiv.appendChild(emptyDiv);
 
@@ -4357,8 +4359,8 @@ class tabElement_calcul {
         this.tab_memo_div.className = `t${this.db.index}`;
 
         this.setHead();
-        //this.setBody();
-        this.setFoot(this.allCheck);
+        this.setBody();
+        this.setFoot(this.allCheck, this.sum);
 
         return this.tab_memo_div;
     }
@@ -4429,6 +4431,15 @@ class Tab_Memo_text {
         this.checked = true; this.text = null; this.fk_colorIndex = 0;
     }
 }
+
+class Tab_Calcul_text {
+    fk_tabIndex = null; key_madeDate = null;
+    checked = null; text = null; 
+    constructor(tabIndex) {
+        this.fk_tabIndex = tabIndex; this.key_madeDate = new Date();
+        this.checked = true; this.text = null;
+    }
+}
 //<==========Model - make tuple all
 
 //MVC pattern all ==========>
@@ -4439,6 +4450,7 @@ class Model {
 
     tab_memo_colorArr = [];
     tab_memo_textArr = [];
+    tab_calcul_textArr = [];
     observer_update = "hear, I am Model";
     check = null; value = null; target = null; name = null;
 
@@ -4450,6 +4462,8 @@ class Model {
 
         tab_memo_color: "memo_color",
         tab_memo_text: "memo_text",
+        
+        tab_calcul_text : "calcul_text",
     }
 
     constructor() {
@@ -4460,6 +4474,8 @@ class Model {
 
         this.tab_memo_colorArr = JSON.parse(localStorage.getItem("memo_color"));
         this.tab_memo_textArr = JSON.parse(localStorage.getItem("memo_text"));
+
+        this.tab_calcul_textArr = JSON.parse(localStorage.getItem(this.DBname.tab_calcul_text));
 
         if (this.htmlInfo == null) {
             this.htmlInfo = new htmlInfo();
@@ -4500,6 +4516,20 @@ class Model {
             }
             this.tab_memo_textArr = newArr;
             this.tab_memo_text_save();
+        }
+
+        if (this.tab_calcul_textArr == null) {
+            this.tab_calcul_textArr = [];
+            this.tab_calcul_text_save();
+        }else{
+            let newArr = []
+            for(let i=0;i<this.tab_calcul_textArr.length;i++){
+                if(this.tab_calcul_textArr != null){
+                    newArr.push(this.tab_calcul_textArr[i]);
+                }
+            }
+            this.tab_calcul_textArr = newArr;
+            this.tab_calcul_text_save();
         }
     }
     //html_remote
@@ -4915,6 +4945,54 @@ class Model {
         this.tab_memo_text_save();
     }
 
+    //Tab_Calcul_text
+    tab_calcul_text_C(tabIndex, text){
+        const memoText = new Tab_Calcul_text();
+
+        memoText.fk_tabIndex = tabIndex;
+        const time =  new Date();
+        const timeLi = {
+            year:time.getFullYear(), month:time.getMonth(), date:time.getDate(), day:time.getDay(), 
+            hours:time.getHours(), minutes:time.getMinutes(), seconds:time.getSeconds(),
+        };   
+        memoText.key_madeDate = timeLi;
+        memoText.checked = false;
+        memoText.text = text;
+
+        this.tab_calcul_textArr.push(memoText);
+        this.tab_calcul_text_save();
+        this.value = memoText;
+    }
+    tab_calcul_text_D(textIndex){
+        const timeIndex =new Date();
+        const newTrashTuple = {index : timeIndex, 
+            text : this.tab_memo_textArr[textIndex].text
+        }
+        this.htmlInfo.trash.tab_text.push(newTrashTuple);
+        if(this.htmlInfo.trash.tab_text.length > 40){
+            this.htmlInfo.trash.tab_text.shift();
+        }
+        this.htmlInfo_save();
+        //---trash tab_text
+
+        this.tab_calcul_textArr[textIndex] = null;
+        this.tab_calcul_text_save();
+    }
+    tab_calcul_text_U(tupleIndex, key, value){
+        console.log(tupleIndex, key, value);
+        this.tab_calcul_textArr[tupleIndex][key] = value;
+        this.tab_calcul_text_save();
+    }
+    tab_calcul_text_U_indexChange(tupleIndex1, tupleIndex2){
+        //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
+        const ex = this.tab_memo_textArr[tupleIndex1];
+        this.tab_memo_textArr[tupleIndex1] = this.tab_memo_textArr[tupleIndex2];
+        this.tab_memo_textArr[tupleIndex1].index = tupleIndex1;
+        this.tab_memo_textArr[tupleIndex2] = ex;
+        this.tab_memo_textArr[tupleIndex2].index = tupleIndex2;
+        this.tab_memo_text_save();
+    }
+
     checkFunction() { return this.check; }
     sendValue() {
         this.window_C();
@@ -4951,6 +5029,18 @@ class Model {
             }
         }
         this.tab_memo_textArr = newArr;
+        this.tab_memo_text_save();
+    }
+
+    tab_calcul_text_save(){localStorage.setItem(this.DBname.tab_calcul_text, JSON.stringify(this.tab_calcul_textArr));}
+    tab_calcul_text_nullClear(){
+        let newArr = [];
+        for(let i=0;i<this.tab_calcul_textArr.length; i++){
+            if(this.tab_calcul_textArr[i]!=null){
+                newArr.push(this.tab_calcul_textArr[i]);
+            }
+        }
+        this.tab_calcul_textArr = newArr;
         this.tab_memo_text_save();
     }
 }
@@ -4996,6 +5086,14 @@ class View {
                 element.setValue(info.set);
                 const tabInfo = info.tab; 
                 this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text, tabInfo.fk_colorIndex);
+            }else if(tabType == "calcul"){
+                const element = new tabElement_calcul();
+                const exInfo = { text : [] };
+                info.set.tabInfo = exInfo;
+
+                element.setValue(info.set);
+                const tabInfo = info.tab; 
+                this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text, tabInfo.fk_colorIndex);
             }
             const html_tuple_info = {
                 text : info.tab.text,
@@ -5021,13 +5119,8 @@ class Controller {
         //db null clear
         this.model.tab_memo_color_nullClear();
         this.model.tab_memo_text_nullClear();
-/*
-        for (let i = 0; i < this.model.windowArr.length; i++) {
-            if (this.model.windowArr[i] != null && this.model.windowArr[i].indexBefo == null) {
-                this.windowAppend(this.model.windowArr[i]);
-            }
-        }
-*/
+        this.model.tab_calcul_text_nullClear();
+
         let winSelectInfo = [];
         //window start
         let win_i = 0;
@@ -5074,8 +5167,17 @@ class Controller {
                 }
                 const tabInfo = { text:tabText, color:tabColor, winSelect:winSelectInfo};
                 this.model.tabInfoArr[tab_i].tabInfo = tabInfo;
+            }else if(this.model.tabInfoArr[tab_i].type == 1){
+                let tabText = [];
+                for(let j=0;j<this.model.tab_calcul_textArr.length; j++){
+                    if(this.model.tab_calcul_textArr[j]!=null && this.model.tab_calcul_textArr[j].fk_tabIndex==tab_i){
+                        this.model.tab_calcul_textArr[j].index = j;
+                        tabText.push(this.model.tab_calcul_textArr[j]);
+                    }
+                }
+                const tabInfo = { text:tabText, winSelect:winSelectInfo};
+                this.model.tabInfoArr[tab_i].tabInfo = tabInfo;
             }
-
 
             this.tabAppend(this.model.tabInfoArr[tab_i]);
             delete this.model.tabInfoArr[tab_i].tabInfo;
@@ -5084,32 +5186,6 @@ class Controller {
             if(next != null){ tab_i = next }
             else{ tab_i = null; break }
         }
-/*
-        for (let i = 0; i < this.model.tabInfoArr.length; i++) {
-            if (this.model.tabInfoArr[i] != null) {
-                //tab_memo start
-                if(this.model.tabInfoArr[i].type == 0){
-                    let tabText = [];
-                    let tabColor = [];
-                    for(let j=0;j<this.model.tab_memo_textArr.length; j++){
-                        if(this.model.tab_memo_textArr[j]!=null && this.model.tab_memo_textArr[j].fk_tabIndex==i){
-                            this.model.tab_memo_textArr[j].index = j;
-                            tabText.push(this.model.tab_memo_textArr[j]);
-                        }
-                    }
-                    for(let j=0; j<this.model.tab_memo_colorArr.length; j++){
-                        if(this.model.tab_memo_colorArr[j] !=null && this.model.tab_memo_colorArr[j].fk_tabIndex==i){
-                            tabColor = this.model.tab_memo_colorArr[j];
-                        }
-                    }
-                    const tabInfo = { text:tabText, color:tabColor};
-                    this.model.tabInfoArr[i].tabInfo = tabInfo;
-                }
-                this.tabAppend(this.model.tabInfoArr[i]);
-                delete this.model.tabInfoArr[i].tabInfo;
-            }
-        }
-            */
 
         //html start
         const newHtmlInfo = this.model.htmlInfo;
@@ -5168,9 +5244,11 @@ class Controller {
                         tabInfo.color = this.model.tab_memo_colorArr[j];
                     }
                 }
-                
-            }
             this.tabAppend(this.model.value, "memo", tabInfo);
+            }else if(this.model.value.type == 1){
+                tabInfo = { text : [] };
+                this.tabAppend(this.model.value, "calcul", tabInfo);
+            }
         }else if(target == "tab_U"){
             const index = value.split("/")[0];
             const key = value.split("/")[1];
@@ -5217,6 +5295,25 @@ class Controller {
             this.model.tab_memo_color_U(tabIndex, key, colorValue);
         }else if(target == "html_trash_D"){
             this.model.html_trash_D(value.key, value.value, value.type);
+        }else if(target == "tab_calcul_text_C"){
+            const tabIndex = value.tabIndex;
+            const text = value.text;
+            this.model.tab_calcul_text_C(tabIndex, text);
+            this.model.value.index = this.model.tab_calcul_textArr.length - 1;
+            const info = {
+                set:this.model.tabInfoArr[tabIndex],
+                tab:this.model.value,
+            }
+            this.tupleAppend(tabIndex, info, "calcul");
+        }else if(target == "tab_calcul_text_D"){
+            this.model.tab_calcul_text_D(value);
+        }else if(target == "tab_calcul_text_U"){
+            const index = value.index;
+            const key = value.key;
+            let value2 = value.value;
+            if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
+            if (isNaN(value2) == false) { value2 = Number(value2) }
+            this.model.tab_calcul_text_U(index, key, value2);
         }
     }
     sendTarget() { return "windowAppend"; }
