@@ -3680,32 +3680,7 @@ class tabElement_calcul {
     function_selectEvent(event) {
         const target = event.target.className;
         const split = target.split("_");
-        if (target.includes("colorInputSelect")) {
-            const element = document.querySelector(`.${split[0]}_colorInputDiv`);
-            for (let i = 0; i < element.childElementCount; i++) {
-                element.childNodes[i].style.display = "none";
-            }
-            if(event.target.selectedIndex-1 != -1){
-                element.childNodes[event.target.selectedIndex -1].style.display = event.target.selectedIndex != 0 ? "block" : "none";
-            }
-        }else if(target.includes("tupleColorSelect")){
-            const colorArr = document.querySelector(`.${split[0]}_colorInputDiv`);
-            const mark = document.querySelector(`.${split[0]}_${split[1]}_mark`);
-            const index = event.target.selectedIndex;
-            if(index != 0){
-                mark.style.backgroundColor = colorArr.childNodes[index - 1].value;
-            }else{
-                mark.style.backgroundColor = "transparent";
-            }
-
-            const observer = new Observer_sendGetData(true);
-            observer.name = "tap_memo_text update event";
-            observer.target = "tab_memo_text_U";
-            observer.value = {index:split[1].replace(baseic_regex, ""), 
-                key:"fk_colorIndex", value:index};
-            subj.subscribe(observer);
-            subj.notifyAll();
-        }else if(target.includes("sortBtn")){
+        if(target.includes("sortBtn")){
             const index = split[0].replace(baseic_regex, "");
             const key = "sort";
             const value = event.target.selectedIndex;
@@ -3762,14 +3737,15 @@ class tabElement_calcul {
                     }
                 }
             }else if(value == 2){
-                let all = [ [], [], [], [] ];
+                let all = [ [], [] ];
                 for(let j=0; j<all.length; j++){
                     for(let i=0; i<len; i++){
                         const i_tuple = tuplesDiv.childNodes[i];
-                        const i_index = i_tuple.childNodes[0].childNodes[0].value
-                        const i_color = i_tuple.childNodes[1].childNodes[1].childNodes[0].childNodes[2].selectedIndex;
-                        if(i_color == j){
-                            all[j].push(i_index);
+                        const i_index = i_tuple.childNodes[0].childNodes[0].value;
+                        if(i_tuple.childNodes[0].childNodes[0].checked){
+                            all[0].push(i_index);
+                        }else{
+                            all[1].push(i_index);
                         }
                     }
                 }
@@ -4082,7 +4058,7 @@ class tabElement_calcul {
         //-->textarea
 
         const sortSelect = this.select.cloneNode(true);
-        const sortText = ["new", "old", "color"];
+        const sortText = ["new", "old", "check"];
         for (let i = 0; i < sortText.length; i++) {
             const op = this.option.cloneNode(true);
             op.innerText = sortText[i];
@@ -4154,24 +4130,32 @@ class tabElement_calcul {
                             this.sum += Number(text[1]);
                         }
                     }
-
                     bodyDiv.appendChild(tuple);
                 }
             }else if(this.db.sort == 1){
                 for (let i = 0; i < len; i++) {
                     const tuple = this.makeTuple(this.db.textArr[i].checked, this.db.textArr[i].index, this.db.textArr[i].text, this.db.textArr[i].fk_colorIndex);
                     if(this.db.textArr[i].checked==false){ this.allCheck = false; }
+
+                    const pls = this.db.textArr[i].text.split("=")[1];
+                    if(pls != null && this.db.textArr[i].checked){
+                        this.sum += Number(pls);
+                    }
                     bodyDiv.appendChild(tuple);
                 }
             }else if(this.db.sort == 2){
-                let all = [ [], [], [], [] ];
-                for(let j=0; j<all.length; j++){
-                    for(let i=0; i<len; i++){
-                        const i_index = i;
-                        const i_color = this.db.textArr[i].fk_colorIndex;
-                        if(i_color == j){
-                            all[j].push(i_index);
+                let all = [ [], [] ];
+                for(let j=0; j<this.db.textArr.length; j++){
+                    const i_index = j;
+                    const check = this.db.textArr[j].checked;
+                    if(check){
+                        all[0].push(i_index);
+                        const pls = this.db.textArr[j].text.split("=")[1];
+                        if(pls != null && this.db.textArr[j].checked){
+                            this.sum += Number(pls);
                         }
+                    }else{
+                        all[1].push(i_index);
                     }
                 }
                 for(let i=0; i<all.length;i++){
@@ -4180,7 +4164,7 @@ class tabElement_calcul {
                 for(let i=1; i<all.length; i++){
                     for(let j=0; j<all[i].length;j++){
                         const index = all[i][j];
-                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text, this.db.textArr[index].fk_colorIndex);
+                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text);
                         if(this.db.textArr[index].checked==false){ this.allCheck = false; }
                         bodyDiv.appendChild(tuple);
                     }
@@ -4188,7 +4172,7 @@ class tabElement_calcul {
                 for(let i=0; i<1; i++){
                     for(let j=0; j<all[i].length;j++){
                         const index = all[i][j];
-                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text, this.db.textArr[index].fk_colorIndex);
+                        const tuple = this.makeTuple(this.db.textArr[index].checked, this.db.textArr[index].index, this.db.textArr[index].text);
                         if(this.db.textArr[index].checked==false){ this.allCheck = false; }
                         bodyDiv.appendChild(tuple);
                     }
