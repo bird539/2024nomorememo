@@ -734,12 +734,13 @@ class htmlRemoteElement {
         const tabTupleTextDiv = this.div.cloneNode(true);
         tabTupleTextDiv.style.textAlign = "start";
         let count = this.trash.tab_text.length;
+        tabTupleTextDiv.style.borderBottom = `1.5px solid ${this.db.fontColor}`;
         tabTupleTextDiv.innerText = `tuple (max 40/${count})`;
         pageDiv.appendChild(tabTupleTextDiv);
-        tabTupleTextDiv.style.borderBottom = `1.5px solid ${this.db.fontColor}`;
-        for(let i=0; i<this.trash.tab_text.length; i++){
+        for(let i=this.trash.tab_text.length-1; i>=0; i--){
             pageDiv.appendChild(this.tuple_trash(this.trash.tab_text[i].index, this.trash.tab_text[i].text ));
         }
+
 
 
         //tab
@@ -747,7 +748,7 @@ class htmlRemoteElement {
         count = this.trash.tab.length;
         tabTextDiv.innerText = `tab (max 10/${count})`;
         pageDiv.appendChild(tabTextDiv);
-        for(let i=0; i<this.trash.tab.length; i++){
+        for(let i=this.trash.tab.length-1; i>=0; i--){
             const allDiv = this.tuple_trash_tab(this.trash.tab[i].index, this.trash.tab[i].name, this.trash.tab[i]);
             pageDiv.appendChild(allDiv);
         }
@@ -758,7 +759,7 @@ class htmlRemoteElement {
         count = this.trash.window.length;
         windowTextDiv.innerText = `window(max 5/${count})`;
         pageDiv.appendChild(windowTextDiv);
-        for(let i=0; i<this.trash.window.length; i++){
+        for(let i=this.trash.window.length-1; i>=0; i--){
             const allDiv = this.tuple_trash_window(this.trash.window[i].index, this.trash.window[i].name, this.trash.window[i]);
             pageDiv.appendChild(allDiv);
         }
@@ -3643,14 +3644,37 @@ class tabElement_calcul {
                 key:"checked", value:event.target.checked};
             subj.subscribe(observer);
             subj.notifyAll();
+
+            const sumDiv = document.querySelector(`.${split[0]}_sum`);
+            const value = document.querySelector(`.${split[0]}_${split[1]}_emptyDiv`).innerText.replace(baseic_regex, "");
+            const value2 = sumDiv.innerText.replace(baseic_regex, "");
+
+            if(value != null && event.target.checked){sumDiv.innerText = Number(value2) + Number(value);
+            }else if(value != null && event.target.checked == false){
+                sumDiv.innerText = Number(value2) - Number(value);
+            }
         } else if (target.includes("allCheckbox")) {
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
             for (let i = 0; i < element.childNodes.length; i++) {
                 const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
                 if (checkbox.checked != event.target.checked) {
-                    element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].dispatchEvent(new Event('click'));
+                    element.childNodes[i].childNodes[0].childNodes[0].click();
                 }
             }
+        } else if(target.includes("allSubBtn")){
+            const element = document.querySelector(`.${split[0]}_tuplesDiv`);
+            const textarea = document.querySelector(`.${split[0]}_textarea`);
+            let newText = "";
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
+                if (checkbox.checked) {
+                    if(newText.length !=0){ newText += "+"; }
+                    newText += element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].childNodes[0].innerText;
+                }
+            }
+            textarea.value = newText;
+            const subBtn = document.querySelector(`.${split[0]}_subBtn`);
+            subBtn.click();
         }
     }
     function_selectEvent(event) {
@@ -3790,24 +3814,20 @@ class tabElement_calcul {
             const element = document.querySelector(`.${split[0]}_${split[1]}_mark`);
             copyToClipboard(element.innerText + event.target.innerText);
         }else if(target.includes("copyAll")){
-            const select = event.target.previousSibling.previousSibling;
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
             let text = "";
             for (let i = 0; i < element.childNodes.length; i++) {
                 const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
                 if(checkbox.checked){
-                    const mark = element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].childNodes[0];
-                    const color = element.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
-                    if(select.selectedIndex != 0 && select.selectedIndex==color.selectedIndex){
-                        text += mark.innerText
-                        text += "\n";
-                    }else if(select.selectedIndex == 0){
-                        text += mark.innerText
-                        text += "\n";
-                    }
+                    const mark = element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].childNodes[0].innerText;
+                    const value = element.childNodes[i].childNodes[1].childNodes[1].childNodes[1].innerText;
+                    text += mark + " " + value;
+                    text += "\n";
                 }
             }
             copyToClipboard(text);
+        }else if(target.includes("sum")){
+            copyToClipboard(event.target.innerText);
         }
     }
     function_newTuple(event){
@@ -3862,19 +3882,13 @@ class tabElement_calcul {
     }
     function_allDelTuple(event){
         const index = event.target.className.split("_")[0].replace(baseic_regex, "");
-        const select = event.target.previousSibling;
 
         const tuplesDiv = document.querySelector(`.t${index}_tuplesDiv`);
         for(let i=tuplesDiv.childNodes.length-1;i>=0;i--){
             const checkbox = tuplesDiv.childNodes[i].childNodes[0].childNodes[0];
-            const color = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
-            const del = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[3];
+            const del = tuplesDiv.childNodes[i].childNodes[0].childNodes[1];
             if(checkbox.checked){
-                if(select.selectedIndex != 0 && select.selectedIndex==color.selectedIndex){
-                    del.click();
-                }else if(select.selectedIndex == 0){
-                    del.click();
-                }
+                del.click();
             }
         }
         
@@ -4209,6 +4223,8 @@ class tabElement_calcul {
         const subBtn = this.button.cloneNode(true);
         subBtn.innerText = "sub";
         subBtn.style.width = "60px"
+        subBtn.className = `t${this.db.index}_allSubBtn`;
+        subBtn.addEventListener("click", this.function_checkEvent);
         const sumDiv = this.button.cloneNode(true);
         sumDiv.innerText = sum;
         sumDiv.style.display = "flex";
@@ -4218,6 +4234,7 @@ class tabElement_calcul {
         sumDiv.style.alignItems = "center";
         sumDiv.style.width = "60px"
         sumDiv.className = `t${this.db.index}_sum`;
+        sumDiv.addEventListener("click", this.function_copyEvent);
         
         const rightDiv = this.div.cloneNode(true);
         rightDiv.appendChild(delBtn);
@@ -4966,7 +4983,7 @@ class Model {
     tab_calcul_text_D(textIndex){
         const timeIndex =new Date();
         const newTrashTuple = {index : timeIndex, 
-            text : this.tab_memo_textArr[textIndex].text
+            text : this.tab_calcul_textArr[textIndex].text
         }
         this.htmlInfo.trash.tab_text.push(newTrashTuple);
         if(this.htmlInfo.trash.tab_text.length > 40){
@@ -4979,7 +4996,6 @@ class Model {
         this.tab_calcul_text_save();
     }
     tab_calcul_text_U(tupleIndex, key, value){
-        console.log(tupleIndex, key, value);
         this.tab_calcul_textArr[tupleIndex][key] = value;
         this.tab_calcul_text_save();
     }
@@ -5093,7 +5109,7 @@ class View {
 
                 element.setValue(info.set);
                 const tabInfo = info.tab; 
-                this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text, tabInfo.fk_colorIndex);
+                this.returnElement = element.makeTuple(tabInfo.checked, tabInfo.index, tabInfo.text);
             }
             const html_tuple_info = {
                 text : info.tab.text,
@@ -5190,6 +5206,7 @@ class Controller {
         //html start
         const newHtmlInfo = this.model.htmlInfo;
         newHtmlInfo.newInfo.push(this.model.tab_memo_textArr);
+        newHtmlInfo.newInfo.push(this.model.tab_calcul_textArr);
         const v_element_html = new View("html", newHtmlInfo);
         mainHtml.appendChild(v_element_html.returnElement);
         this.model.htmlInfo.newInfo = [];
