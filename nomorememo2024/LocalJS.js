@@ -3959,10 +3959,9 @@ class tabElement_calcul {
 
         if(tupleIndex2 != null){
             const observer = new Observer_sendGetData(true);
-            observer.name = "tab_memo_text update event";
-            observer.target = "tab_memo_text_U_indexChange";
+            observer.name = "tab_calcul_text update event";
+            observer.target = "tab_calcul_text_U_indexChange";
             observer.value = {tupleIndex1:tupleIndex1, tupleIndex2:tupleIndex2}
-            console.log(observer.value);
             subj.subscribe(observer);
             subj.notifyAll();
         }
@@ -4985,12 +4984,12 @@ class Model {
     }
     tab_calcul_text_U_indexChange(tupleIndex1, tupleIndex2){
         //fk_tabIndex, key_madeDate, checked, text, fk_colorIndex
-        const ex = this.tab_memo_textArr[tupleIndex1];
-        this.tab_memo_textArr[tupleIndex1] = this.tab_memo_textArr[tupleIndex2];
-        this.tab_memo_textArr[tupleIndex1].index = tupleIndex1;
-        this.tab_memo_textArr[tupleIndex2] = ex;
-        this.tab_memo_textArr[tupleIndex2].index = tupleIndex2;
-        this.tab_memo_text_save();
+        const ex = this.tab_calcul_textArr[tupleIndex1];
+        this.tab_calcul_textArr[tupleIndex1] = this.tab_calcul_textArr[tupleIndex2];
+        this.tab_calcul_textArr[tupleIndex1].index = tupleIndex1;
+        this.tab_calcul_textArr[tupleIndex2] = ex;
+        this.tab_calcul_textArr[tupleIndex2].index = tupleIndex2;
+        this.tab_calcul_text_save();
     }
 
     checkFunction() { return this.check; }
@@ -5315,6 +5314,8 @@ class Controller {
             if (value2 == "true" || value2 == "false") { value2 = value2 == "true" ? true : false; }
             if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.tab_calcul_text_U(index, key, value2);
+        }else if(target == "tab_calcul_text_U_indexChange"){
+            this.model.tab_calcul_text_U_indexChange(value.tupleIndex1, value.tupleIndex2);
         }
     }
     sendTarget() { return "windowAppend"; }
