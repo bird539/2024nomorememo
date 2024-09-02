@@ -1457,12 +1457,12 @@ class windowElement {
         tapSelectDiv.style.display = "none";
         tapSelectDiv.className = `w${this.db.index}TabSelectDiv`;
         const plsBtnType = LEFT_BTN.cloneNode(true);
-        let tapTypeName = ["메모", "계산", "링크", "시간", "그림", "달력", "확율", "윈도"];
+        let tapTypeName = ["메모", "계산", "링크", "윈도"];
         for (let i = 0; i < tapTypeName.length; i++) {
             const plsBtn_new = plsBtnType.cloneNode(true);
             plsBtn_new.innerText = tapTypeName[i];
             plsBtn_new.className = `w${this.db.index}_${i}`;
-            if (i == 7) {
+            if (i == tapTypeName.length - 1) {
                 plsBtn_new.addEventListener("click", this.function_createWindow);
             } else {
                 plsBtn_new.addEventListener("click", this.function_newTab);
@@ -5010,7 +5010,7 @@ class tabElement_link {
         const formDiv = this.div.cloneNode(true);
         formDiv.className = `t${this.db.index}Form`;
         const textarea = this.textarea.cloneNode(true);
-        textarea.rows = "5"; textarea.placeholder = "input memo...";
+        textarea.rows = "5"; textarea.placeholder = "input title + enter + url";
         textarea.className = `t${this.db.index}_textarea`;
         textarea.style.width = "100%";
 
@@ -6609,7 +6609,7 @@ class Controller {
             const text = value.text;
             const colorIndex = value.colorIndex;
             this.model.tab_link_text_C(tabIndex, text, colorIndex);
-            this.model.value.index = this.model.tab_memo_textArr.length - 1;
+            this.model.value.index = this.model.tab_link_textArr.length - 1;
             const info = {
                 set: this.model.tabInfoArr[tabIndex],
                 tab: this.model.value,
