@@ -1367,7 +1367,7 @@ class windowElement {
         const winEdit = document.querySelector(`.w${index}EditDiv`);
 
         const winBody = document.querySelector(`.w${index}body`);
-        winBody.style.display = winBody.style.display == "none" ? "block" : "none";
+        winBody.style.display = winBody.style.display == "none" ? "flex" : "none";
         const plsBtn = event.target.nextSibling;
         plsBtn.innerText = winBody.style.display == "none" ? "-" : "+";
         const show = winBody.style.display != "none";
@@ -1415,7 +1415,11 @@ class windowElement {
         const winHeadDiv = this.div.cloneNode(true);
         const winBodyDiv = this.div.cloneNode(true);
         winBodyDiv.className = `w${this.db.index}body`
-        winBodyDiv.style.display = this.db.show == true ? "block" : "none";
+        winBodyDiv.style.display = this.db.show == true ? "flex" : "none";
+        winBodyDiv.style.flexWrap = "wrap";
+        winBodyDiv.style.justifyContent = "center"
+        winBodyDiv.style.alignItems = "start";
+
         winBodyDiv.style.overflow = "scroll";
         const MAIN_LINE_DIV = this.div.cloneNode(true);
         MAIN_LINE_DIV.style.display = "flex";
@@ -2682,7 +2686,20 @@ class tabElement_memo {
         } else if (target.includes("checkbox")) {
             const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
             element1.style.textDecorationLine = event.target.checked ? "line-through" : "none";
-            element1.style.color = event.target.checked ? "gray" : "black";
+            const doneColor = document.querySelector(`.${split[0]}_done`);
+            const textColor = document.querySelector(`.${split[0]}_subBtn`);
+            element1.style.color = event.target.checked ? doneColor.value : doneColor.style.color;
+
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tap_memo_text update event";
+            observer.target = "tab_memo_text_U";
+            observer.value = {
+                index: split[1].replace(baseic_regex, ""),
+                key: "checked", value: event.target.checked
+            };
+            subj.subscribe(observer);
+            subj.notifyAll();
+
         } else if (target.includes("allCheckbox")) {
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
             for (let i = 0; i < element.childNodes.length; i++) {
@@ -4582,8 +4599,8 @@ class tabElement_link {
             mark.innerText = textarea.value;
             const observer = new Observer_sendGetData(true);
             observer.check = true;
-            observer.name = "tap_memo_text update event";
-            observer.target = "tab_memo_text_U";
+            observer.name = "tap_link_text update event";
+            observer.target = "tab_link_text_U";
             observer.value = { index: tupleIndex, key: "text", value: textarea.value };
             subj.subscribe(observer);
             subj.notifyAll();
@@ -4604,8 +4621,8 @@ class tabElement_link {
             element1.style.color = element.checked ? `${colorArr.childNodes[3].value}` : `${fontColor.value}`;
 
             const observer = new Observer_sendGetData(true);
-            observer.name = "tap_memo_text update event";
-            observer.target = "tab_memo_text_U";
+            observer.name = "tap_link_text update event";
+            observer.target = "tab_link_text_U";
             observer.value = {
                 index: split[1].replace(baseic_regex, ""),
                 key: "checked", value: element.checked
@@ -4616,14 +4633,24 @@ class tabElement_link {
             return
         } else if (target.includes("checkbox")) {
             const element1 = document.querySelector(`.${split[0]}_${split[1]}_mark`);
-            element1.style.textDecorationLine = event.target.checked ? "line-through" : "none";
-            element1.style.color = event.target.checked ? "gray" : "black";
+            element1.style.textDecorationLine = event.target.checked ? "underline" : "none";
+
+            const observer = new Observer_sendGetData(true);
+            observer.name = "tap_link_text update event";
+            observer.target = "tab_link_text_U";
+            observer.value = {
+                index: split[1].replace(baseic_regex, ""),
+                key: "checked", value: event.target.checked
+            };
+            subj.subscribe(observer);
+            subj.notifyAll();
+
         } else if (target.includes("allCheckbox")) {
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
             for (let i = 0; i < element.childNodes.length; i++) {
                 const checkbox = element.childNodes[i].childNodes[0].childNodes[0];
                 if (checkbox.checked != event.target.checked) {
-                    element.childNodes[i].childNodes[1].childNodes[0].childNodes[0].dispatchEvent(new Event('click'));
+                    element.childNodes[i].childNodes[0].childNodes[0].click();
                 }
             }
         }
@@ -4650,8 +4677,8 @@ class tabElement_link {
             }
 
             const observer = new Observer_sendGetData(true);
-            observer.name = "tap_memo_text update event";
-            observer.target = "tab_memo_text_U";
+            observer.name = "tap_link_text update event";
+            observer.target = "tab_link_text_U";
             observer.value = {
                 index: split[1].replace(baseic_regex, ""),
                 key: "fk_colorIndex", value: index
@@ -4720,7 +4747,7 @@ class tabElement_link {
                     for (let i = 0; i < len; i++) {
                         const i_tuple = tuplesDiv.childNodes[i];
                         const i_index = i_tuple.childNodes[0].childNodes[0].value
-                        const i_color = i_tuple.childNodes[1].childNodes[1].childNodes[0].childNodes[2].selectedIndex;
+                        const i_color = i_tuple.childNodes[1].childNodes[1].childNodes[1].childNodes[2].childNodes[0].selectedIndex;
                         if (i_color == j) {
                             all[j].push(i_index);
                         }
@@ -4763,9 +4790,9 @@ class tabElement_link {
     function_copyEvent(event) {
         const target = event.target.className;
         const split = target.split("_");
-        if (target.includes("tupleCopy")) {
+        if (target.includes("tupleCopy") || target.includes("emptyDiv")) {
             const element = document.querySelector(`.${split[0]}_${split[1]}_mark`);
-            copyToClipboard(element.innerText);
+            copyToClipboard(element.href);
         } else if (target.includes("copyAll")) {
             const select = event.target.previousSibling.previousSibling;
             const element = document.querySelector(`.${split[0]}_tuplesDiv`);
@@ -4778,9 +4805,13 @@ class tabElement_link {
                     if (select.selectedIndex != 0 && select.selectedIndex == color.selectedIndex) {
                         text += mark.innerText
                         text += "\n";
+                        text += mark.href;
+                        text += "\n\n";
                     } else if (select.selectedIndex == 0) {
                         text += mark.innerText
                         text += "\n";
+                        text += mark.href;
+                        text += "\n\n";
                     }
                 }
             }
@@ -4810,7 +4841,7 @@ class tabElement_link {
 
         const observer = new Observer_sendGetData(true);
         observer.name = "tab_memo_color update event";
-        observer.target = "tab_memo_color_U";
+        observer.target = "tab_link_tag_U";
         observer.value = {
             value: event.target.value, index: tabIndex,
             key: key,
@@ -4825,8 +4856,8 @@ class tabElement_link {
 
         const observer = new Observer_sendGetData(true);
         observer.check = true;
-        observer.name = "tap_memo_text update event";
-        observer.target = "tab_memo_text_D";
+        observer.name = "tap_link_text update event";
+        observer.target = "tab_link_text_D";
         observer.value = tupleIndex;
         subj.subscribe(observer);
         subj.notifyAll();
@@ -4836,12 +4867,12 @@ class tabElement_link {
     function_allDelTuple(event) {
         const index = event.target.className.split("_")[0].replace(baseic_regex, "");
         const select = event.target.previousSibling;
-
+        
         const tuplesDiv = document.querySelector(`.t${index}_tuplesDiv`);
         for (let i = tuplesDiv.childNodes.length - 1; i >= 0; i--) {
             const checkbox = tuplesDiv.childNodes[i].childNodes[0].childNodes[0];
-            const color = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[2];
-            const del = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[0].childNodes[3];
+            const color = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[1].childNodes[2];
+            const del = tuplesDiv.childNodes[i].childNodes[1].childNodes[1].childNodes[1].childNodes[1];
             if (checkbox.checked) {
                 if (select.selectedIndex != 0 && select.selectedIndex == color.selectedIndex) {
                     del.click();
@@ -4877,7 +4908,6 @@ class tabElement_link {
 
         const table = document.querySelector(`.t${index}_tuplesDiv`)
         const len = table.childNodes.length;
-
 
         if (key.includes("next")) {
             let firstNodeNot = true;
@@ -4942,8 +4972,8 @@ class tabElement_link {
 
         if (tupleIndex2 != null) {
             const observer = new Observer_sendGetData(true);
-            observer.name = "tab_memo_text update event";
-            observer.target = "tab_memo_text_U_indexChange";
+            observer.name = "tab_link_text update event";
+            observer.target = "tab_link_text_U_indexChange";
             observer.value = { tupleIndex1: tupleIndex1, tupleIndex2: tupleIndex2 }
             console.log(observer.value);
             subj.subscribe(observer);
@@ -4994,15 +5024,35 @@ class tabElement_link {
         sortSelect.className = `t${this.db.index}sortBtn`;
         sortSelect.selectedIndex = this.db.sort;
         sortSelect.addEventListener("change", this.function_selectEvent);
-        const colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3", "done"];
+        const colorText = ["#", "color1", "color2", "color3", "done"];
         const colorSelect = this.select.cloneNode(true);
         colorSelect.className = `t${this.db.index}_colorInputSelect`;
         colorSelect.addEventListener("change", this.function_selectEvent);
-        for (let i = 0; i < colorText.length; i++) {
-            const op = this.option.cloneNode(true);
-            op.innerText = colorText[i];
-            colorSelect.appendChild(op);
-        }
+        
+        const op0 = this.option.cloneNode(true);
+        op0.innerText = `#`;
+        op0.value = 0;
+        colorSelect.appendChild(op0);
+        const op1 = this.option.cloneNode(true);
+        op1.innerText = `${this.db.colorArr.color1}`;
+        op1.value = 1;
+        colorSelect.appendChild(op1);
+        const op2 = this.option.cloneNode(true);
+        op2.innerText = `${this.db.colorArr.color2}`;
+        op2.value = 2;
+        colorSelect.appendChild(op2);
+        const op3 = this.option.cloneNode(true);
+        op3.innerText = `${this.db.colorArr.color3}`;
+        op3.value = 3;
+        colorSelect.appendChild(op3);
+
+        const selectDiv = this.div.cloneNode(true);
+        selectDiv.style.display = "flex";
+        selectDiv.style.flexShrink = "0";
+        selectDiv.style.overflow = "auto";
+        selectDiv.style.width = "120px";
+        selectDiv.appendChild(colorSelect);
+
         const subBtn = MIN_BTN.cloneNode(true);
         subBtn.style.marginRight = "10px";
         subBtn.className = `t${this.db.index}_subBtn`;
@@ -5013,7 +5063,7 @@ class tabElement_link {
         colorInputDiv.className = `t${this.db.index}_colorInputDiv`;
 
         const colorInput = this.input.cloneNode(true);
-        colorInput.type = "color";
+        //colorInput.type = "in";
         colorInput.style.display = "none";
         colorInput.value = this.db.colorArr.color1;
         colorInput.className = `t${this.db.index}_color1`;
@@ -5061,7 +5111,7 @@ class tabElement_link {
         textareaTogather.style.flexDirection = "row-reverse";
         textareaTogather.flexWrap = "wrap";
         textareaTogather.appendChild(subBtn);
-        textareaTogather.appendChild(colorSelect);
+        textareaTogather.appendChild(selectDiv);
         textareaTogather.appendChild(colorInputDiv);
         textareaTogather.className = `t${this.db.index}subDiv`;
         textareaTogather.style.flexGrow = 1;
@@ -5149,13 +5199,32 @@ class tabElement_link {
         checkAll.addEventListener("change", this.function_checkEvent);
         checkDiv.appendChild(checkAll);
 
-        const select = this.select.cloneNode(true);
-        let text = ["all", "color1", "color2", "color3"];
-        for (let i = 0; i < text.length; i++) {
-            const op = this.option.cloneNode(true);
-            op.innerText = text[i];
-            select.appendChild(op);
-        }
+        const colorSelect = this.select.cloneNode(true);
+        colorSelect.className = `t${this.db.index}_colorInputSelect`;
+        
+        const op0 = this.option.cloneNode(true);
+        op0.innerText = `#`;
+        op0.value = 0;
+        colorSelect.appendChild(op0);
+        const op1 = this.option.cloneNode(true);
+        op1.innerText = `${this.db.colorArr.color1}`;
+        op1.value = 1;
+        colorSelect.appendChild(op1);
+        const op2 = this.option.cloneNode(true);
+        op2.innerText = `${this.db.colorArr.color2}`;
+        op2.value = 2;
+        colorSelect.appendChild(op2);
+        const op3 = this.option.cloneNode(true);
+        op3.innerText = `${this.db.colorArr.color3}`;
+        op3.value = 3;
+        colorSelect.appendChild(op3);
+
+        const selectDiv = this.div.cloneNode(true);
+        selectDiv.style.display = "flex";
+        selectDiv.style.flexShrink = "0";
+        selectDiv.style.overflow = "auto";
+        selectDiv.style.width = "120px";
+        selectDiv.appendChild(colorSelect);
 
         const copyBtn = this.button.cloneNode(true);
         copyBtn.innerText = "c";
@@ -5169,7 +5238,10 @@ class tabElement_link {
 
 
         const rightDiv = this.div.cloneNode(true);
-        rightDiv.appendChild(select);
+        rightDiv.style.display = "flex";
+        rightDiv.style.alignItems = "start";
+        rightDiv.style.width = "100%";
+        rightDiv.appendChild(selectDiv);
         rightDiv.appendChild(delBtn);
         rightDiv.appendChild(copyBtn);
 
@@ -5188,7 +5260,7 @@ class tabElement_link {
         chekDiv.style.display = "flex";
         const checkBox = this.input.cloneNode(true);
         checkBox.type = "checkbox";
-        checkBox.width = "40px"
+        checkBox.style.width = "40px"
         checkBox.style.color = `${this.db.fontColor}`;
         checkBox.style.height = "100%";
         checkBox.value = index;
@@ -5201,13 +5273,14 @@ class tabElement_link {
         chekDiv.style.flexDirection = "column";
         chekDiv.style.alignItems = "stretch";
         chekDiv.style.width = "40px";
-        //chekDiv.appendChild(checkBox);
+        chekDiv.appendChild(checkBox);
 
         const textDiv = this.div.cloneNode(true);
         const mark = this.mark.cloneNode(true);
         mark.style.width = "100%";
         mark.style.display = "block";
-        mark.style.wordBreak = "break-word";
+        //mark.style.wordBreak = "break-word";
+        mark.style.height = "60px";
         mark.innerText = text.split("\n")[0];
         mark.href = text.split("\n")[1];
         mark.className = `t${this.db.index}_i${index}_mark`;
@@ -5217,11 +5290,13 @@ class tabElement_link {
             else if (colorIndex == 3) { mark.style.backgroundColor = this.db.colorArr.color3 }
         }
         //mark.style.backgroundColor = "rgb(234, 37, 37)";
-        mark.style.textDecorationLine = checked ? "line-through" : "none";
-        mark.style.color = checked ? `${this.db.colorArr.done}` : `${this.db.fontColor}`;
+        mark.style.textDecorationLine = checked ? "underline" : "none";
+        //mark.style.color = checked ? `${this.db.colorArr.done}` : `${this.db.fontColor}`;
         //mark.addEventListener("click",this.function_checkEvent);
         textDiv.style.textAlign = "start";
+        textDiv.style.overflow = "auto";
         textDiv.className = `t${this.db.index}_i${index}_textDiv`;
+        textDiv.style.width = `${this.db.width - 40}px`;
         textDiv.appendChild(mark);
         //textDiv.addEventListener("click", this.function_checkEvent);
 
@@ -5265,35 +5340,62 @@ class tabElement_link {
 
         const delBtn = this.button.cloneNode(true);
         delBtn.className = `t${this.db.index}_i${index}_delBtn`;
-        delBtn.innerText = "x"; delBtn.style.width = "40px"; delBtn.style.margin = "0px";
+        delBtn.innerText = "x"; 
+        delBtn.style.width = "40px"; 
+        delBtn.style.flexShrink = "0";
+        delBtn.style.margin = "0px";
         delBtn.addEventListener("click", this.function_delTuple);
-        const editBtn = this.button.cloneNode(true);
-        editBtn.innerText = "e"; editBtn.style.width = "40px"; editBtn.style.margin = "0px";
+        const editBtn = delBtn.cloneNode(true);
+        editBtn.innerText = "e"; 
         editBtn.className = `t${this.db.index}_i${index}_editBtn`;
         editBtn.addEventListener("click", this.function_showEvent);
 
         const colorSelect = this.select.cloneNode(true);
-        let colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3"];
-        for (let i = 0; i < colorText.length; i++) {
-            const op = this.option.cloneNode(true);
-            op.innerText = `${colorText[i]}`;
-            op.value = i;
-            colorSelect.appendChild(op);
-        }
+        colorSelect.style.margin = "0";
+        //let colorText = ["⁙⁙⁙⁙", "color1", "color2", "color3"];
+
+        const op0 = this.option.cloneNode(true);
+        op0.innerText = `#`;
+        op0.value = 0;
+        colorSelect.appendChild(op0);
+        const op1 = this.option.cloneNode(true);
+        op1.innerText = `${this.db.colorArr.color1}`;
+        op1.value = 1;
+        colorSelect.appendChild(op1);
+        const op2 = this.option.cloneNode(true);
+        op2.innerText = `${this.db.colorArr.color2}`;
+        op2.value = 2;
+        colorSelect.appendChild(op2);
+        const op3 = this.option.cloneNode(true);
+        op3.innerText = `${this.db.colorArr.color3}`;
+        op3.value = 3;
+        colorSelect.appendChild(op3);
+
+        const selectDiv = this.div.cloneNode(true);
+        selectDiv.style.display = "flex";
+        selectDiv.style.flexShrink = "0";
+        selectDiv.style.overflow = "auto";
+        selectDiv.style.width = "120px";
+        selectDiv.appendChild(colorSelect);
+
         colorSelect.selectedIndex = colorIndex;
         colorSelect.className = `t${this.db.index}_i${index}_tupleColorSelect`;
         colorSelect.addEventListener("change", this.function_selectEvent);
         mainBtnDiv.style.display = "flex";
         mainBtnDiv.style.flexGrow = "1";
         mainBtnDiv.style.flexDirection = "row";
+        mainBtnDiv.style.overflow = "scroll"
         mainBtnDiv.className = `t${this.db.index}_i${index}_colorECBtn`;
+        mainBtnDiv.style.width = "100%";
+        mainBtnDiv.style.textAlign = "start";
 
         //mainBtnDiv.appendChild(copyBtn);
-        chekDiv.appendChild(editBtn);
-        chekDiv.appendChild(delBtn);
-        mainBtnDiv.appendChild(colorSelect);
+        mainBtnDiv.appendChild(editBtn);
+        mainBtnDiv.appendChild(delBtn);
+        mainBtnDiv.appendChild(selectDiv);
 
         const mainAreaDiv = this.div.cloneNode(true);
+        //mainAreaDiv.style.overflow = "auto";
         mainAreaDiv.appendChild(textDiv);
         mainAreaDiv.appendChild(editDiv);
         mainAreaDiv.style.paddingTop = "10px";
@@ -5305,18 +5407,24 @@ class tabElement_link {
         btnDiv.style.textAlign = "start"
         editDiv2.style.width = "160px";
 
+        const emptyDiv2 = this.div.cloneNode(true);
+        emptyDiv2.style.display = "flex";
+        emptyDiv2.style.flexGrow = "0";
+        emptyDiv2.style.alignItems = "center"
+        emptyDiv2.style.overflow = "auto";
+
         const emptyDiv = this.div.cloneNode(true);
         emptyDiv.className = `t${this.db.index}_i${index}_emptyDiv`;
-        emptyDiv.style.display = "flex";
         emptyDiv.innerText = text.split("\n")[1];
-        emptyDiv.style.flexGrow = "1";
         emptyDiv.style.textAlign = "start"
-        emptyDiv.addEventListener("click", this.function_checkEvent);
-        //mainBtnDiv.appendChild(emptyDiv);
+        emptyDiv.style.alignItems = "center"
+        emptyDiv.addEventListener("click", this.function_copyEvent);
+        emptyDiv2.appendChild(emptyDiv);
+        mainBtnDiv.appendChild(emptyDiv2);
 
         mainBtnDiv.style.width = "250px";
         btnDiv.appendChild(editDiv2);
-        btnDiv.appendChild(emptyDiv);
+        //btnDiv.appendChild(emptyDiv);
         btnDiv.appendChild(mainBtnDiv);
 
         const rightDiv = this.div.cloneNode(true);
@@ -5420,9 +5528,9 @@ class Tab_Calcul_text {
 }
 
 class Tab_Link_tag {
-    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; done = null;
+    fk_tabIndex = null; color1 = null; color2 = null; color3 = null; 
     constructor(tabIndex) {
-        this.fk_tabIndex = tabIndex; this.color1 = '#fe0000'; this.color2 = '#1500ff'; this.color3 = '#00ff19'; this.done = "#A3A3A3";
+        this.fk_tabIndex = tabIndex; this.color1 = '#fe0000'; this.color2 = '#1500ff'; this.color3 = '#00ff19';
     }
 }
 class Tab_Link_text {
@@ -6085,6 +6193,7 @@ class Model {
         this.tab_link_text_save();
     }
     tab_link_text_U_indexChange(tupleIndex1, tupleIndex2) {
+        console.log("mo", tupleIndex1, tupleIndex2);
         const ex = this.tab_link_textArr[tupleIndex1];
         this.tab_link_textArr[tupleIndex1] = this.tab_link_textArr[tupleIndex2];
         this.tab_link_textArr[tupleIndex1].index = tupleIndex1;
@@ -6272,6 +6381,8 @@ class Controller {
         this.model.tab_memo_color_nullClear();
         this.model.tab_memo_text_nullClear();
         this.model.tab_calcul_text_nullClear();
+        this.model.tab_link_tag_nullClear();
+        this.model.tab_link_text_nullClear();
 
         let winSelectInfo = [];
         //window start
@@ -6419,9 +6530,9 @@ class Controller {
                 this.tabAppend(this.model.value, "calcul", tabInfo);
             } else if (this.model.value.type == 2) {
                 tabInfo = { color: null, text: [] }
-                for (let j = 0; j < this.model.tab_link_tagrArr.length; j++) {
-                    if (this.model.tab_link_tagrArr[j] != null && this.model.tab_link_tagrArr[j].fk_tabIndex == this.model.value.index) {
-                        tabInfo.color = this.model.tab_link_tagrArr[j];
+                for (let j = 0; j < this.model.tab_link_tagArr.length; j++) {
+                    if (this.model.tab_link_tagArr[j] != null && this.model.tab_link_tagArr[j].fk_tabIndex == this.model.value.index) {
+                        tabInfo.color = this.model.tab_link_tagArr[j];
                     }
                 }
                 this.tabAppend(this.model.value, "link", tabInfo);
@@ -6497,7 +6608,6 @@ class Controller {
             const tabIndex = value.tabIndex;
             const text = value.text;
             const colorIndex = value.colorIndex;
-            console.log("con", tabIndex, text, colorIndex);
             this.model.tab_link_text_C(tabIndex, text, colorIndex);
             this.model.value.index = this.model.tab_memo_textArr.length - 1;
             const info = {
@@ -6519,7 +6629,7 @@ class Controller {
             if (isNaN(value2) == false) { value2 = Number(value2) }
             this.model.tab_link_text_U(index, key, value2);
         } else if (target == "tab_link_text_U_indexChange") {
-            this.model.tab_memo_text_U_indexChange(value.tupleIndex1, value.tupleIndex2);
+            this.model.tab_link_text_U_indexChange(value.tupleIndex1, value.tupleIndex2);
         } else if (target == "tab_link_text_D") {
             this.model.tab_link_text_D(value);
         } else if (target == "tab_link_tag_U") {
