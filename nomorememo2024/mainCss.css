@@ -1,3 +1,6 @@
+* {
+    touch-action:manipulation;
+}
 * ::-webkit-scrollbar {
     display: none;
 }
@@ -5,6 +8,7 @@
 /* checkbox */
 input[type="checkbox"] {
     -webkit-appearance: none;
+    -webkit-border-radius: 0;
     position: relative;
     width: 100%;
     height: 20px;
