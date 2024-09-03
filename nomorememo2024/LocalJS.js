@@ -6325,7 +6325,7 @@ class View {
         } else if (type == "tab") {
             const element = new tabElement();
             let newI = info;
-            if (tabType == "memo" || tabType == "link") {
+            if (tabType == "memo" || tabType =="calcul"  || tabType == "link") {
                 newI.tabInfo = tabInfo;
             }
             element.setValue(newI);
